@@ -1,0 +1,100 @@
+version: "3"
+
+networks:
+  yourule:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.0.0/16
+
+services:
+  redis-cluster:
+    container_name: redis-cluster
+    image: dimax94/redis
+    command: redis-cli --cluster create 10.0.0.11:7001 10.0.0.12:7002 10.0.0.13:7003 10.0.0.14:7004 10.0.0.15:7005 10.0.0.16:7006 --cluster-replicas 1 --cluster-yes
+    depends_on:
+      - redis-1
+      - redis-2
+      - redis-3
+      - redis-4
+      - redis-5
+      - redis-6
+    networks:
+      yourule:
+        ipv4_address: 10.0.0.2
+
+  redis-1:
+    container_name: redis-1
+    build: redis_cluster_node1
+    environment:
+      X_REDIS_PORT: 7001
+    networks:
+      yourule:
+        ipv4_address: 10.0.0.11
+    ports:
+      - 7001:6379
+
+  redis-2:
+    container_name: redis-2
+    build: redis_cluster_node2
+    environment:
+      X_REDIS_PORT: 7002
+    networks:
+      yourule:
+        ipv4_address: 10.0.0.12
+    ports:
+      - 7002:6379
+
+  redis-3:
+    container_name: redis-3
+    build: redis_cluster_node3
+    environment:
+      X_REDIS_PORT: 7003
+    networks:
+      yourule:
+        ipv4_address: 10.0.0.13
+    ports:
+      - 7003:6379
+
+  redis-4:
+    container_name: redis-4
+    build: redis_cluster_node4
+    environment:
+      X_REDIS_PORT: 7004
+    networks:
+      yourule:
+        ipv4_address: 10.0.0.14
+    ports:
+      - 7004:6379
+
+  redis-5:
+    container_name: redis-5
+    build: redis_cluster_node5
+    environment:
+      X_REDIS_PORT: 7005
+    networks:
+      yourule:
+        ipv4_address: 10.0.0.15
+    ports:
+      - 7005:6379
+
+  redis-6:
+    container_name: redis-6
+    build: redis_cluster_node6
+    environment:
+      X_REDIS_PORT: 7006
+    networks:
+      yourule:
+        ipv4_address: 10.0.0.16
+    ports:
+      - 7006:6379
+
+
+
+
+
+
+
+
+
+
