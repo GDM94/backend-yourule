@@ -155,22 +155,33 @@ def get_all_devices_id():
         return json.dumps(output)
 
 
-@device.route('/alert/add/<email>', methods=['POST'])
+@device.route('/alert/add/', methods=['POST'])
 @check_token
-def add_alert_email(email):
+def add_alert_email():
     user_id = request.args.get("user_id")
-    output = device_service.add_alert_email(user_id, email)
+    output = device_service.add_alert_email(user_id)
     if output == "error":
         raise Exception()
     else:
         return output
 
 
-@device.route('/alert/delete/<email>', methods=['DELETE'])
+@device.route('/alert/modify/<email>/<idx>', methods=['POST'])
 @check_token
-def delete_alert_email(email):
+def modify_alert_email(email, idx):
     user_id = request.args.get("user_id")
-    output = device_service.delete_alert_email(user_id, email)
+    output = device_service.modify_alert_email(user_id, email, idx)
+    if output == "error":
+        raise Exception()
+    else:
+        return output
+
+
+@device.route('/alert/delete/<idx>', methods=['DELETE'])
+@check_token
+def delete_alert_email(idx):
+    user_id = request.args.get("user_id")
+    output = device_service.delete_alert_email(user_id, int(idx))
     if output == "error":
         raise Exception()
     else:

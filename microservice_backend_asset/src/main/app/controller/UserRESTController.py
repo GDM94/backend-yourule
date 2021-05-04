@@ -62,11 +62,13 @@ def user_registration():
     try:
         access_token = request.args.get("access_token")
         claims = jwt.decode(access_token, secret_key, algorithms=["HS256"])
+        print(claims)
         email = claims["email"]
         password = claims["password"]
         name = claims["name"]
         surname = claims["surname"]
         output = user_service.user_registration(email, password, name, surname)
+        print(output)
     except Exception as error:
         print(repr(error))
         raise Exception()

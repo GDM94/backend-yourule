@@ -53,7 +53,7 @@ class ConsequentServiceEvaluation(object):
     def alert_evaluation(self, user_id, rule_id):
         if self.r.get("user:" + user_id + ":rule:" + rule_id + ":evaluation") == "true":
             alert_id = "alert" + user_id
-            sendto = list(self.r.smembers("device:" + alert_id + ":email_list"))
+            sendto = self.r.lrange("device:" + alert_id + ":email_list", 0, -1)
             if len(sendto) > 0:
                 alert = self.email_connection(self.email_user, self.email_password)
                 rule_name = self.r.get("user:" + user_id + ":rule:" + rule_id + ":name")

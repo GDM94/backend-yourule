@@ -21,34 +21,43 @@ class DeviceServiceEvaluation(object):
         config.read(config_path)
         return config
 
+    def device_antecedent_measure(self, device_id, measure):
+        if "SWITCH" not in device_id:
+            key_pattern = "device:" + device_id
+            if "WATERLEVEL" in device_id:
+                max_measure = int(self.r.get(key_pattern + ":setting:max"))
+                error_setting = int(self.r.get(key_pattern + ":setting:error"))
+                relative_measure = float(measure) - float(error_setting)
+                measure = str(round((1 - (relative_measure / float(max_measure))) * 100.0))
+            elif "PHOTOCELL" in device_id or "SOILMOISTURE" in device_id:
+                max_measure = 1024
+                measure = str(round((int(measure) / max_measure) * 100.0))
+            elif "AMMETER" in device_id:
+                max_measure = int(self.r.get(key_pattern + ":setting:max"))
+                measure = str(round((int(measure) / max_measure) * 100.0))
+        return measure
+
     def device_evaluation(self, device_id, measure):
-        output = Trigger("", "", "", [], "")
+        output = Trigger("", device_id, "", [], "")
         try:
             key_pattern = "device:" + device_id
             if self.r.exists(key_pattern + ":userid") == 1:
                 user_id = self.r.get("device:" + device_id + ":userid")
-                device_prefix = device_id.split("-")[0]
-                if device_prefix == "WATERLEVEL":
-                    max_measure = int(self.r.get(key_pattern + ":setting:max"))
-                    error_setting = int(self.r.get(key_pattern + ":setting:error"))
-                    relative_measure = float(measure) - float(error_setting)
-                    measure = str(round((1 - (relative_measure / float(max_measure))) * 100.0))
-                elif device_prefix == "PHOTOCELL":
-                    max_measure = 1024
-                    measure = str(round((int(measure) / max_measure) * 100.0))
-                elif device_prefix == "SOILMOISTURE":
-                    max_measure = 1025
-                    measure = str(round((int(measure) / max_measure) * 100.0))
+                output.user_id = user_id
+                absolute_measure = measure
+                measure = self.device_antecedent_measure(device_id, measure)
+                output.measure = measure
                 self.r.setex(key_pattern + ":measure", self.EXPIRATION, measure)
-                if device_prefix != "SWITCH":
+                self.r.setex(key_pattern + ":absolute_measure", self.EXPIRATION, absolute_measure)
+                rules = []
+                if "SWITCH" not in device_id:
+                    output.type = "antecedent"
                     if self.r.exists(key_pattern + ":rules"):
                         rules = list(self.r.smembers(key_pattern + ":rules"))
-                    else:
-                        rules = []
-                    if len(rules) > 0:
-                        output = Trigger(user_id, device_id, measure, rules, "antecedent")
+                    output.rules = rules
                 else:
-                    output = Trigger(user_id, device_id, measure, [], "consequent")
+                    output.type = "consequent"
+                    output.rules = rules
                     timestamp = datetime.now().strftime("%H:%M:%S")
                     if measure == "on":
                         self.r.set(key_pattern+":last_on", timestamp)

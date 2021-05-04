@@ -50,7 +50,7 @@ class UserService(object):
                 self.r.set("user:name:" + email + ":surname", surname)
                 self.r.set("user:name:" + email + ":login", "true")
                 self.timer_registration(user_id)
-                self.alert_registration(user_id)
+                self.alert_registration(user_id, email)
                 payload = {"uid": user_id, "email": email, "password": password, "name": name, "surname": surname}
                 output["tokenId"] = jwt.encode(payload, self.secret_key, algorithm="HS256")
         except Exception as error:
@@ -74,12 +74,13 @@ class UserService(object):
         self.r.set("device:" + timer_id + ":userid", user_id)
         self.r.set("device:" + timer_id + ":name", "timer")
 
-    def alert_registration(self, user_id):
+    def alert_registration(self, user_id, email):
         alert_id = "alert" + user_id
         self.r.sadd("user:" + user_id + ":consequents", alert_id)
         self.r.set("device:" + alert_id + ":userid", user_id)
         self.r.set("device:" + alert_id + ":name", "alert")
         self.r.set("device:" + alert_id + ":automatic", "true")
+        self.r.lpush("device:" + alert_id + ":email_list", email)
 
     def get_user_names(self):
         try:

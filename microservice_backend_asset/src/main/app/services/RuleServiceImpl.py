@@ -203,11 +203,30 @@ class RuleService(object):
         device_name = self.r.get("device:" + device_id + ":name")
         value = "null"
         if "SWITCH" in device_id:
-            value = self.r.get("device:" + device_id + ":last_on")
-        else:
             if self.r.exists("device:" + device_id + ":measure"):
-                value = self.r.get("device:" + device_id + ":measure")
+                value = self.r.get("device:" + device_id + ":last_on")
+        else:
+            if self.r.exists("device:" + device_id + ":absolute_measure"):
+                absolute_measure = self.r.get("device:" + device_id + ":absolute_measure")
+                value = self.device_antecedent_measure(device_id, absolute_measure)
         return Antecedent(device_id, device_name, start_value, stop_value, condition, evaluation, measure, value)
+
+    def device_antecedent_measure(self, device_id, measure):
+        if "SWITCH" not in device_id:
+            if measure != "init":
+                key_pattern = "device:" + device_id
+                if "WATERLEVEL" in device_id:
+                    max_measure = int(self.r.get(key_pattern + ":setting:max"))
+                    error_setting = int(self.r.get(key_pattern + ":setting:error"))
+                    relative_measure = float(measure) - float(error_setting)
+                    measure = str(round((1 - (relative_measure / float(max_measure))) * 100.0))
+                elif "PHOTOCELL" in device_id or "SOILMOISTURE" in device_id:
+                    max_measure = 1024
+                    measure = str(round((int(measure) / max_measure) * 100.0))
+                elif "AMMETER" in device_id:
+                    max_measure = int(self.r.get(key_pattern + ":setting:max"))
+                    measure = str(round((int(measure) / max_measure) * 100.0))
+        return measure
 
     def get_consequent(self, user_id, rule_id, device_id):
         key_pattern = "user:" + user_id + ":rule:" + rule_id

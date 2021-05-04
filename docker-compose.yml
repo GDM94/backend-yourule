@@ -10,12 +10,14 @@ services:
     ports:
       - 5000:5000
     depends_on:
+      - redis
       - rabbitmq
 
   device_entrypoint:
     container_name: device_entrypoint
     image: dimax94/microservice_device_entrypoint
     depends_on:
+      - redis
       - device_evaluation
       - rabbitmq
 
@@ -26,6 +28,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     depends_on:
+      - redis
       - antecedent_evaluation
       - rabbitmq
 
@@ -33,6 +36,7 @@ services:
     container_name: antecedent_evaluation
     image: dimax94/microservice_antecedent_evaluation
     depends_on:
+      - redis
       - rule_evaluation
       - rabbitmq
 
@@ -43,6 +47,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     depends_on:
+      - redis
       - rule_evaluation
       - rabbitmq
 
@@ -53,6 +58,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     depends_on:
+      - redis
       - rule_evaluation
       - rabbitmq
 
@@ -60,6 +66,7 @@ services:
     container_name: rule_evaluation
     image: dimax94/microservice_rule_evaluation
     depends_on:
+      - redis
       - consequent_evaluation
       - rabbitmq
 
@@ -67,12 +74,14 @@ services:
     container_name: consequent_evaluation
     image: dimax94/microservice_consequent_evaluation
     depends_on:
+      - redis
       - rabbitmq
 
   switch_sync:
     container_name: switch_sync
     image: dimax94/microservice_switch_sync
     depends_on:
+      - redis
       - rabbitmq
 
   rabbitmq:
@@ -81,6 +90,12 @@ services:
     ports:
       - 15672:15672
       - 5672:5672
+
+  redis:
+    container_name: redis
+    image: dimax94/redis
+    ports:
+      - 6379:6379
 
   frontend:
     container_name: frontend

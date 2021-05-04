@@ -1,4 +1,4 @@
-FROM arm32v7/redis:latest
+FROM redis:latest
 
 
 COPY ./redis.conf /usr/local/etc/redis/redis.conf

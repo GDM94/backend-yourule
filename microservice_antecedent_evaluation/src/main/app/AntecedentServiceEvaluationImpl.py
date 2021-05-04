@@ -30,23 +30,26 @@ class AntecedentServiceEvaluation(object):
                     evaluation = "false"
                     old_evaluation = self.r.get(key_pattern + ":evaluation")
                     condition = self.r.get(key_pattern + ":condition")
-                    start_value = int(self.r.get(key_pattern + ":start_value"))
-                    measure = int(trigger["measure"])
+                    start_value = self.r.get(key_pattern + ":start_value")
+                    measure = trigger["measure"]
                     if condition == "between":
-                        stop_value = int(self.r.get(key_pattern + ":stop_value"))
-                        if start_value <= measure < stop_value:
+                        stop_value = self.r.get(key_pattern + ":stop_value")
+                        if int(start_value) <= int(measure) < int(stop_value):
                             evaluation = "true"
                     elif condition == ">":
-                        if measure > start_value:
+                        if int(measure) > int(start_value):
                             evaluation = "true"
                     elif condition == "<":
-                        if measure < start_value:
+                        if int(measure) < int(start_value):
+                            evaluation = "true"
+                    elif condition == "=":
+                        if measure == start_value:
                             evaluation = "true"
                     elif condition == "isteresi":
-                        stop_value = int(self.r.get(key_pattern + ":stop_value"))
-                        if measure <= start_value:
+                        stop_value = self.r.get(key_pattern + ":stop_value")
+                        if int(measure) <= int(start_value):
                             evaluation = "true"
-                        if old_evaluation == "true" and measure <= stop_value:
+                        if old_evaluation == "true" and int(measure) <= int(stop_value):
                             evaluation = "true"
                     if evaluation != old_evaluation:
                         self.r.set(key_pattern + ":evaluation", evaluation)
