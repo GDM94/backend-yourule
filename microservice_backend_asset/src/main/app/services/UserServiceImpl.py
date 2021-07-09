@@ -1,23 +1,10 @@
-import redis
-from os.path import dirname, join, abspath
-import configparser
 import jwt
 
 
 class UserService(object):
-    def __init__(self):
-        config = self.read_config()
-        redis_host = config.get("REDIS", "host")
-        redis_port = config.get("REDIS", "port")
-        self.secret_key = config.get("OAUTH", "secret")
-        self.r = redis.Redis(host=redis_host, port=redis_port, decode_responses=True)
-
-    def read_config(self):
-        d = dirname(dirname(dirname(dirname(abspath(__file__)))))
-        config_path = join(d, 'properties', 'app-config.ini')
-        config = configparser.ConfigParser()
-        config.read(config_path)
-        return config
+    def __init__(self, secret_key, redis):
+        self.secret_key = secret_key
+        self.r = redis
 
     def user_login(self, email, password):
         try:
@@ -84,7 +71,7 @@ class UserService(object):
 
     def get_user_names(self):
         try:
-            users_keys = self.r.scan(0, "user:name:*:id", 1000)[1]
+            users_keys = self.r.scan("user:name:*:id")
             output = []
             if len(users_keys) > 0:
                 for key in users_keys:

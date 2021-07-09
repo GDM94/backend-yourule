@@ -1,7 +1,4 @@
 import paho.mqtt.client as mqtt
-from os.path import dirname, join, abspath
-import configparser
-import json
 
 
 class Subscriber(object):

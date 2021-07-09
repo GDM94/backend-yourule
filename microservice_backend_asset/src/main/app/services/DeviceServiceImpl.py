@@ -1,7 +1,3 @@
-import redis
-from os.path import dirname, join, abspath
-import configparser
-
 from ..dto.AlertConsequentDTO import AlertConsequent
 from ..dto.DeviceAntecedentDTO import DeviceAntecedent
 from ..dto.DeviceConsequentDTO import DeviceConsequent
@@ -10,31 +6,21 @@ from datetime import datetime
 
 
 class DeviceService(object):
-    def __init__(self, mqtt_client, rabbitmq):
-        config = self.read_config()
-        redis_host = config.get("REDIS", "host")
-        redis_port = config.get("REDIS", "port")
-        self.r = redis.Redis(host=redis_host, port=redis_port, decode_responses=True)
+    def __init__(self, mqtt_client, rabbitmq, redis, config):
+        self.r = redis
         self.publish_rule = config.get("RABBITMQ", "publish_rule")
         self.publish_consequent = config.get("RABBITMQ", "publish_consequent")
         self.mqtt_client = mqtt_client
         self.rabbitmq = rabbitmq
         self.EXPIRATION = config.get("REDIS", "expiration")
 
-    def read_config(self):
-        d = dirname(dirname(dirname(dirname(abspath(__file__)))))
-        config_path = join(d, 'properties', 'app-config.ini')
-        config = configparser.ConfigParser()
-        config.read(config_path)
-        return config
-
     def device_registration(self, user_id, device_id, device_name):
         try:
             key_pattern = "device:" + device_id
             if self.r.exists(key_pattern + ":userid") == 0:
                 self.r.set(key_pattern + ":userid", user_id)
-                self.r.setex(key_pattern + ":measure", self.EXPIRATION, "init")
-                self.r.setex(key_pattern + ":absolute_measure", self.EXPIRATION, "init")
+                self.r.setex(key_pattern + ":measure", "init")
+                self.r.setex(key_pattern + ":absolute_measure", "init")
                 self.r.set(key_pattern + ":name", device_name)
                 prefix = device_id.split("-")[0]
                 if prefix == "SWITCH":
@@ -78,7 +64,7 @@ class DeviceService(object):
             if self.r.exists(key_pattern + ":absolute_measure"):
                 absolute_measure = self.r.get(key_pattern + ":absolute_measure")
                 measure = self.device_antecedent_measure(device_id, absolute_measure)
-                self.r.setex(key_pattern + ":measure", self.EXPIRATION, measure)
+                self.r.setex(key_pattern + ":measure", measure)
             output = measure
         except Exception as error:
             print(repr(error))
@@ -340,7 +326,7 @@ class DeviceService(object):
 
     def get_all_devices_id(self):
         try:
-            keys = self.r.scan(0, "device:*:userid", 1000)[1]
+            keys = self.r.scan("device:*:userid")
             id_list = []
             for key in keys:
                 device_id = key.split(":")[1]
@@ -364,9 +350,9 @@ class DeviceService(object):
     def delete_alert_email(self, user_id, index):
         try:
             alert_id = "alert" + user_id
-            email_list = self.r.lrange("device:" + alert_id + ":email_list", 0, -1)
+            email_list = self.r.lrange("device:" + alert_id + ":email_list")
             email = email_list[index]
-            self.r.lrem("device:" + alert_id + ":email_list", 1, email)
+            self.r.lrem("device:" + alert_id + ":email_list", email)
         except Exception as error:
             print(repr(error))
             return "error"

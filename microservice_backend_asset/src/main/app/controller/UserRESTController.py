@@ -5,22 +5,14 @@ from functools import wraps
 from flask import request
 from werkzeug.datastructures import ImmutableMultiDict
 import jwt
-from os.path import dirname, join, abspath
-import configparser
+from ...config import read_config
+from ..services.RedisConnectionImpl import RedisConnection
 
-
-def read_config():
-    d = dirname(dirname(dirname(dirname(abspath(__file__)))))
-    config_path = join(d, 'properties', 'app-config.ini')
-    config = configparser.ConfigParser()
-    config.read(config_path)
-    return config
-
-
+config = read_config()
+redis = RedisConnection(config)
 user = Blueprint('user', __name__)
-user_service = UserService()
-configuration = read_config()
-secret_key = configuration.get("OAUTH", "secret")
+secret_key = config.get("OAUTH", "secret")
+user_service = UserService(secret_key, redis)
 
 
 def check_token(f):

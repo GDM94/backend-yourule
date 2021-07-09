@@ -1,6 +1,3 @@
-import redis
-from os.path import dirname, join, abspath
-import configparser
 from ..dto.AntecedentDTO import Antecedent
 from ..dto.ConsequentDTO import Consequent
 from ..dto.RuleDTO import Rule
@@ -9,21 +6,11 @@ from datetime import datetime
 
 
 class RuleService(object):
-    def __init__(self, mqtt_client, rabbitmq):
-        config = self.read_config()
-        redis_host = config.get("REDIS", "host")
-        redis_port = config.get("REDIS", "port")
+    def __init__(self, mqtt_client, rabbitmq, config, redis):
         self.publish_rule = config.get("RABBITMQ", "publish_rule")
-        self.r = redis.Redis(host=redis_host, port=redis_port, decode_responses=True)
+        self.r = redis
         self.mqtt_client = mqtt_client
         self.rabbitmq = rabbitmq
-
-    def read_config(self):
-        d = dirname(dirname(dirname(dirname(abspath(__file__)))))
-        config_path = join(d, 'properties', 'app-config.ini')
-        config = configparser.ConfigParser()
-        config.read(config_path)
-        return config
 
     def create_new_rule(self, user_id, rule_name):
         try:
@@ -116,14 +103,14 @@ class RuleService(object):
                 self.r.delete(key_pattern + ":last_true")
                 self.r.delete(key_pattern + ":last_false")
                 # delete rule antecedents
-                antecedent_keys = self.r.scan(0, key_pattern + ":antecedent:*:start_value", 1000)[1]
+                antecedent_keys = self.r.scan(key_pattern + ":antecedent:*:start_value")
                 if len(antecedent_keys) > 0:
                     for key in antecedent_keys:
                         k = key.split(":")
                         device_id = k[-2]
                         self.delete_antecedent(user_id, rule_id, device_id)
                 # delete rule consequent
-                consequent_keys = self.r.scan(0, key_pattern + ":consequent:*:if_value", 1000)[1]
+                consequent_keys = self.r.scan(key_pattern + ":consequent:*:if_value")
                 if len(consequent_keys) > 0:
                     for key in consequent_keys:
                         k = key.split(":")
@@ -187,7 +174,7 @@ class RuleService(object):
                     last_true = timestamp
                     last_false = self.r.get(key_pattern + ":last_false")
                 # get rule antecedents
-                antecedent_keys = self.r.scan(0, key_pattern + ":antecedent:*:start_value", 1000)[1]
+                antecedent_keys = self.r.scan(key_pattern + ":antecedent:*:start_value")
                 antecedent_list = []
                 if len(antecedent_keys) > 0:
                     for key in antecedent_keys:
@@ -195,7 +182,7 @@ class RuleService(object):
                         antecedent = self.get_antecedent(user_id, rule_id, device_id)
                         antecedent_list.append(antecedent)
                 # get rule consequent
-                consequent_keys = self.r.scan(0, key_pattern + ":consequent:*:if_value", 1000)[1]
+                consequent_keys = self.r.scan(key_pattern + ":consequent:*:if_value")
                 consequent_list = []
                 if len(consequent_keys) > 0:
                     for key in consequent_keys:
@@ -272,7 +259,7 @@ class RuleService(object):
 
     def get_user_rules(self, user_id):
         try:
-            rule_name_keys = self.r.scan(0, "user:" + user_id + ":rule:*:name", 1000)[1]
+            rule_name_keys = self.r.scan("user:" + user_id + ":rule:*:name")
             output = []
             for key in rule_name_keys:
                 rule_id = key.split(":")[-2]

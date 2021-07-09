@@ -9,14 +9,18 @@ from .UserRESTController import check_token
 from .RabbitMqClient import RabbitMQ
 import random
 import string
+from ...config import read_config
+from ..services.RedisConnectionImpl import RedisConnection
 
+config = read_config()
+redis = RedisConnection(config)
 rule = Blueprint('rule', __name__)
 random_client_id = 'backend_rule'.join(random.choices(string.ascii_letters + string.digits, k=8))
 mqtt_client = Subscriber(random_client_id)
 mqtt_client.start_connection()
 rabbitmq = RabbitMQ("backend_rule")
 rabbitmq.start_connection()
-rule_service = RuleService(mqtt_client, rabbitmq)
+rule_service = RuleService(mqtt_client, rabbitmq, config, redis)
 
 
 @rule.route('/device/<device_id>', methods=['GET'])
