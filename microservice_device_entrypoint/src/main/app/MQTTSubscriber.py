@@ -5,8 +5,7 @@ import json
 
 
 class Subscriber(object):
-    def __init__(self, client_id, service):
-        config = self.read_config()
+    def __init__(self, config, client_id, service):
         self.client = mqtt.Client(client_id, True)
         self.BROKER = config.get("MQTT", "broker")
         self.PORT = int(config.get("MQTT", "port"))
@@ -17,13 +16,6 @@ class Subscriber(object):
         self.client.on_connect = self.callback_on_connect
         self.client.on_message = self.callback_on_message_received
         self.client.on_disconnect = self.callback_on_disconnect
-
-    def read_config(self):
-        d = dirname(dirname(dirname(abspath(__file__))))
-        config_path = join(d, 'properties', 'app-config.ini')
-        config = configparser.ConfigParser()
-        config.read(config_path)
-        return config
 
     def start_connection(self):
         # manage connection to broker
