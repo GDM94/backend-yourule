@@ -1,29 +1,15 @@
-import redis
-from os.path import dirname, join, abspath
-import configparser
 import json
 from datetime import datetime
 from .dto.AntecedentEvaluationDTO import AntecedentEvaluation
 
 
 class TimerServiceEvaluation(object):
-    def __init__(self, mqtt_client):
-        config = self.read_config()
-        HOST = config.get("REDIS", "host")
-        PORT = config.get("REDIS", "port")
-        self.EXPIRATION = config.get("REDIS", "expiration")
-        self.r = redis.Redis(host=HOST, port=PORT, decode_responses=True)
+    def __init__(self, mqtt_client, redis):
+        self.r = redis
         self.mqtt_client = mqtt_client
 
-    def read_config(self):
-        d = dirname(dirname(dirname(abspath(__file__))))
-        config_path = join(d, 'properties', 'app-config.ini')
-        config = configparser.ConfigParser()
-        config.read(config_path)
-        return config
-
     def get_all_users(self):
-        users_keys = self.r.scan(0, "user:name:*:id", 1000)[1]
+        users_keys = self.r.scan("user:name:*:id")
         user_id_list = []
         for user_key in users_keys:
             user_id = self.r.get(user_key)
@@ -32,7 +18,7 @@ class TimerServiceEvaluation(object):
 
     def get_rules_with_timer(self, user_id):
         timer_id = "timer" + user_id
-        rules_keys = self.r.scan(0, "user:" + user_id + ":rule:*:antecedent:" + timer_id + ":start_value", 1000)[1]
+        rules_keys = self.r.scan("user:" + user_id + ":rule:*:antecedent:" + timer_id + ":start_value")
         rule_id_list = []
         for rule_key in rules_keys:
             rule_id = rule_key.split(":")[3]

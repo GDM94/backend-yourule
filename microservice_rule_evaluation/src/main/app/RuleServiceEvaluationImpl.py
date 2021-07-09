@@ -1,24 +1,9 @@
-import redis
-from os.path import dirname, join, abspath
-import configparser
-import json
 from datetime import datetime
 
 
 class RuleServiceEvaluation(object):
-    def __init__(self):
-        config = self.read_config()
-        HOST = config.get("REDIS", "host")
-        PORT = config.get("REDIS", "port")
-        self.EXPIRATION = config.get("REDIS", "expiration")
-        self.r = redis.Redis(host=HOST, port=PORT, decode_responses=True)
-
-    def read_config(self):
-        d = dirname(dirname(dirname(abspath(__file__))))
-        config_path = join(d, 'properties', 'app-config.ini')
-        config = configparser.ConfigParser()
-        config.read(config_path)
-        return config
+    def __init__(self, redis):
+        self.r = redis
 
     def check_antecedent_evaluation(self, antecedent_keys):
         new_evaluation = "true"
@@ -49,7 +34,7 @@ class RuleServiceEvaluation(object):
             pattern_key = "user:" + user_id + ":rule:" + rule_id
             if self.r.exists(pattern_key + ":name") == 1:
                 old_evaluation = self.r.get(pattern_key + ":evaluation")
-                antecedent_keys = self.r.scan(0, pattern_key + ":antecedent:*:evaluation", 1000)[1]
+                antecedent_keys = self.r.scan(pattern_key + ":antecedent:*:evaluation")
                 new_evaluation = "false"
                 if len(antecedent_keys) > 0:
                     new_evaluation = self.check_antecedent_evaluation(antecedent_keys)
