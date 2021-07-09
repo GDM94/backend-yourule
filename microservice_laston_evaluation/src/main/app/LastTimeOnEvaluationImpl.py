@@ -1,5 +1,3 @@
-from os.path import dirname, join, abspath
-import configparser
 import json
 from datetime import datetime
 from .dto.AntecedentEvaluationDTO import AntecedentEvaluation
