@@ -1,61 +1,47 @@
 import smtplib
 from email.mime.text import MIMEText
-import redis
-from os.path import dirname, join, abspath
-import configparser
 import json
 
 
+def email_connection(email_user, email_password):
+    print("email connection")
+    session = smtplib.SMTP("smtp.gmail.com", 587)
+    session.starttls()
+    session.login(email_user, email_password)
+    return session
+
+
 class ConsequentServiceEvaluation(object):
-    def __init__(self):
-        config = self.read_config()
-        HOST = config.get("REDIS", "host")
-        PORT = config.get("REDIS", "port")
-        self.EXPIRATION = config.get("REDIS", "expiration")
-        self.r = redis.Redis(host=HOST, port=PORT, decode_responses=True)
+    def __init__(self, config, redis):
+        self.r = redis
         self.email_user = config.get("ALERT", "email_user")
         self.email_password = config.get("ALERT", "email_password")
 
-    def read_config(self):
-        d = dirname(dirname(dirname(abspath(__file__))))
-        config_path = join(d, 'properties', 'app-config.ini')
-        config = configparser.ConfigParser()
-        config.read(config_path)
-        return config
-
-    def email_connection(self, email_user, email_password):
-        print("email connection")
-        session = smtplib.SMTP("smtp.gmail.com", 587)
-        session.starttls()
-        session.login(email_user, email_password)
-        return session
-
-    def switch_evaluation(self, user_id, device_id, output):
+    def switch_evaluation(self, user_id, device_id, delay, output):
         key_pattern = "device:" + device_id
         automatic = self.r.get(key_pattern + ":automatic")
         if automatic == "true":
             rules = list(self.r.smembers(key_pattern + ":rules"))
-            consequent_evaluation = "false"
-            for rule in rules:
-                if self.r.get("user:" + user_id + ":rule:" + rule + ":evaluation") == "true":
-                    consequent_evaluation = "true"
-                    break
             new_status = "off"
-            if consequent_evaluation == "true":
-                new_status = "on"
+            for rule in rules:
+                rule_evaluation = self.r.get("user:" + user_id + ":rule:" + rule + ":evaluation")
+                if rule_evaluation == "true":
+                    new_status = "on"
+                    break
             if self.r.exists(key_pattern + ":measure") == 1:
                 current_status = self.r.get("device:" + device_id + ":measure")
                 if current_status != new_status:
                     output["device_id"].append(device_id)
                     output["measure"].append(new_status)
+                    output["delay"].append(delay)
         return output
 
     def alert_evaluation(self, user_id, rule_id):
         if self.r.get("user:" + user_id + ":rule:" + rule_id + ":evaluation") == "true":
             alert_id = "alert" + user_id
-            sendto = self.r.lrange("device:" + alert_id + ":email_list", 0, -1)
+            sendto = self.r.lrange("device:" + alert_id + ":email_list")
             if len(sendto) > 0:
-                alert = self.email_connection(self.email_user, self.email_password)
+                alert = email_connection(self.email_user, self.email_password)
                 rule_name = self.r.get("user:" + user_id + ":rule:" + rule_id + ":name")
                 sender = "raspberrypi.sugherotorto@gmail.com"
                 content = """Alert for rule name {}""".format(rule_name)
@@ -66,18 +52,41 @@ class ConsequentServiceEvaluation(object):
                 alert.quit()
                 print("send alert email")
 
+    def consequent_order_delay(self, user_id, rule_id, consequent_keys):
+        pattern_key = "user:" + user_id + ":rule:" + rule_id
+        consequent_list_unordered = []
+        for key in consequent_keys:
+            consequent_obj = {}
+            device_id = key.split(":")[-2]
+            order = self.r.get(pattern_key + ":consequent:" + device_id + ":order")
+            delay = self.r.get(pattern_key + ":consequent:" + device_id + ":delay")
+            consequent_obj["device_id"] = device_id
+            consequent_obj["order"] = int(order)
+            consequent_obj["delay"] = int(delay)
+            consequent_list_unordered.append(consequent_obj)
+        consequent_list_ordered = sorted(consequent_list_unordered, key=lambda k: k['order'])
+        delay = 0
+        consequent_list_ordered_delay = []
+        for consequent in consequent_list_ordered:
+            delay = delay + consequent["delay"]
+            consequent["delay"] = delay
+            consequent_list_ordered_delay.append(consequent)
+        return consequent_list_ordered_delay
+
     def consequent_evaluation(self, payload):
         try:
             trigger = json.loads(payload)
             user_id = str(trigger["user_id"])
             rule_id = str(trigger["rule_id"])
-            output = {"device_id": [], "measure": []}
+            output = {"device_id": [], "measure": [], "delay": []}
             pattern_key = "user:" + user_id + ":rule:" + rule_id
-            consequent_keys = self.r.scan(0, pattern_key + ":consequent:*:if_value", 1000)[1]
-            for key in consequent_keys:
-                device_id = key.split(":")[-2]
+            consequent_keys = self.r.scan(pattern_key + ":consequent:*:order")
+            consequent_list_ordered_delay = self.consequent_order_delay(user_id, rule_id, consequent_keys)
+            for consequent in consequent_list_ordered_delay:
+                device_id = consequent["device_id"]
+                delay = str(consequent["delay"])
                 if "alert" not in device_id:
-                    output = self.switch_evaluation(user_id, device_id, output)
+                    output = self.switch_evaluation(user_id, device_id, delay, output)
                 else:
                     self.alert_evaluation(user_id, rule_id)
         except Exception as error:

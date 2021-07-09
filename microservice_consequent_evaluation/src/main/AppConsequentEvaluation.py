@@ -4,13 +4,17 @@ from app.RabbitMqClient import RabbitMQ
 import time
 import random
 import string
+from configuration.config import read_config
+from app.RedisConnectionImpl import RedisConnection
 
 client_id = random_client_id = 'consequent'.join(random.choices(string.ascii_letters + string.digits, k=8))
 
-consequent = ConsequentServiceEvaluation()
-mqtt = Subscriber(client_id, consequent)
+config = read_config()
+redis = RedisConnection(config)
+mqtt = Subscriber(client_id, config)
 mqtt.start_connection()
-rabbitmq = RabbitMQ(client_id, consequent, mqtt)
+consequent = ConsequentServiceEvaluation(config, redis)
+rabbitmq = RabbitMQ(client_id, consequent, mqtt, config)
 rabbitmq.start_connection()
 rabbitmq.subscribe()
 
