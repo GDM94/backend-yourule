@@ -1,4 +1,3 @@
-import redis
 from os.path import dirname, join, abspath
 import configparser
 import json
@@ -7,23 +6,12 @@ from .dto.AntecedentEvaluationDTO import AntecedentEvaluation
 
 
 class LastTimeOnEvaluation(object):
-    def __init__(self, mqtt_client):
-        config = self.read_config()
-        HOST = config.get("REDIS", "host")
-        PORT = config.get("REDIS", "port")
-        self.EXPIRATION = config.get("REDIS", "expiration")
-        self.r = redis.Redis(host=HOST, port=PORT, decode_responses=True)
+    def __init__(self, mqtt_client, redis):
+        self.r = redis
         self.mqtt_client = mqtt_client
 
-    def read_config(self):
-        d = dirname(dirname(dirname(abspath(__file__))))
-        config_path = join(d, 'properties', 'app-config.ini')
-        config = configparser.ConfigParser()
-        config.read(config_path)
-        return config
-
     def get_all_users(self):
-        users_keys = self.r.scan(0, "user:name:*:id", 1000)[1]
+        users_keys = self.r.scan("user:name:*:id")
         user_id_list = []
         for user_key in users_keys:
             user_id = self.r.get(user_key)
@@ -31,12 +19,12 @@ class LastTimeOnEvaluation(object):
         return user_id_list
 
     def get_rules_with_last_time_measure(self, user_id):
-        rule_id_list = self.r.scan(0, "user:" + user_id + ":rule:*:name", 1000)[1]
+        rule_id_list = self.r.scan("user:" + user_id + ":rule:*:name")
         selection = {}
         for rule_id_key in rule_id_list:
             rule_id = rule_id_key.split(":")[3]
             selection[rule_id] = []
-            antecedent_keys = self.r.scan(0, "user:" + user_id + ":rule:" + rule_id + ":antecedent:*:measure", 1000)[1]
+            antecedent_keys = self.r.scan("user:" + user_id + ":rule:" + rule_id + ":antecedent:*:measure")
             for antecedent_key in antecedent_keys:
                 measure = self.r.get(antecedent_key)
                 if measure == "last time on":
