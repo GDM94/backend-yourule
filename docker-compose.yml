@@ -65,6 +65,9 @@ services:
   rule_evaluation:
     container_name: rule_evaluation
     image: dimax94/microservice_rule_evaluation
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     depends_on:
       - redis
       - consequent_evaluation
@@ -87,6 +90,9 @@ services:
   rabbitmq:
     container_name: rabbitmq
     image: dimax94/rabbitmq
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - 15672:15672
       - 5672:5672

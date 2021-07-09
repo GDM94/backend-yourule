@@ -13,4 +13,4 @@ ADD ./src /backend/microservice_backend_asset/src/
 
 WORKDIR /backend/microservice_backend_asset/src/main/
 
-CMD ["gunicorn", "AppBackendAsset:app" ,"--workers=9", "--threads=5", "-b :5000"]
+CMD ["gunicorn", "AppBackendAsset:app" ,"--workers=9", "--threads=5", "--timeout=120", "-b :5000"]
