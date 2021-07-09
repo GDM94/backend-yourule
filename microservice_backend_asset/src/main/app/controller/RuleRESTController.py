@@ -18,7 +18,7 @@ rule = Blueprint('rule', __name__)
 random_client_id = 'backend_rule'.join(random.choices(string.ascii_letters + string.digits, k=8))
 mqtt_client = Subscriber(random_client_id)
 mqtt_client.start_connection()
-rabbitmq = RabbitMQ("backend_rule")
+rabbitmq = RabbitMQ("backend_rule", config)
 rabbitmq.start_connection()
 rule_service = RuleService(mqtt_client, rabbitmq, config, redis)
 

@@ -16,7 +16,7 @@ device = Blueprint('device', __name__)
 random_client_id = 'backend_device'.join(random.choices(string.ascii_letters + string.digits, k=8))
 mqtt_client = Subscriber(random_client_id)
 mqtt_client.start_connection()
-rabbitmq = RabbitMQ("backend_device")
+rabbitmq = RabbitMQ("backend_device", config)
 rabbitmq.start_connection()
 device_service = DeviceService(mqtt_client, rabbitmq, redis, config)
 
