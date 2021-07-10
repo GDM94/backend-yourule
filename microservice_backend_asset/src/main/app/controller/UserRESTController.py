@@ -5,7 +5,7 @@ from functools import wraps
 from flask import request
 from werkzeug.datastructures import ImmutableMultiDict
 import jwt
-from ...config import read_config
+from .configuration.config import read_config
 from ..services.RedisConnectionImpl import RedisConnection
 
 config = read_config()

@@ -211,7 +211,7 @@ class DeviceService(object):
             rules.append(rule)
         email_list = []
         if self.r.exists(key_pattern + ":email_list"):
-            email_list = self.r.lrange(key_pattern + ":email_list", 0, -1)
+            email_list = self.r.lrange(key_pattern + ":email_list")
         return AlertConsequent(alert_id, name, rules, email_list)
 
     def delete_device(self, user_id, device_id):

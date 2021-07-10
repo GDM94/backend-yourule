@@ -7,7 +7,7 @@ from .UserRESTController import check_token
 from .RabbitMqClient import RabbitMQ
 import random
 import string
-from ...config import read_config
+from .configuration.config import read_config
 from ..services.RedisConnectionImpl import RedisConnection
 
 config = read_config()

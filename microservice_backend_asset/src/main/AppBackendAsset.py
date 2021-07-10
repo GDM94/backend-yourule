@@ -3,7 +3,7 @@ from flask_cors import CORS
 from app.controller.UserRESTController import user
 from app.controller.DeviceRESTController import device
 from app.controller.RuleRESTController import rule
-from .config import read_config
+from app.controller.configuration.config import read_config
 
 # REST API
 app = Flask(__name__)
