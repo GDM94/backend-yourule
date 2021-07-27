@@ -203,10 +203,9 @@ class DeviceService(object):
         name = self.r.get(key_pattern + ":name")
         rules_id = list(self.r.smembers(key_pattern + ":rules"))
         rules = []
-        rule = {"id": "", "name": ""}
         for rule_id in rules_id:
+            rule = {"id": rule_id, "name": ""}
             rule_name = self.r.get("user:" + user_id + ":rule:" + rule_id + ":name")
-            rule["id"] = rule_id
             rule["name"] = rule_name
             rules.append(rule)
         email_list = []
