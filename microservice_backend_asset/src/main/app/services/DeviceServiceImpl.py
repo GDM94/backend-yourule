@@ -25,7 +25,7 @@ class DeviceService(object):
                 prefix = device_id.split("-")[0]
                 if prefix == "SWITCH":
                     self.r.sadd("user:" + user_id + ":consequents", device_id)
-                    timestamp = datetime.now().strftime("%H:%M:%S")
+                    timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                     self.r.set(key_pattern + ":last_on", timestamp)
                     self.r.set(key_pattern + ":last_off", timestamp)
                     self.r.set(key_pattern + ":automatic", "true")
