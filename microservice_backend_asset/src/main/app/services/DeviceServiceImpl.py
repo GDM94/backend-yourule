@@ -22,16 +22,17 @@ class DeviceService(object):
                 self.r.setex(key_pattern + ":measure", "init")
                 self.r.setex(key_pattern + ":absolute_measure", "init")
                 self.r.set(key_pattern + ":name", device_name)
+                timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                self.r.set(key_pattern + ":registration_date", timestamp)
                 prefix = device_id.split("-")[0]
                 if prefix == "SWITCH":
-                    self.r.sadd("user:" + user_id + ":consequents", device_id)
-                    timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                    self.r.rpush("user:" + user_id + ":consequents", device_id)
                     self.r.set(key_pattern + ":last_on", timestamp)
                     self.r.set(key_pattern + ":last_off", timestamp)
                     self.r.set(key_pattern + ":automatic", "true")
                     self.r.set(key_pattern + ":manual_measure", "off")
                 else:
-                    self.r.sadd("user:" + user_id + ":antecedents", device_id)
+                    self.r.rpush("user:" + user_id + ":antecedents", device_id)
                     self.r.set(key_pattern + ":min_measure", "-")
                     self.r.set(key_pattern + ":min_measure_time", "-")
                     self.r.set(key_pattern + ":max_measure", "-")
@@ -46,9 +47,9 @@ class DeviceService(object):
                         self.device_update_setting(device_id, "100", "0")
                     elif prefix == "BUTTON":
                         self.device_update_setting(device_id, "", "")
-                output = "device {} successful registered for userId {}".format(device_id, user_id)
+                output = "true"
             else:
-                output = "device {} already exist!".format(device_id)
+                output = "false"
         except Exception as error:
             print(repr(error))
             return "error"
@@ -101,7 +102,7 @@ class DeviceService(object):
 
     def get_user_antecedent_list(self, user_id):
         try:
-            device_id_keys = list(self.r.smembers("user:" + user_id + ":antecedents"))
+            device_id_keys = self.r.lrange("user:" + user_id + ":antecedents")
             output = []
             for device_id in device_id_keys:
                 device = self.get_antecedent_device_slim(user_id, device_id)
@@ -152,7 +153,7 @@ class DeviceService(object):
 
     def get_user_consequent_list(self, user_id):
         try:
-            device_id_keys = list(self.r.smembers("user:" + user_id + ":consequents"))
+            device_id_keys = self.r.lrange("user:" + user_id + ":consequents")
             output = []
             for device_id in device_id_keys:
                 device = self.get_consequent_device_slim(user_id, device_id)
@@ -217,12 +218,12 @@ class DeviceService(object):
         try:
             key_pattern = "device:" + device_id
             if "SWITCH" in device_id:
-                self.r.srem("user:" + user_id + ":consequents", device_id)
+                self.r.lrem("user:" + user_id + ":consequents", device_id)
                 self.r.delete(key_pattern + ":last_on")
                 self.r.delete(key_pattern + ":last_off")
                 self.r.delete(key_pattern + ":automatic")
             else:
-                self.r.srem("user:" + user_id + ":antecedents", device_id)
+                self.r.lrem("user:" + user_id + ":antecedents", device_id)
                 self.r.delete(key_pattern + ":max_measure")
                 self.r.delete(key_pattern + ":min_measure")
                 self.r.delete(key_pattern + ":max_measure_time")

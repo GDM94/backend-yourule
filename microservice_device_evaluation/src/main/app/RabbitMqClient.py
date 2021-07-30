@@ -28,7 +28,6 @@ class RabbitMQ(object):
             content_encoding='utf-8',
             delivery_mode=2)
 
-
     def start_connection(self):
         if not self.connection or self.connection.is_closed:
             while not self.connection or self.connection.is_closed:

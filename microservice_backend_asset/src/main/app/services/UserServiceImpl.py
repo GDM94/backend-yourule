@@ -57,13 +57,13 @@ class UserService(object):
 
     def timer_registration(self, user_id):
         timer_id = "timer" + user_id
-        self.r.sadd("user:" + user_id + ":antecedents", timer_id)
+        self.r.rpush("user:" + user_id + ":antecedents", timer_id)
         self.r.set("device:" + timer_id + ":userid", user_id)
         self.r.set("device:" + timer_id + ":name", "timer")
 
     def alert_registration(self, user_id, email):
         alert_id = "alert" + user_id
-        self.r.sadd("user:" + user_id + ":consequents", alert_id)
+        self.r.rpush("user:" + user_id + ":consequents", alert_id)
         self.r.set("device:" + alert_id + ":userid", user_id)
         self.r.set("device:" + alert_id + ":name", "alert")
         self.r.set("device:" + alert_id + ":automatic", "true")

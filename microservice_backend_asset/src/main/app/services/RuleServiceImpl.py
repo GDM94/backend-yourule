@@ -23,6 +23,7 @@ class RuleService(object):
             timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
             self.r.set(key_pattern + ":last_true", "-")
             self.r.set(key_pattern + ":last_false", timestamp)
+            self.r.set(key_pattern + ":registration_date", timestamp)
         except Exception as error:
             print(repr(error))
             return "error"
@@ -102,6 +103,7 @@ class RuleService(object):
                 self.r.delete(key_pattern + ":evaluation")
                 self.r.delete(key_pattern + ":last_true")
                 self.r.delete(key_pattern + ":last_false")
+                self.r.delete(key_pattern + ":registration_date")
                 # delete rule antecedents
                 antecedent_keys = self.r.scan(key_pattern + ":antecedent:*:start_value")
                 if len(antecedent_keys) > 0:
@@ -266,6 +268,7 @@ class RuleService(object):
                 rule = self.get_user_rules_slim(user_id, rule_id)
                 if rule != "error":
                     output.append(rule)
+            output.sort(key=lambda r: datetime.strptime(r.registration_date, '%d/%m/%Y %H:%M:%S'))
         except Exception as error:
             print(repr(error))
             return "error"
@@ -279,7 +282,8 @@ class RuleService(object):
                 # get rule name
                 rule_name = self.r.get(key_pattern + ":name")
                 rule_evaluation = self.r.get(key_pattern + ":evaluation")
-                output = Rule(rule_id, rule_name, [], [], rule_evaluation, "", "")
+                registration_date = self.r.get(key_pattern + ":registration_date")
+                output = Rule(rule_id, rule_name, [], [], rule_evaluation, "", "", registration_date)
             else:
                 output = "error"
         except Exception as error:
