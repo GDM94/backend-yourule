@@ -115,7 +115,8 @@ def set_rule_antecedent():
     stop_value = request.args.get("stop_value")
     condition = request.args.get("condition")
     measure = request.args.get("measure")
-    antecedent = Antecedent(device_id, "", start_value, stop_value, condition, "false", measure)
+    order = request.args.get("order")
+    antecedent = Antecedent(device_id, "", start_value, stop_value, condition, "false", measure, order)
     output = rule_service.set_new_antecedent(user_id, rule_id, antecedent)
     if output == "error":
         raise Exception()
