@@ -193,7 +193,7 @@ class RuleService(object):
                         consequent = self.get_consequent(user_id, rule_id, device_id)
                         consequent_list.append(consequent)
                 output = Rule(rule_id, rule_name, antecedent_list, consequent_list, rule_evaluation, last_true,
-                              last_false)
+                              last_false, "")
             else:
                 output = "error"
         except Exception as error:
