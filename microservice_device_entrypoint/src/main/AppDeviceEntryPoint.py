@@ -22,6 +22,8 @@ mqtt.subscribe()
 
 service = DeviceInitialization(redis)
 mqtt_initialization = SubscriberInitialization(config, client_id_init, service)
+mqtt_initialization.start_connection()
+mqtt_initialization.subscribe()
 
 if __name__ == '__main__':
     while True:
