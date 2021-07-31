@@ -12,7 +12,7 @@ config = read_config()
 redis = RedisConnection(config)
 user = Blueprint('user', __name__)
 secret_key = config.get("OAUTH", "secret")
-user_service = UserService(secret_key, redis)
+user_service = UserService(secret_key, redis, config)
 
 
 def check_token(f):
@@ -127,4 +127,14 @@ def get_user_location():
         raise Exception()
     else:
         return json.dumps(output, default=lambda o: o.__dict__, indent=4)
+
+
+@user.route('/search/location/<name>', methods=["GET"])
+@check_token
+def search_new_location(name):
+    output = user_service.search_new_location(name)
+    if output == "error":
+        raise Exception()
+    else:
+        return output
 

@@ -7,6 +7,7 @@ RUN pip install redis;
 RUN pip install paho-mqtt;
 RUN pip install pika;
 RUN pip install gunicorn;
+RUN pip install requests;
 
 
 ADD ./src /backend/microservice_backend_asset/src/

@@ -1,11 +1,14 @@
 import jwt
 from ..dto.LocationDTO import Location
+import requests
 
 
 class UserService(object):
-    def __init__(self, secret_key, redis):
+    def __init__(self, secret_key, redis, config):
         self.secret_key = secret_key
         self.r = redis
+        self.api_key = config.get("OPEN_WEATHER", "api_key")
+        self.api_location_url = config.get("OPEN_WEATHER", "api_location_url")
 
     def user_login(self, email, password):
         try:
@@ -132,3 +135,13 @@ class UserService(object):
             return "error"
         else:
             return output
+
+    def search_new_location(self, name):
+        try:
+            r = requests.get(self.api_location_url, params={'q': name, 'limit': 5, 'appid': self.api_key})
+            data = r.json()
+        except Exception as error:
+            print(repr(error))
+            return "error"
+        else:
+            return data
