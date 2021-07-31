@@ -31,6 +31,7 @@ def check_token(f):
             return {'message': 'Invalid token provided.'}, 400
         else:
             return f(*args, **kwargs)
+
     return wrap
 
 
@@ -100,3 +101,18 @@ def get_user_logged(user_name):
 def user_logout(user_name):
     user_service.user_logout(user_name)
     return "logout"
+
+
+@user.route('/location', methods=["POST"])
+@check_token
+def user_location():
+    user_id = request.args.get("user_id")
+    name = request.args.get("name")
+    country = request.args.get("country")
+    lat = request.args.get("lat")
+    lon = request.args.get("lon")
+    output = user_service.user_location(user_id, name, country, lat, lon)
+    if output == "error":
+        raise Exception()
+    else:
+        return output
