@@ -73,8 +73,14 @@ class DeviceServiceEvaluation(object):
                 output.measure = measure
                 self.device_max_measure_range(device_id, absolute_measure, timestamp)
                 self.device_min_measure_range(device_id, absolute_measure, timestamp)
-                self.r.setex(key_pattern + ":measure", measure)
-                self.r.setex(key_pattern + ":absolute_measure", absolute_measure)
+
+                if self.r.exists(key_pattern + ":expiration") == 1:
+                    expiration = self.r.get("device:" + device_id + ":expiration")
+                else:
+                    expiration = 0
+                self.r.setex(key_pattern + ":measure", measure, expiration)
+                self.r.setex(key_pattern + ":absolute_measure", absolute_measure, expiration)
+
                 rules = []
                 if "SWITCH" not in device_id:
                     output.type = "antecedent"
