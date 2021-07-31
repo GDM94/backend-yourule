@@ -40,7 +40,7 @@ class UserService(object):
                 self.timer_registration(user_id)
                 # self.weather_registration(user_id)
                 self.alert_registration(user_id, email)
-                self.user_location(user_id, "Torino", "IT", "45.1333", "7.3667")
+                self.set_user_location(user_id, "Torino", "IT", "45.1333", "7.3667")
                 payload = {"uid": user_id, "email": email, "password": password, "name": name, "surname": surname}
                 output["tokenId"] = jwt.encode(payload, self.secret_key, algorithm="HS256")
         except Exception as error:
