@@ -136,5 +136,5 @@ def search_new_location(name):
     if output == "error":
         raise Exception()
     else:
-        return output
+        return json.dumps(output)
 
