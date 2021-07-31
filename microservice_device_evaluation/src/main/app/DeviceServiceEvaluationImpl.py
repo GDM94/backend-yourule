@@ -75,7 +75,7 @@ class DeviceServiceEvaluation(object):
                 self.device_min_measure_range(device_id, absolute_measure, timestamp)
 
                 if self.r.exists(key_pattern + ":expiration") == 1:
-                    expiration = self.r.get("device:" + device_id + ":expiration")
+                    expiration = int(self.r.get("device:" + device_id + ":expiration"))
                 else:
                     expiration = 0
                 self.r.setex(key_pattern + ":measure", measure, expiration)
