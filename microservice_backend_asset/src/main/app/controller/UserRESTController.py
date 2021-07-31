@@ -103,16 +103,28 @@ def user_logout(user_name):
     return "logout"
 
 
-@user.route('/location', methods=["POST"])
+@user.route('/set/location', methods=["POST"])
 @check_token
-def user_location():
+def set_user_location():
     user_id = request.args.get("user_id")
     name = request.args.get("name")
     country = request.args.get("country")
     lat = request.args.get("lat")
     lon = request.args.get("lon")
-    output = user_service.user_location(user_id, name, country, lat, lon)
+    output = user_service.set_user_location(user_id, name, country, lat, lon)
     if output == "error":
         raise Exception()
     else:
         return output
+
+
+@user.route('/location', methods=["GET"])
+@check_token
+def get_user_location():
+    user_id = request.args.get("user_id")
+    output = user_service.get_user_location(user_id)
+    if output == "error":
+        raise Exception()
+    else:
+        return json.dumps(output, default=lambda o: o.__dict__, indent=4)
+

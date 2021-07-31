@@ -1,4 +1,5 @@
 import jwt
+from ..dto.LocationDTO import Location
 
 
 class UserService(object):
@@ -105,7 +106,7 @@ class UserService(object):
     def user_logout(self, user_name):
         self.r.set("user:name:" + user_name + ":login", "false")
 
-    def user_location(self, user_id, name, country, lat, lon):
+    def set_user_location(self, user_id, name, country, lat, lon):
         key_pattern = "user:" + user_id + ":location:"
         try:
             self.r.set(key_pattern + "name", name)
@@ -117,3 +118,17 @@ class UserService(object):
             return "error"
         else:
             return ""
+
+    def get_user_location(self, user_id):
+        key_pattern = "user:" + user_id + ":location:"
+        try:
+            name = self.r.get(key_pattern + "name")
+            country = self.r.get(key_pattern + "country")
+            lat = self.r.get(key_pattern + "lat")
+            lon = self.r.get(key_pattern + "lon")
+            output = Location(name, country, lat, lon)
+        except Exception as error:
+            print(repr(error))
+            return "error"
+        else:
+            return output
