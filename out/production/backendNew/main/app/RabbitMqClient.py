@@ -1,13 +1,9 @@
 import pika
-from os.path import dirname, join, abspath
-import configparser
-import json
 import time
 
 
 class RabbitMQ(object):
-    def __init__(self, app_id, service, mqtt):
-        config = self.read_config()
+    def __init__(self, app_id, service, mqtt, config):
         rabbitmq_server = config.get("RABBITMQ", "server")
         rabbitmq_port = int(config.get("RABBITMQ", "port"))
         virtual_host = config.get("RABBITMQ", "virtual_host")
@@ -30,13 +26,6 @@ class RabbitMQ(object):
             content_type='application/json',
             content_encoding='utf-8',
             delivery_mode=2)
-
-    def read_config(self):
-        d = dirname(dirname(dirname(abspath(__file__))))
-        config_path = join(d, 'properties', 'app-config.ini')
-        config = configparser.ConfigParser()
-        config.read(config_path)
-        return config
 
     def start_connection(self):
         if not self.connection or self.connection.is_closed:

@@ -4,13 +4,17 @@ from app.RabbitMqClient import RabbitMQ
 import time
 import random
 import string
+from configuration.config import read_config
+from app.RedisConnectionImpl import RedisConnection
 
 client_id = random_client_id = 'switch'.join(random.choices(string.ascii_letters + string.digits, k=8))
 
-switch = SwitchServiceEvaluation()
+config = read_config()
+redis = RedisConnection(config)
+switch = SwitchServiceEvaluation(redis)
 mqtt = Subscriber(client_id, switch)
 mqtt.start_connection()
-rabbitmq = RabbitMQ(client_id, switch, mqtt)
+rabbitmq = RabbitMQ(client_id, switch, mqtt, config)
 rabbitmq.start_connection()
 rabbitmq.subscribe()
 

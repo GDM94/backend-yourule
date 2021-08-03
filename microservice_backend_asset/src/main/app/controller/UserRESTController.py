@@ -11,7 +11,7 @@ from ..services.RedisConnectionImpl import RedisConnection
 config = read_config()
 redis = RedisConnection(config)
 user = Blueprint('user', __name__)
-secret_key = config.get("OAUTH", "secret")
+secret_key = config.get("OAUTH", "token_key")
 user_service = UserService(secret_key, redis, config)
 
 

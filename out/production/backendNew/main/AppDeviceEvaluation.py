@@ -3,12 +3,15 @@ from app.DeviceServiceEvaluationImpl import DeviceServiceEvaluation
 from app.RabbitMqClient import RabbitMQ
 import random
 import string
-from appconfig.Config import read_config
+from configuration.config import read_config
+from app.RedisConnectionImpl import RedisConnection
 
 client_id = random_client_id = 'device_subscriber'.join(random.choices(string.ascii_letters + string.digits, k=8))
 
-service = DeviceServiceEvaluation()
-rabbitmq = RabbitMQ(client_id, service)
+config = read_config()
+redis = RedisConnection(config)
+service = DeviceServiceEvaluation(redis)
+rabbitmq = RabbitMQ(client_id, service, config)
 rabbitmq.start_connection()
 rabbitmq.subscribe()
 

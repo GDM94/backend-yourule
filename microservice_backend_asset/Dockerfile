@@ -8,6 +8,7 @@ RUN pip install paho-mqtt;
 RUN pip install pika;
 RUN pip install gunicorn;
 RUN pip install requests;
+RUN pip install cryptography;
 
 
 ADD ./src /backend/microservice_backend_asset/src/

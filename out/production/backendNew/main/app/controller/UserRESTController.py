@@ -5,22 +5,14 @@ from functools import wraps
 from flask import request
 from werkzeug.datastructures import ImmutableMultiDict
 import jwt
-from os.path import dirname, join, abspath
-import configparser
+from .configuration.config import read_config
+from ..services.RedisConnectionImpl import RedisConnection
 
-
-def read_config():
-    d = dirname(dirname(dirname(dirname(abspath(__file__)))))
-    config_path = join(d, 'properties', 'app-config.ini')
-    config = configparser.ConfigParser()
-    config.read(config_path)
-    return config
-
-
+config = read_config()
+redis = RedisConnection(config)
 user = Blueprint('user', __name__)
-user_service = UserService()
-configuration = read_config()
-secret_key = configuration.get("OAUTH", "secret")
+secret_key = config.get("OAUTH", "token_key")
+user_service = UserService(secret_key, redis, config)
 
 
 def check_token(f):
@@ -39,6 +31,7 @@ def check_token(f):
             return {'message': 'Invalid token provided.'}, 400
         else:
             return f(*args, **kwargs)
+
     return wrap
 
 
@@ -108,3 +101,40 @@ def get_user_logged(user_name):
 def user_logout(user_name):
     user_service.user_logout(user_name)
     return "logout"
+
+
+@user.route('/set/location', methods=["POST"])
+@check_token
+def set_user_location():
+    user_id = request.args.get("user_id")
+    name = request.args.get("name")
+    country = request.args.get("country")
+    lat = request.args.get("lat")
+    lon = request.args.get("lon")
+    output = user_service.set_user_location(user_id, name, country, lat, lon)
+    if output == "error":
+        raise Exception()
+    else:
+        return output
+
+
+@user.route('/location', methods=["GET"])
+@check_token
+def get_user_location():
+    user_id = request.args.get("user_id")
+    output = user_service.get_user_location(user_id)
+    if output == "error":
+        raise Exception()
+    else:
+        return json.dumps(output, default=lambda o: o.__dict__, indent=4)
+
+
+@user.route('/search/location/<name>', methods=["GET"])
+@check_token
+def search_new_location(name):
+    output = user_service.search_new_location(name)
+    if output == "error":
+        raise Exception()
+    else:
+        return json.dumps(output)
+

@@ -9,14 +9,18 @@ from .UserRESTController import check_token
 from .RabbitMqClient import RabbitMQ
 import random
 import string
+from .configuration.config import read_config
+from ..services.RedisConnectionImpl import RedisConnection
 
+config = read_config()
+redis = RedisConnection(config)
 rule = Blueprint('rule', __name__)
 random_client_id = 'backend_rule'.join(random.choices(string.ascii_letters + string.digits, k=8))
 mqtt_client = Subscriber(random_client_id)
 mqtt_client.start_connection()
-rabbitmq = RabbitMQ("backend_rule")
+rabbitmq = RabbitMQ("backend_rule", config)
 rabbitmq.start_connection()
-rule_service = RuleService(mqtt_client, rabbitmq)
+rule_service = RuleService(mqtt_client, rabbitmq, config, redis)
 
 
 @rule.route('/device/<device_id>', methods=['GET'])
@@ -111,7 +115,8 @@ def set_rule_antecedent():
     stop_value = request.args.get("stop_value")
     condition = request.args.get("condition")
     measure = request.args.get("measure")
-    antecedent = Antecedent(device_id, "", start_value, stop_value, condition, "false", measure)
+    order = request.args.get("order")
+    antecedent = Antecedent(device_id, "", start_value, stop_value, condition, "false", measure, order)
     output = rule_service.set_new_antecedent(user_id, rule_id, antecedent)
     if output == "error":
         raise Exception()

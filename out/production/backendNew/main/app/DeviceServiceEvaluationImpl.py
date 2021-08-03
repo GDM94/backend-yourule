@@ -1,24 +1,10 @@
-import redis
-from os.path import dirname, join, abspath
-import configparser
 from .dto.TriggerDTO import Trigger
 from datetime import datetime
 
 
 class DeviceServiceEvaluation(object):
-    def __init__(self):
-        config = self.read_config()
-        HOST = config.get("REDIS", "host")
-        PORT = config.get("REDIS", "port")
-        self.EXPIRATION = config.get("REDIS", "expiration")
-        self.r = redis.Redis(host=HOST, port=PORT, decode_responses=True)
-
-    def read_config(self):
-        d = dirname(dirname(dirname(abspath(__file__))))
-        config_path = join(d, 'properties', 'app-config.ini')
-        config = configparser.ConfigParser()
-        config.read(config_path)
-        return config
+    def __init__(self, redis):
+        self.r = redis
 
     def device_antecedent_measure(self, device_id, absolute_measure, timestamp):
         measure = absolute_measure
@@ -87,8 +73,14 @@ class DeviceServiceEvaluation(object):
                 output.measure = measure
                 self.device_max_measure_range(device_id, absolute_measure, timestamp)
                 self.device_min_measure_range(device_id, absolute_measure, timestamp)
-                self.r.setex(key_pattern + ":measure", self.EXPIRATION, measure)
-                self.r.setex(key_pattern + ":absolute_measure", self.EXPIRATION, absolute_measure)
+
+                if self.r.exists(key_pattern + ":expiration") == 1:
+                    expiration = int(self.r.get("device:" + device_id + ":expiration"))
+                else:
+                    expiration = 0
+                self.r.setex(key_pattern + ":measure", measure, expiration)
+                self.r.setex(key_pattern + ":absolute_measure", absolute_measure, expiration)
+
                 rules = []
                 if "SWITCH" not in device_id:
                     output.type = "antecedent"

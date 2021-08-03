@@ -1,6 +1,3 @@
-import redis
-from os.path import dirname, join, abspath
-import configparser
 from ..dto.AntecedentDTO import Antecedent
 from ..dto.ConsequentDTO import Consequent
 from ..dto.RuleDTO import Rule
@@ -9,21 +6,11 @@ from datetime import datetime
 
 
 class RuleService(object):
-    def __init__(self, mqtt_client, rabbitmq):
-        config = self.read_config()
-        redis_host = config.get("REDIS", "host")
-        redis_port = config.get("REDIS", "port")
+    def __init__(self, mqtt_client, rabbitmq, config, redis):
         self.publish_rule = config.get("RABBITMQ", "publish_rule")
-        self.r = redis.Redis(host=redis_host, port=redis_port, decode_responses=True)
+        self.r = redis
         self.mqtt_client = mqtt_client
         self.rabbitmq = rabbitmq
-
-    def read_config(self):
-        d = dirname(dirname(dirname(dirname(abspath(__file__)))))
-        config_path = join(d, 'properties', 'app-config.ini')
-        config = configparser.ConfigParser()
-        config.read(config_path)
-        return config
 
     def create_new_rule(self, user_id, rule_name):
         try:
@@ -36,6 +23,7 @@ class RuleService(object):
             timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
             self.r.set(key_pattern + ":last_true", "-")
             self.r.set(key_pattern + ":last_false", timestamp)
+            self.r.set(key_pattern + ":registration_date", timestamp)
         except Exception as error:
             print(repr(error))
             return "error"
@@ -54,7 +42,7 @@ class RuleService(object):
         for antecedent in antecedent_list:
             new_antecedent = Antecedent(antecedent["device_id"], antecedent["name"], antecedent["start_value"],
                                         antecedent["stop_value"], antecedent["condition"], "false",
-                                        antecedent["measure"], antecedent["value"])
+                                        antecedent["measure"], antecedent["value"], antecedent["order"])
             output_antecedent = self.set_new_antecedent(user_id, rule_id, new_antecedent)
             if output_antecedent == "error":
                 output = "error"
@@ -84,6 +72,7 @@ class RuleService(object):
             self.r.set(key_pattern + ":stop_value", antecedent.stop_value)
             self.r.set(key_pattern + ":condition", antecedent.condition)
             self.r.set(key_pattern + ":measure", antecedent.measure)
+            self.r.set(key_pattern + ":order", antecedent.order)
             if self.r.exists(key_pattern + ":evaluation") == 0:
                 self.r.set(key_pattern + ":evaluation", "init")
         except Exception as error:
@@ -115,15 +104,16 @@ class RuleService(object):
                 self.r.delete(key_pattern + ":evaluation")
                 self.r.delete(key_pattern + ":last_true")
                 self.r.delete(key_pattern + ":last_false")
+                self.r.delete(key_pattern + ":registration_date")
                 # delete rule antecedents
-                antecedent_keys = self.r.scan(0, key_pattern + ":antecedent:*:start_value", 1000)[1]
+                antecedent_keys = self.r.scan(key_pattern + ":antecedent:*:start_value")
                 if len(antecedent_keys) > 0:
                     for key in antecedent_keys:
                         k = key.split(":")
                         device_id = k[-2]
                         self.delete_antecedent(user_id, rule_id, device_id)
                 # delete rule consequent
-                consequent_keys = self.r.scan(0, key_pattern + ":consequent:*:if_value", 1000)[1]
+                consequent_keys = self.r.scan(key_pattern + ":consequent:*:if_value")
                 if len(consequent_keys) > 0:
                     for key in consequent_keys:
                         k = key.split(":")
@@ -145,6 +135,7 @@ class RuleService(object):
             self.r.delete(key_pattern + ":condition")
             self.r.delete(key_pattern + ":evaluation")
             self.r.delete(key_pattern + ":measure")
+            self.r.delete(key_pattern + ":order")
             # trigger rule evaluation
             trigger_message = {"user_id": user_id, "rules": [rule_id]}
             payload = json.dumps(trigger_message)
@@ -187,24 +178,11 @@ class RuleService(object):
                     last_true = timestamp
                     last_false = self.r.get(key_pattern + ":last_false")
                 # get rule antecedents
-                antecedent_keys = self.r.scan(0, key_pattern + ":antecedent:*:start_value", 1000)[1]
-                antecedent_list = []
-                if len(antecedent_keys) > 0:
-                    for key in antecedent_keys:
-                        device_id = key.split(":")[-2]
-                        antecedent = self.get_antecedent(user_id, rule_id, device_id)
-                        antecedent_list.append(antecedent)
+                antecedent_list = self.get_rule_antecedents(user_id, rule_id)
                 # get rule consequent
-                consequent_keys = self.r.scan(0, key_pattern + ":consequent:*:if_value", 1000)[1]
-                consequent_list = []
-                if len(consequent_keys) > 0:
-                    for key in consequent_keys:
-                        k = key.split(":")
-                        device_id = k[-2]
-                        consequent = self.get_consequent(user_id, rule_id, device_id)
-                        consequent_list.append(consequent)
+                consequent_list = self.get_rule_consequents(user_id, rule_id)
                 output = Rule(rule_id, rule_name, antecedent_list, consequent_list, rule_evaluation, last_true,
-                              last_false)
+                              last_false, "")
             else:
                 output = "error"
         except Exception as error:
@@ -213,13 +191,26 @@ class RuleService(object):
         else:
             return output
 
-    def get_antecedent(self, user_id, rule_id, device_id):
+    def get_rule_antecedents(self, user_id, rule_id):
         key_pattern = "user:" + user_id + ":rule:" + rule_id
-        start_value = self.r.get(key_pattern + ":antecedent:" + device_id + ":start_value")
-        stop_value = self.r.get(key_pattern + ":antecedent:" + device_id + ":stop_value")
-        condition = self.r.get(key_pattern + ":antecedent:" + device_id + ":condition")
-        evaluation = self.r.get(key_pattern + ":antecedent:" + device_id + ":evaluation")
-        measure = self.r.get(key_pattern + ":antecedent:" + device_id + ":measure")
+        antecedent_keys = self.r.scan(key_pattern + ":antecedent:*:start_value")
+        antecedent_list = []
+        if len(antecedent_keys) > 0:
+            for key in antecedent_keys:
+                device_id = key.split(":")[-2]
+                antecedent = self.get_antecedent(user_id, rule_id, device_id)
+                antecedent_list.append(antecedent)
+        antecedent_list.sort(key=lambda device: int(device.order))
+        return antecedent_list
+
+    def get_antecedent(self, user_id, rule_id, device_id):
+        key_pattern = "user:" + user_id + ":rule:" + rule_id + ":antecedent:" + device_id
+        start_value = self.r.get(key_pattern + ":start_value")
+        stop_value = self.r.get(key_pattern + ":stop_value")
+        condition = self.r.get(key_pattern + ":condition")
+        evaluation = self.r.get(key_pattern + ":evaluation")
+        measure = self.r.get(key_pattern + ":measure")
+        order = self.r.get(key_pattern + ":order")
         device_name = self.r.get("device:" + device_id + ":name")
         value = "null"
         if "SWITCH" in device_id:
@@ -229,7 +220,7 @@ class RuleService(object):
             if self.r.exists("device:" + device_id + ":absolute_measure"):
                 absolute_measure = self.r.get("device:" + device_id + ":absolute_measure")
                 value = self.device_antecedent_measure(device_id, absolute_measure)
-        return Antecedent(device_id, device_name, start_value, stop_value, condition, evaluation, measure, value)
+        return Antecedent(device_id, device_name, start_value, stop_value, condition, evaluation, measure, value, order)
 
     def device_antecedent_measure(self, device_id, measure):
         if "SWITCH" not in device_id:
@@ -247,6 +238,19 @@ class RuleService(object):
                     max_measure = int(self.r.get(key_pattern + ":setting:max"))
                     measure = str(round((int(measure) / max_measure) * 100.0))
         return measure
+
+    def get_rule_consequents(self, user_id, rule_id):
+        key_pattern = "user:" + user_id + ":rule:" + rule_id
+        consequent_keys = self.r.scan(key_pattern + ":consequent:*:if_value")
+        consequent_list = []
+        if len(consequent_keys) > 0:
+            for key in consequent_keys:
+                k = key.split(":")
+                device_id = k[-2]
+                consequent = self.get_consequent(user_id, rule_id, device_id)
+                consequent_list.append(consequent)
+        consequent_list.sort(key=lambda device: int(device.order))
+        return consequent_list
 
     def get_consequent(self, user_id, rule_id, device_id):
         key_pattern = "user:" + user_id + ":rule:" + rule_id
@@ -272,13 +276,14 @@ class RuleService(object):
 
     def get_user_rules(self, user_id):
         try:
-            rule_name_keys = self.r.scan(0, "user:" + user_id + ":rule:*:name", 1000)[1]
+            rule_name_keys = self.r.scan("user:" + user_id + ":rule:*:name")
             output = []
             for key in rule_name_keys:
                 rule_id = key.split(":")[-2]
                 rule = self.get_user_rules_slim(user_id, rule_id)
                 if rule != "error":
                     output.append(rule)
+            output.sort(key=lambda r: datetime.strptime(r.registration_date, '%d/%m/%Y %H:%M:%S'))
         except Exception as error:
             print(repr(error))
             return "error"
@@ -292,7 +297,8 @@ class RuleService(object):
                 # get rule name
                 rule_name = self.r.get(key_pattern + ":name")
                 rule_evaluation = self.r.get(key_pattern + ":evaluation")
-                output = Rule(rule_id, rule_name, [], [], rule_evaluation, "", "")
+                registration_date = self.r.get(key_pattern + ":registration_date")
+                output = Rule(rule_id, rule_name, [], [], rule_evaluation, "", "", registration_date)
             else:
                 output = "error"
         except Exception as error:

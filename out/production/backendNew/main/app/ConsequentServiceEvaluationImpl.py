@@ -1,34 +1,21 @@
 import smtplib
 from email.mime.text import MIMEText
-import redis
-from os.path import dirname, join, abspath
-import configparser
 import json
 
 
+def email_connection(email_user, email_password):
+    print("email connection")
+    session = smtplib.SMTP("smtp.gmail.com", 587)
+    session.starttls()
+    session.login(email_user, email_password)
+    return session
+
+
 class ConsequentServiceEvaluation(object):
-    def __init__(self):
-        config = self.read_config()
-        HOST = config.get("REDIS", "host")
-        PORT = config.get("REDIS", "port")
-        self.EXPIRATION = config.get("REDIS", "expiration")
-        self.r = redis.Redis(host=HOST, port=PORT, decode_responses=True)
+    def __init__(self, config, redis):
+        self.r = redis
         self.email_user = config.get("ALERT", "email_user")
         self.email_password = config.get("ALERT", "email_password")
-
-    def read_config(self):
-        d = dirname(dirname(dirname(abspath(__file__))))
-        config_path = join(d, 'properties', 'app-config.ini')
-        config = configparser.ConfigParser()
-        config.read(config_path)
-        return config
-
-    def email_connection(self, email_user, email_password):
-        print("email connection")
-        session = smtplib.SMTP("smtp.gmail.com", 587)
-        session.starttls()
-        session.login(email_user, email_password)
-        return session
 
     def switch_evaluation(self, user_id, device_id, delay, output):
         key_pattern = "device:" + device_id
@@ -52,9 +39,9 @@ class ConsequentServiceEvaluation(object):
     def alert_evaluation(self, user_id, rule_id):
         if self.r.get("user:" + user_id + ":rule:" + rule_id + ":evaluation") == "true":
             alert_id = "alert" + user_id
-            sendto = self.r.lrange("device:" + alert_id + ":email_list", 0, -1)
+            sendto = self.r.lrange("device:" + alert_id + ":email_list")
             if len(sendto) > 0:
-                alert = self.email_connection(self.email_user, self.email_password)
+                alert = email_connection(self.email_user, self.email_password)
                 rule_name = self.r.get("user:" + user_id + ":rule:" + rule_id + ":name")
                 sender = "raspberrypi.sugherotorto@gmail.com"
                 content = """Alert for rule name {}""".format(rule_name)
@@ -93,7 +80,7 @@ class ConsequentServiceEvaluation(object):
             rule_id = str(trigger["rule_id"])
             output = {"device_id": [], "measure": [], "delay": []}
             pattern_key = "user:" + user_id + ":rule:" + rule_id
-            consequent_keys = self.r.scan(0, pattern_key + ":consequent:*:order", 1000)[1]
+            consequent_keys = self.r.scan(pattern_key + ":consequent:*:order")
             consequent_list_ordered_delay = self.consequent_order_delay(user_id, rule_id, consequent_keys)
             for consequent in consequent_list_ordered_delay:
                 device_id = consequent["device_id"]
