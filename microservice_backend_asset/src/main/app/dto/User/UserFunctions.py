@@ -16,6 +16,13 @@ class UserFunction(object):
             print(repr(error))
             return "error"
 
+    def get_rules(self, user_id):
+        try:
+            return self.r.lrange("user:" + user_id + ":rules")
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
     def get_folders(self, user_id):
         try:
             return self.r.lrange("user:" + user_id + ":folders")

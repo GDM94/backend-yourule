@@ -3,4 +3,5 @@ class UserDto(object):
         self.user_id = ""
         self.sensors = []
         self.switches = []
+        self.rules = []
         self.folders = []

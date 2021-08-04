@@ -9,7 +9,7 @@ class TimerAntecedentFunction(object):
     def get_antecedent(self, user_id, rule_id, device_id):
         try:
             antecedent = TimerAntecedent()
-            key_pattern = "user:"+user_id+":rule:"+rule_id+":antecedents:"+device_id
+            key_pattern = "user:"+user_id+":rule:"+rule_id+":rule_antecedents:"+device_id
             antecedent.device_id = device_id
             antecedent.device_name = self.r.get(key_pattern+":device_name")
             antecedent.day_start_value = self.r.lrange(key_pattern+":day_start_value")
@@ -29,7 +29,7 @@ class TimerAntecedentFunction(object):
     def get_antecedent_slim(self, user_id, rule_id, device_id):
         try:
             antecedent = TimerAntecedent()
-            key_pattern = "user:"+user_id+":rule:"+rule_id+":antecedents:"+device_id
+            key_pattern = "user:"+user_id+":rule:"+rule_id+":rule_antecedents:"+device_id
             antecedent.device_id = device_id
             antecedent.device_name = self.r.get(key_pattern+":device_name")
             antecedent.evaluation = self.r.get(key_pattern+":evaluation")
@@ -41,7 +41,7 @@ class TimerAntecedentFunction(object):
 
     def delete_antecedent(self, user_id, rule_id, device_id):
         try:
-            key_pattern = "user:"+user_id+":rule:"+rule_id+":antecedents:"+device_id
+            key_pattern = "user:"+user_id+":rule:"+rule_id+":rule_antecedents:"+device_id
             if self.r.exists(key_pattern+":day_start_value") == 1:
                 days = self.r.lrange(key_pattern+":day_start_value")
                 for day in days:
@@ -60,7 +60,7 @@ class TimerAntecedentFunction(object):
 
     def set_antecedent(self, user_id, rule_id, antecedent):
         try:
-            key_pattern = "user:"+user_id+":rule:"+rule_id+":antecedents:"+antecedent.device_id
+            key_pattern = "user:"+user_id+":rule:"+rule_id+":rule_antecedents:"+antecedent.device_id
             if self.r.exists(key_pattern+":day_start_value") == 1:
                 days = self.r.lrange(key_pattern+":day_start_value")
                 for day in days:
@@ -94,7 +94,7 @@ class TimerAntecedentFunction(object):
 
     def evaluate_time(self, user_id, rule_id, device_id):
         try:
-            key_pattern = "user:"+user_id+":rule:"+rule_id+":antecedents:"+device_id
+            key_pattern = "user:"+user_id+":rule:"+rule_id+":rule_antecedents:"+device_id
             check_time = self.r.get(key_pattern+":check_time")
             evaluation = "true"
             if check_time == "true":
@@ -114,7 +114,7 @@ class TimerAntecedentFunction(object):
 
     def evaluate_date(self, user_id, rule_id, device_id):
         try:
-            key_pattern = "user:"+user_id+":rule:"+rule_id+":antecedents:"+device_id
+            key_pattern = "user:"+user_id+":rule:"+rule_id+":rule_antecedents:"+device_id
             check_date = self.r.get(key_pattern+":check_date")
             evaluation = "true"
             if check_date == "true":
