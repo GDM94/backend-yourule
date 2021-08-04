@@ -1,9 +1,81 @@
+from .AlertDTO import Alert
+
+
 class AlertFunction(object):
     def __init__(self, redis):
         self.r = redis
 
-    def register(self, alert_dto):
-        key_pattern = "device:"+alert_dto
-        if self.r.exists(key_pattern+":name") == 0:
-            self.r.set(key_pattern+":name", alert_dto.name)
-            self.r.rpush(key_pattern+":email_list", alert_dto.email_list[0])
+    def register(self, dto):
+        try:
+            key_pattern = "device:" + dto.device_id
+            if self.r.exists(key_pattern + ":name") == 0:
+                self.r.set(key_pattern + ":name", dto.name)
+                for email in dto.email_list:
+                    self.r.rpush(key_pattern + ":email_list", email)
+                return "true"
+            else:
+                return "false"
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
+    def get_device(self, device_id):
+        try:
+            dto = Alert()
+            key_pattern = "device:" + dto.device_id
+            dto.device_id = device_id
+            dto.name = self.r.get(key_pattern + ":name")
+            dto.email_list = self.r.lrange(key_pattern + ":email_list")
+            dto.rules = self.r.lrange(key_pattern + ":rules")
+            return dto
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
+    def get_device_slim(self, device_id):
+        try:
+            dto = Alert()
+            key_pattern = "device:" + dto.device_id
+            dto.device_id = device_id
+            dto.name = self.r.get(key_pattern + ":name")
+            return dto
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
+    def delete_all_email(self, device_id):
+        key_pattern = "device:" + device_id
+        if self.r.exists(key_pattern + ":email_list"):
+            email_list = self.r.lrange(key_pattern + ":email_list")
+            if len(email_list) > 0:
+                for email in email_list:
+                    self.r.lrem(key_pattern + ":email_list", email)
+
+    def update_device(self, dto):
+        try:
+            key_pattern = "device:" + dto.device_id
+            self.r.set(key_pattern + ":name", dto.name)
+            self.delete_all_email(dto.device_id)
+            if len(dto.email_list) > 0:
+                for email in dto.email_list:
+                    self.r.rpush(key_pattern + ":email_list", email)
+            return dto
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
+    def add_rule(self, device_id, rule_id):
+        try:
+            self.r.rpush("device:" + device_id + ":rules", rule_id)
+            return "true"
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
+    def delete_rule(self, device_id, rule_id):
+        try:
+            self.r.lrem("device:" + device_id + ":rules", rule_id)
+            return "true"
+        except Exception as error:
+            print(repr(error))
+            return "error"
