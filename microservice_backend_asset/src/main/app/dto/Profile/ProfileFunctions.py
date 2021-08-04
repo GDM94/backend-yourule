@@ -21,11 +21,10 @@ class ProfileFunction(object):
                 self.r.set(key_pattern + ":user_id", user_id)
                 dto.user_id = user_id
                 token = self.create_token(dto)
+                return token
         except Exception as error:
             print(repr(error))
             return "error"
-        else:
-            return token
 
     def login(self, dto):
         try:
@@ -38,11 +37,10 @@ class ProfileFunction(object):
                     dto.surname = self.r.get(key_pattern + ":surname")
                     dto.user_id = self.r.get(key_pattern + ":user_id")
                     token = self.create_token(dto)
+                    return token
         except Exception as error:
             print(repr(error))
             return "error"
-        else:
-            return token
 
     def create_token(self, dto):
         payload = dto.__dict__
