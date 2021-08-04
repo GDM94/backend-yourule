@@ -1,5 +1,7 @@
 class TimerAntecedent(object):
     def __init__(self):
+        self.device_id = ""
+        self.device_name = ""
         self.measure_time = ""
         self.measure_day = ""
         self.condition_time = "between"
