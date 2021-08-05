@@ -6,8 +6,8 @@ from ..Alert.AlertConsequentFunctions import AlertConsequentFunction
 class RuleFunction(object):
     def __init__(self, redis):
         self.r = redis
-        self.timerAntecedentFunctions = TimerAntecedentFunction(redis)
-        self.alertConsequentFunctions = AlertConsequentFunction(redis)
+        self.timer_antecedent_functions = TimerAntecedentFunction(redis)
+        self.alert_consequent_functions = AlertConsequentFunction(redis)
 
     def get_rule(self, user_id, rule_id):
         try:
@@ -40,7 +40,7 @@ class RuleFunction(object):
     def get_antecedent(self, user_id, rule_id, device_id):
         antecedent = {}
         if "timer" in device_id:
-            antecedent = self.timerAntecedentFunctions.get_antecedent_slim(user_id, rule_id, device_id)
+            antecedent = self.timer_antecedent_functions.get_antecedent_slim(user_id, rule_id, device_id)
         return antecedent
 
     def get_rules_consequents(self, user_id, rule_id):
@@ -54,7 +54,7 @@ class RuleFunction(object):
     def get_consequent(self, user_id, rule_id, device_id):
         consequent = {}
         if "alert" in device_id:
-            consequent = self.alertConsequentFunctions.get_consequent_slim(user_id, rule_id, device_id)
+            consequent = self.alert_consequent_functions.get_consequent_slim(user_id, rule_id, device_id)
         return consequent
 
     def get_rule_slim(self, user_id, rule_id):
@@ -94,19 +94,21 @@ class RuleFunction(object):
         device_antecedents = self.r.lrange(key_pattern+":device_antecedents")
         for device_id in device_antecedents:
             self.delete_rule_antecedent(user_id, rule_id, device_id)
-            self.r.lrem(key_pattern+":device_antecedents", device_id)
         device_consequents = self.r.lrange(key_pattern+":device_consequents")
         for device_id in device_consequents:
             self.delete_rule_consequent(user_id, rule_id, device_id)
-            self.r.lrem(key_pattern+":device_consequents", device_id)
 
     def delete_rule_antecedent(self, user_id, rule_id, device_id):
+        key_pattern = "user:"+user_id+":rule:"+rule_id
+        self.r.lrem(key_pattern+":device_antecedents", device_id)
         if "timer" in device_id:
-            self.timerAntecedentFunctions.delete_antecedent(user_id, rule_id, device_id)
+            self.timer_antecedent_functions.delete_antecedent(user_id, rule_id, device_id)
 
     def delete_rule_consequent(self, user_id, rule_id, device_id):
+        key_pattern = "user:"+user_id+":rule:"+rule_id
+        self.r.lrem(key_pattern+":device_consequents", device_id)
         if "alert" in device_id:
-            self.alertConsequentFunctions.delete_consequent(user_id, rule_id, device_id)
+            self.alert_consequent_functions.delete_consequent(user_id, rule_id, device_id)
 
     def update_rule_name(self, user_id, rule_id, rule_name):
         key_pattern = "user:"+user_id+":rule:"+rule_id
@@ -124,11 +126,11 @@ class RuleFunction(object):
 
     def update_rule_antecedent(self, user_id, rule_id, antecedent):
         if "timer" in antecedent.device_id:
-            self.timerAntecedentFunctions.set_antecedent(user_id, rule_id, antecedent)
+            self.timer_antecedent_functions.set_antecedent(user_id, rule_id, antecedent)
 
     def update_rule_consequent(self, user_id, rule_id, consequent):
         if "alert" in consequent.device_id:
-            self.alertConsequentFunctions.set_consequent(user_id, rule_id, consequent)
+            self.alert_consequent_functions.set_consequent(user_id, rule_id, consequent)
 
 
 
