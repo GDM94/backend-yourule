@@ -11,10 +11,9 @@ class ProfileFunction(object):
 
     def register(self, dto):
         try:
-            token = "false"
-            key_pattern = "email:" + dto.email
+            key_pattern = "profile:" + dto.email
             if self.r.exists(key_pattern + ":name") == 0:
-                user_id = str(self.r.incr("email:counter"))
+                user_id = str(self.r.incr("profile:counter"))
                 self.r.set(key_pattern + ":name", dto.name)
                 self.r.set(key_pattern + ":password", self.encrypt_password(dto.password))
                 self.r.set(key_pattern + ":surname", dto.surname)
@@ -28,8 +27,7 @@ class ProfileFunction(object):
 
     def login(self, dto):
         try:
-            key_pattern = "email:" + dto.email
-            token = "false"
+            key_pattern = "profile:" + dto.email
             if self.r.exists(key_pattern + ":name") == 1:
                 password = self.decrypt_password(self.r.get(key_pattern+":password"))
                 if password == dto.password:

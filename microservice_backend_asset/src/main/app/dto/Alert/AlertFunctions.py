@@ -5,13 +5,13 @@ class AlertFunction(object):
     def __init__(self, redis):
         self.r = redis
 
-    def register(self, dto):
+    def register(self, user_id, email):
         try:
-            key_pattern = "device:" + dto.device_id
+            device_id = "alert" + user_id
+            key_pattern = "device:" + device_id
             if self.r.exists(key_pattern + ":name") == 0:
-                self.r.set(key_pattern + ":name", dto.name)
-                for email in dto.email_list:
-                    self.r.rpush(key_pattern + ":email_list", email)
+                self.r.set(key_pattern + ":name", "alert")
+                self.r.rpush(key_pattern + ":email_list", email)
                 return "true"
             else:
                 return "false"

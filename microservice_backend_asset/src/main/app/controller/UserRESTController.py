@@ -39,10 +39,8 @@ def check_token(f):
 def user_login():
     try:
         access_token = request.args.get("access_token")
-        claims = jwt.decode(access_token, secret_key, algorithms=["HS256"])
-        email = claims["email"]
-        password = claims["password"]
-        output = user_service.user_login(email, password)
+        profile_map = jwt.decode(access_token, secret_key, algorithms=["HS256"])
+        output = user_service.user_login(profile_map)
     except Exception as error:
         print(repr(error))
         raise Exception()
@@ -54,13 +52,8 @@ def user_login():
 def user_registration():
     try:
         access_token = request.args.get("access_token")
-        claims = jwt.decode(access_token, secret_key, algorithms=["HS256"])
-        print(claims)
-        email = claims["email"]
-        password = claims["password"]
-        name = claims["name"]
-        surname = claims["surname"]
-        output = user_service.user_registration(email, password, name, surname)
+        profile_map = jwt.decode(access_token, secret_key, algorithms=["HS256"])
+        output = user_service.user_registration(profile_map)
         print(output)
     except Exception as error:
         print(repr(error))

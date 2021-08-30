@@ -1,5 +1,4 @@
 from .TimerDTO import Timer
-from .TimerAntecedentDTO import TimerAntecedent
 from datetime import datetime
 
 
@@ -7,11 +6,12 @@ class TimerFunction(object):
     def __init__(self, redis):
         self.r = redis
 
-    def register(self, dto):
+    def register(self, user_id):
         try:
-            if self.r.exists("device:" + dto.device_id + ":name") == 0:
-                key_pattern = "device:" + dto.device_id
-                self.r.set(key_pattern + ":name", dto.name)
+            device_id = "timer" + user_id
+            if self.r.exists("device:" + device_id + ":name") == 0:
+                key_pattern = "device:" + device_id
+                self.r.set(key_pattern + ":name", "timer")
                 return "true"
             else:
                 return "false"

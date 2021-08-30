@@ -8,7 +8,10 @@ class Timer(object):
         self.status = "connected"
         self.color = "green"
 
-    def constructor(self, device_id, name, rules):
-        self.device_id = device_id
+    def constructor(self, user_id, name, rules):
+        self.device_id = "timer"+user_id
         self.name = name
         self.rules = rules
+
+    def constructor_register(self, user_id):
+        self.device_id = "timer"+user_id
