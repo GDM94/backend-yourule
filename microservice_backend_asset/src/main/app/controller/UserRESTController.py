@@ -72,30 +72,6 @@ def get_user_id(user_name):
         return json.dumps(json_output)
 
 
-@user.route('/names', methods=["GET"])
-def get_users_name():
-    output = user_service.get_user_names()
-    if output == "error":
-        raise Exception()
-    else:
-        return json.dumps(output)
-
-
-@user.route('/check/logged/<user_name>', methods=["GET"])
-def get_user_logged(user_name):
-    output = user_service.get_user_logged(user_name)
-    if output == "error":
-        raise Exception()
-    else:
-        return output
-
-
-@user.route('/logout/<user_name>', methods=["POST"])
-def user_logout(user_name):
-    user_service.user_logout(user_name)
-    return "logout"
-
-
 @user.route('/set/location', methods=["POST"])
 @check_token
 def set_user_location():
