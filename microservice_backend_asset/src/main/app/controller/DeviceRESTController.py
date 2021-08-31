@@ -26,8 +26,7 @@ device_service = DeviceService(mqtt_client, rabbitmq, redis, config)
 def device_registration():
     user_id = request.args.get("user_id")
     device_id = request.args.get("device_id")
-    device_name = request.args.get("device_name")
-    output = device_service.device_registration(user_id, device_id, device_name)
+    output = device_service.device_registration(user_id, device_id)
     if output == "error":
         raise Exception()
     else:

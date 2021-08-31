@@ -31,6 +31,7 @@ class AlertConsequentFunction(object):
 
     def delete_consequent(self, user_id, rule_id, device_id):
         try:
+            self.r.lrem("user:" + user_id + ":rule:" + rule_id + ":device_consequents", device_id)
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_consequents:" + device_id
             self.r.delete(key_pattern + ":device_name")
             self.r.delete(key_pattern + ":message")

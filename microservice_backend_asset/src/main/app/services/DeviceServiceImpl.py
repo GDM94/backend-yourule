@@ -14,14 +14,13 @@ class DeviceService(object):
         self.rabbitmq = rabbitmq
         self.EXPIRATION = config.get("REDIS", "expiration")
 
-    def device_registration(self, user_id, device_id, device_name):
+    def device_registration(self, user_id, device_id):
         try:
             key_pattern = "device:" + device_id
             if self.r.exists(key_pattern + ":userid") == 0:
-                self.r.set(key_pattern + ":userid", user_id)
+                self.r.set(key_pattern + ":user_id", user_id)
                 self.r.setex(key_pattern + ":measure", "init")
                 self.r.setex(key_pattern + ":absolute_measure", "init")
-                self.r.set(key_pattern + ":name", device_name)
                 timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                 self.r.set(key_pattern + ":registration_date", timestamp)
                 prefix = device_id.split("-")[0]
@@ -102,117 +101,33 @@ class DeviceService(object):
 
     def get_user_antecedent_list(self, user_id):
         try:
-            device_id_keys = self.r.lrange("user:" + user_id + ":antecedents")
             output = []
+            device_id_keys = self.r.lrange("user:" + user_id + ":sensors")
+            device_id_keys.insert(0, "timer" + user_id)
             for device_id in device_id_keys:
-                device = self.get_antecedent_device_slim(user_id, device_id)
-                output.append(device)
+                key_pattern = "device:" + device_id
+                device_name = self.r.get(key_pattern + ":name")
+                output.append(device_name)
         except Exception as error:
             print(repr(error))
             return "error"
         else:
             return output
-
-    def get_antecedent_device_slim(self, user_id, device_id):
-        key_pattern = "device:" + device_id
-        device_name = self.r.get(key_pattern + ":name")
-        measure = "null"
-        if self.r.exists(key_pattern + ":measure") == 1:
-            measure = self.r.get(key_pattern + ":measure")
-        return DeviceAntecedent(device_id, device_name, measure, "", "", [], measure, "", "", "", "")
-
-    def get_antecedent_device(self, user_id, device_id):
-        key_pattern = "device:" + device_id
-        device_name = self.r.get(key_pattern + ":name")
-        absolute_measure = "null"
-        measure = "null"
-        if self.r.exists(key_pattern + ":absolute_measure") == 1:
-            absolute_measure = self.r.get(key_pattern + ":absolute_measure")
-            measure = self.r.get(key_pattern + ":measure")
-        setting = ""
-        if self.r.exists(key_pattern + ":setting:max"):
-            setting = self.r.get(key_pattern + ":setting:max")
-        error_setting = ""
-        if self.r.exists(key_pattern + ":setting:error"):
-            error_setting = self.r.get(key_pattern + ":setting:error")
-        max_measure = self.r.get(key_pattern + ":max_measure")
-        min_measure = self.r.get(key_pattern + ":min_measure")
-        max_measure_time = self.r.get(key_pattern + ":max_measure_time")
-        min_measure_time = self.r.get(key_pattern + ":min_measure_time")
-        rules = []
-        if self.r.exists(key_pattern + ":rules") == 1:
-            rules_id = list(self.r.smembers(key_pattern + ":rules"))
-            for rule_id in rules_id:
-                rule = {"id": rule_id, "name": ""}
-                rule_name = self.r.get("user:" + user_id + ":rule:" + rule_id + ":name")
-                rule["name"] = rule_name
-                rules.append(rule)
-        return DeviceAntecedent(device_id, device_name, measure, setting, error_setting, rules,
-                                absolute_measure, max_measure,
-                                min_measure, max_measure_time, min_measure_time)
 
     def get_user_consequent_list(self, user_id):
         try:
-            device_id_keys = self.r.lrange("user:" + user_id + ":consequents")
+            device_id_keys = self.r.lrange("user:" + user_id + ":switches")
+            device_id_keys.insert(0, "alert" + user_id)
             output = []
             for device_id in device_id_keys:
-                device = self.get_consequent_device_slim(user_id, device_id)
-                output.append(device)
+                key_pattern = "device:" + device_id
+                device_name = self.r.get(key_pattern + ":name")
+                output.append(device_name)
         except Exception as error:
             print(repr(error))
             return "error"
         else:
             return output
-
-    def get_consequent_device_slim(self, user_id, device_id):
-        key_pattern = "device:" + device_id
-        device_name = self.r.get(key_pattern + ":name")
-        measure = "null"
-        automatic = self.r.get(key_pattern + ":automatic")
-        if self.r.exists(key_pattern + ":measure"):
-            measure = self.r.get(key_pattern + ":measure")
-        if "alert" in device_id:
-            return AlertConsequent(device_id, device_name, [], [])
-        else:
-            return DeviceConsequent(device_id, device_name, measure, [], "", "", automatic, "")
-
-    def get_consequent_device(self, user_id, device_id):
-        if "alert" in device_id:
-            return self.get_alert(user_id, device_id)
-        else:
-            key_pattern = "device:" + device_id
-            device_name = self.r.get(key_pattern + ":name")
-            measure = "null"
-            if self.r.exists(key_pattern + ":measure"):
-                measure = self.r.get(key_pattern + ":measure")
-            rules_id = list(self.r.smembers(key_pattern + ":rules"))
-            rules = []
-            for rule_id in rules_id:
-                rule = {"id": rule_id, "name": ""}
-                rule_name = self.r.get("user:" + user_id + ":rule:" + rule_id + ":name")
-                rule["name"] = rule_name
-                rules.append(rule)
-            last_on = self.r.get(key_pattern + ":last_on")
-            last_off = self.r.get(key_pattern + ":last_off")
-            automatic = self.r.get(key_pattern + ":automatic")
-            manual_measure = self.r.get(key_pattern + ":manual_measure")
-            return DeviceConsequent(device_id, device_name, measure, rules, last_on, last_off, automatic,
-                                    manual_measure)
-
-    def get_alert(self, user_id, alert_id):
-        key_pattern = "device:" + alert_id
-        name = self.r.get(key_pattern + ":name")
-        rules_id = list(self.r.smembers(key_pattern + ":rules"))
-        rules = []
-        for rule_id in rules_id:
-            rule = {"id": rule_id, "name": ""}
-            rule_name = self.r.get("user:" + user_id + ":rule:" + rule_id + ":name")
-            rule["name"] = rule_name
-            rules.append(rule)
-        email_list = []
-        if self.r.exists(key_pattern + ":email_list"):
-            email_list = self.r.lrange(key_pattern + ":email_list")
-        return AlertConsequent(alert_id, name, rules, email_list)
 
     def delete_device(self, user_id, device_id):
         try:
@@ -317,7 +232,7 @@ class DeviceService(object):
         try:
             self.r.set("device:" + device_id + ":manual_measure", manual_measure)
             # trigger setting device
-            self.mqtt_client.publish(device_id, manual_measure+"/0")
+            self.mqtt_client.publish(device_id, manual_measure + "/0")
         except Exception as error:
             print(repr(error))
             return "error"
