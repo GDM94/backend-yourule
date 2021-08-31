@@ -2,7 +2,7 @@ from .WaterLevelAntecedentDTO import WaterLevelAntecedent
 from datetime import datetime
 
 
-class TimerAntecedentFunction(object):
+class WaterLevelAntecedentFunction(object):
     def __init__(self, redis):
         self.r = redis
 
@@ -43,6 +43,7 @@ class TimerAntecedentFunction(object):
 
     def delete_antecedent(self, user_id, rule_id, device_id):
         try:
+            self.r.lrem("device:" + device_id + ":rules", rule_id)
             self.r.lrem("user:" + user_id + ":rule:" + rule_id + ":device_antecedents", device_id)
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
             self.r.delete(key_pattern + ":device_name")
@@ -63,6 +64,7 @@ class TimerAntecedentFunction(object):
 
     def set_antecedent(self, user_id, rule_id, antecedent):
         try:
+            self.r.rpush("device:" + antecedent.device_id + ":rules", rule_id)
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + antecedent.device_id
             self.r.set(key_pattern + ":device_name", antecedent.device_name)
             self.r.set(key_pattern + ":condition_measure", antecedent.condition_measure)

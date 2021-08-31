@@ -41,6 +41,7 @@ class TimerAntecedentFunction(object):
 
     def delete_antecedent(self, user_id, rule_id, device_id):
         try:
+            self.r.lrem("device:" + device_id + ":rules", rule_id)
             self.r.lrem("user:" + user_id + ":rule:" + rule_id + ":device_antecedents", device_id)
             key_pattern = "user:"+user_id+":rule:"+rule_id+":rule_antecedents:"+device_id
             if self.r.exists(key_pattern+":day_start_value") == 1:
@@ -61,6 +62,7 @@ class TimerAntecedentFunction(object):
 
     def set_antecedent(self, user_id, rule_id, antecedent):
         try:
+            self.r.rpush("device:" + antecedent.device_id + ":rules", rule_id)
             key_pattern = "user:"+user_id+":rule:"+rule_id+":rule_antecedents:"+antecedent.device_id
             if self.r.exists(key_pattern+":day_start_value") == 1:
                 days = self.r.lrange(key_pattern+":day_start_value")

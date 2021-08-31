@@ -63,19 +63,3 @@ class AlertFunction(object):
         except Exception as error:
             print(repr(error))
             return "error"
-
-    def add_rule(self, device_id, rule_id):
-        try:
-            self.r.rpush("device:" + device_id + ":rules", rule_id)
-            return "true"
-        except Exception as error:
-            print(repr(error))
-            return "error"
-
-    def delete_rule(self, device_id, rule_id):
-        try:
-            self.r.lrem("device:" + device_id + ":rules", rule_id)
-            return "true"
-        except Exception as error:
-            print(repr(error))
-            return "error"
