@@ -1,3 +1,6 @@
+import json
+
+
 class Timer(object):
     def __init__(self):
         self.device_id = ""
@@ -8,10 +11,11 @@ class Timer(object):
         self.status = "connected"
         self.color = "green"
 
-    def constructor(self, user_id, name, rules):
-        self.device_id = "timer"+user_id
-        self.name = name
-        self.rules = rules
-
-    def constructor_register(self, user_id):
-        self.device_id = "timer"+user_id
+    def json_mapping(self, device_json):
+        x = json.loads(device_json)
+        if "device_id" in x.keys():
+            self.device_id = x["device_id"]
+        if "name" in x.keys():
+            self.name = x["name"]
+        if "rules" in x.keys():
+            self.rules = x["rules"]

@@ -1,3 +1,6 @@
+import json
+
+
 class WaterLevel(object):
     def __init__(self):
         self.device_id = ""
@@ -9,10 +12,27 @@ class WaterLevel(object):
         self.setting_unit_measure = "cm"
         self.expiration = "10"
         self.rules = []
-        self.status = "initialization"
-        self.color = "yellow"
+        self.status = "disconnected"
+        self.color = "red"
         self.unit_measure = "%"
         self.max_measure = "-"
         self.max_measure_time = "-"
         self.min_measure = "-"
         self.min_measure_time = "-"
+
+    def json_mapping(self, device_json):
+        x = json.loads(device_json)
+        if "device_id" in x.keys():
+            self.device_id = x["device_id"]
+        if "name" in x.keys():
+            self.name = x["name"]
+        if "setting_error" in x.keys():
+            self.setting_error = x["setting_error"]
+        if "setting_max" in x.keys():
+            self.setting_max = x["setting_max"]
+        if "setting_unit_measure" in x.keys():
+            self.setting_unit_measure = x["setting_unit_measure"]
+        if "expiration" in x.keys():
+            self.expiration = x["expiration"]
+        if "rules" in x.keys():
+            self.rules = x["rules"]

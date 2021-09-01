@@ -65,6 +65,7 @@ class WaterLevelAntecedentFunction(object):
     def set_antecedent(self, user_id, rule_id, antecedent):
         try:
             self.r.rpush("device:" + antecedent.device_id + ":rules", rule_id)
+            self.r.rpush("user:" + user_id + ":rule:" + rule_id + ":device_antecedents", antecedent.device_id)
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + antecedent.device_id
             self.r.set(key_pattern + ":device_name", antecedent.device_name)
             self.r.set(key_pattern + ":condition_measure", antecedent.condition_measure)

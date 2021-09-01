@@ -9,12 +9,18 @@ class SwitchFunction(object):
 
     def register(self, user_id, device_id):
         try:
-            if self.r.exists("device:" + device_id + ":name") == 0:
-                self.r.rpush("user:" + user_id + ":switches", device_id)
-                key_pattern = "device:" + device_id
+            key_pattern = "device:" + device_id
+            if self.r.exists(key_pattern + ":name") == 0:
                 device_id_keys = self.r.lrange("user:" + user_id + ":switches")
                 device_name = "SWITCH " + str(len(device_id_keys))
                 self.r.set(key_pattern + ":name", device_name)
+                self.r.set(key_pattern + ":user_id", user_id)
+                self.r.set(key_pattern + ":measure", "-")
+                self.r.set(key_pattern + ":last_date_on", "-")
+                self.r.set(key_pattern + ":last_date_off", "-")
+                self.r.set(key_pattern + ":last_time_on", "-")
+                self.r.set(key_pattern + ":last_time_off", "-")
+                self.r.rpush("user:" + user_id + ":switches", device_id)
                 return "true"
             else:
                 return "false"
@@ -31,13 +37,15 @@ class SwitchFunction(object):
             if self.r.exists(key_pattern + ":rules") == 1:
                 dto.rules = self.r.lrange(key_pattern + ":rules")
             if self.r.exists(key_pattern + ":measure") == 1:
-                dto.measure = self.r.get(key_pattern + ":measure")
-                dto.color = "green"
-                dto.status = "connected"
-            else:
-                dto.measure = "-"
-                dto.color = "red"
-                dto.status = "disconnected"
+                measure = self.r.get(key_pattern + ":measure")
+                if measure == "-":
+                    dto.measure = measure
+                    dto.color = "yellow"
+                    dto.status = "initialization"
+                else:
+                    dto.measure = measure
+                    dto.color = "green"
+                    dto.status = "connected"
             dto.automatic = self.r.get(key_pattern + ":automatic")
             dto.manual_measure = self.r.get(key_pattern + ":manual_measure")
             dto.last_date_on = self.r.get(key_pattern + ":last_date_on")
@@ -48,18 +56,10 @@ class SwitchFunction(object):
             print(repr(error))
             return "error"
 
-    def get_device_slim(self, device_id):
+    def update_device(self, device_json):
         try:
             dto = Switch()
-            dto.device_id = device_id
-            dto.name = self.r.get("device:" + device_id + ":name")
-            return dto
-        except Exception as error:
-            print(repr(error))
-            return "error"
-
-    def update_device(self, dto):
-        try:
+            dto.json_mapping(device_json)
             key_pattern = "device:" + dto.device_id
             self.r.set(key_pattern + ":name", dto.name)
             self.r.set(key_pattern + ":automatic", dto.automatic)
@@ -74,6 +74,7 @@ class SwitchFunction(object):
             self.r.lrem("user:" + user_id + ":switches", device_id)
             key_pattern = "device:" + device_id
             self.r.delete(key_pattern + ":name")
+            self.r.delete(key_pattern + ":user_id")
             self.r.delete(key_pattern + ":measure")
             self.r.delete(key_pattern + ":manual_measure")
             self.r.delete(key_pattern + ":automatic")

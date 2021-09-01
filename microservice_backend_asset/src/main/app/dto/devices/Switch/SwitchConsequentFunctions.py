@@ -1,5 +1,6 @@
 from .SwitchConsequentDTO import SwitchConsequent
 
+
 class SwitchConsequentFunction(object):
     def __init__(self, redis):
         self.r = redis
@@ -41,6 +42,7 @@ class SwitchConsequentFunction(object):
     def set_consequent(self, user_id, rule_id, consequent):
         try:
             self.r.rpush("device:" + consequent.device_id + ":rules", rule_id)
+            self.r.rpush("user:" + user_id + ":rule:" + rule_id + ":device_consequents", consequent.device_id)
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_consequents:" + consequent.device_id
             self.r.set(key_pattern + ":device_name", consequent.device_name)
             self.r.set(key_pattern + ":delay", consequent.delay)

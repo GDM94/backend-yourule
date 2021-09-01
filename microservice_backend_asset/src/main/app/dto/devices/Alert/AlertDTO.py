@@ -1,3 +1,6 @@
+import json
+
+
 class Alert(object):
     def __init__(self):
         self.device_id = ""
@@ -7,8 +10,13 @@ class Alert(object):
         self.status = "connected"
         self.color = "green"
 
-    def constructor(self, device_id, name, email_list, rules):
-        self.device_id = device_id
-        self.name = name
-        self.email_list = email_list
-        self.rules = rules
+    def json_mapping(self, device_json):
+        x = json.loads(device_json)
+        if "device_id" in x.keys():
+            self.device_id = x["device_id"]
+        if "name" in x.keys():
+            self.name = x["name"]
+        if "rules" in x.keys():
+            self.rules = x["rules"]
+        if "email_list" in x.keys():
+            self.email_list = x["email_list"]

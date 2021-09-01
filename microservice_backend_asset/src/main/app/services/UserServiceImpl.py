@@ -3,8 +3,8 @@ from ..dto.LocationDTO import Location
 import requests
 from ..dto.Profile.ProfileDTO import ProfileDto
 from ..dto.Profile.ProfileFunctions import ProfileFunction
-from ..dto.Timer.TimerFunctions import TimerFunction
-from ..dto.Alert.AlertFunctions import AlertFunction
+from ..dto.devices.Timer.TimerFunctions import TimerFunction
+from ..dto.devices.Alert.AlertFunctions import AlertFunction
 
 
 class UserService(object):
