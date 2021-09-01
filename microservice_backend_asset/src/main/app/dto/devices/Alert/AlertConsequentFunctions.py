@@ -43,8 +43,10 @@ class AlertConsequentFunction(object):
             print(repr(error))
             return "error"
 
-    def set_consequent(self, user_id, rule_id, consequent):
+    def set_consequent(self, user_id, rule_id, consequent_json):
         try:
+            consequent = AlertConsequent()
+            consequent.json_mapping(consequent_json)
             self.r.rpush("device:" + consequent.device_id + ":rules", rule_id)
             self.r.rpush("user:" + user_id + ":rule:" + rule_id + ":device_consequents", consequent.device_id)
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_consequents:" + consequent.device_id

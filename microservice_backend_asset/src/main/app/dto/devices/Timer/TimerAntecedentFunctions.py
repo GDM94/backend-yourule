@@ -60,8 +60,10 @@ class TimerAntecedentFunction(object):
             print(repr(error))
             return "error"
 
-    def set_antecedent(self, user_id, rule_id, antecedent):
+    def set_antecedent(self, user_id, rule_id, antecedent_json):
         try:
+            antecedent = TimerAntecedent()
+            antecedent.json_mapping(antecedent_json)
             self.r.rpush("device:" + antecedent.device_id + ":rules", rule_id)
             self.r.rpush("user:" + user_id + ":rule:" + rule_id + ":device_antecedents", antecedent.device_id)
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + antecedent.device_id
@@ -77,9 +79,8 @@ class TimerAntecedentFunction(object):
             self.r.set(key_pattern + ":time_stop_value", antecedent.time_stop_value)
             self.r.set(key_pattern + ":check_time", antecedent.check_time)
             self.r.set(key_pattern + ":check_date", antecedent.check_date)
-            self.r.set(key_pattern + ":evaluation", antecedent.evaluation)
             self.r.set(key_pattern + ":order", antecedent.order)
-            return "true"
+            return antecedent
         except Exception as error:
             print(repr(error))
             return "error"

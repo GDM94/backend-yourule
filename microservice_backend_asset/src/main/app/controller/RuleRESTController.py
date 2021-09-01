@@ -85,53 +85,37 @@ def set_rule_name():
     user_id = request.args.get("user_id")
     rule_id = request.args.get("rule_id")
     rule_name = request.args.get("rule_name")
-    output = rule_service.set_new_name(user_id, rule_id, rule_name)
+    output = rule_service.update_rule_name(user_id, rule_id, rule_name)
     if output == "error":
         raise Exception()
     else:
         return output
 
 
-@rule.route('/set', methods=['POST'])
-@check_token
-def set_rule():
-    user_id = request.args.get("user_id")
-    payload = request.get_json()
-    rule_body = json.loads(payload["rule_json"])
-    output = rule_service.set_rule(user_id, rule_body)
-    if output == "error":
-        raise Exception()
-    else:
-        return output
-
-
-@rule.route('/set/antecedent', methods=['POST'])
+@rule.route('/add/antecedent', methods=['POST'])
 @check_token
 def set_rule_antecedent():
     user_id = request.args.get("user_id")
     rule_id = request.args.get("rule_id")
     device_id = request.args.get("device_id")
-    start_value = request.args.get("start_value")
-    stop_value = request.args.get("stop_value")
-    condition = request.args.get("condition")
-    measure = request.args.get("measure")
-    order = request.args.get("order")
-    antecedent = Antecedent(device_id, "", start_value, stop_value, condition, "false", measure, order)
-    output = rule_service.set_new_antecedent(user_id, rule_id, antecedent)
+    payload = request.get_json()
+    antecedent_json = json.loads(payload["antecedent_json"])
+    output = rule_service.add_rule_antecedent(user_id, rule_id, device_id, antecedent_json)
     if output == "error":
         raise Exception()
     else:
         return output
 
 
-@rule.route('/set/consequent', methods=['POST'])
+@rule.route('/add/consequent', methods=['POST'])
 @check_token
 def set_rule_consequent():
     user_id = request.args.get("user_id")
     rule_id = request.args.get("rule_id")
     device_id = request.args.get("device_id")
-    consequent = Consequent(device_id, "", "on", "off")
-    output = rule_service.set_new_consequent(user_id, rule_id, consequent)
+    payload = request.get_json()
+    consequent_json = json.loads(payload["consequent_json"])
+    output = rule_service.add_rule_consequent(user_id, rule_id, device_id, consequent_json)
     if output == "error":
         raise Exception()
     else:
