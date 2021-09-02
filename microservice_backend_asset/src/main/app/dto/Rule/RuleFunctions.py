@@ -63,30 +63,80 @@ class RuleFunction(object):
             return "error"
 
     def get_rule_antecedents(self, user_id, rule_id):
-        key_pattern = "user:"+user_id+":rule:"+rule_id
-        device_antecedents = self.r.lrange(key_pattern+":device_antecedents")
-        rule_antecedents = []
-        for device_id in device_antecedents:
+        try:
+            key_pattern = "user:"+user_id+":rule:"+rule_id
+            device_antecedents = self.r.lrange(key_pattern+":device_antecedents")
+            rule_antecedents = []
+            for device_id in device_antecedents:
+                antecedent = self.get_rule_antecedent_slim(user_id, rule_id, device_id)
+                if antecedent != "error":
+                    rule_antecedents.append(antecedent)
+                else:
+                    raise Exception("error retrieving antecedent")
+            return rule_antecedents
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
+    def get_rule_antecedent(self, user_id, rule_id, device_id):
+        try:
+            antecedent = {}
+            if "timer" in device_id:
+                antecedent = self.timer_antecedent_functions.get_antecedent(user_id, rule_id, device_id)
+            elif "WATERLEVEL" in device_id:
+                antecedent = self.waterlevel_antecedent_functions.get_antecedent(user_id, rule_id, device_id)
+            return antecedent
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
+    def get_rule_antecedent_slim(self, user_id, rule_id, device_id):
+        try:
             antecedent = {}
             if "timer" in device_id:
                 antecedent = self.timer_antecedent_functions.get_antecedent_slim(user_id, rule_id, device_id)
             elif "WATERLEVEL" in device_id:
                 antecedent = self.waterlevel_antecedent_functions.get_antecedent_slim(user_id, rule_id, device_id)
-            rule_antecedents.append(antecedent)
-        return rule_antecedents
+            return antecedent
+        except Exception as error:
+            print(repr(error))
+            return "error"
 
-    def get_rules_consequents(self, user_id, rule_id):
+    def get_rule_consequents(self, user_id, rule_id):
         key_pattern = "user:"+user_id+":rule:"+rule_id
         device_consequents = self.r.lrange(key_pattern+":device_consequents")
         rule_consequents = []
         for device_id in device_consequents:
+            consequent = self.get_rule_consequent_slim(user_id, rule_id, device_id)
+            if consequent != "error":
+                rule_consequents.append(consequent)
+            else:
+                raise Exception("error retrieving consequent")
+        return rule_consequents
+
+    def get_rule_consequent(self, user_id, rule_id, device_id):
+        try:
+            consequent = {}
+            if "alert" in device_id:
+                consequent = self.alert_consequent_functions.get_consequent(user_id, rule_id, device_id)
+            elif "SWITCH" in device_id:
+                consequent = self.switch_consequent_functions.get_consequent(user_id, rule_id, device_id)
+            return consequent
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
+    def get_rule_consequent_slim(self, user_id, rule_id, device_id):
+        try:
             consequent = {}
             if "alert" in device_id:
                 consequent = self.alert_consequent_functions.get_consequent_slim(user_id, rule_id, device_id)
             elif "SWITCH" in device_id:
                 consequent = self.switch_consequent_functions.get_consequent_slim(user_id, rule_id, device_id)
-            rule_consequents.append(consequent)
-        return rule_consequents
+            return consequent
+        except Exception as error:
+            print(repr(error))
+            return "error"
 
     def delete_rule(self, user_id, rule_id):
         key_pattern = "user:"+user_id+":rule:"+rule_id

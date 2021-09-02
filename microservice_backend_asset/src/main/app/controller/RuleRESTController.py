@@ -46,15 +46,54 @@ def get_rule_by_rule_id(rule_id):
         return json.dumps(output, default=lambda o: o.__dict__, indent=4)
 
 
-@rule.route("/delete/<rule_id>", methods=['DELETE'])
+@rule.route('/antecedents', methods=['GET'])
 @check_token
-def delete_rule_by_rule_id(rule_id):
+def get_antecedents_list():
     user_id = request.args.get("user_id")
-    output = rule_service.delete_rule(user_id, rule_id)
+    rule_id = request.args.get("rule_id")
+    output = rule_service.get_rule_antecedents(user_id, rule_id)
     if output == "error":
         raise Exception()
     else:
-        return output
+        return json.dumps(output, default=lambda o: o.__dict__, indent=4)
+
+
+@rule.route('/antecedent', methods=['GET'])
+@check_token
+def get_antecedent():
+    user_id = request.args.get("user_id")
+    rule_id = request.args.get("rule_id")
+    device_id = request.args.get("device_id")
+    output = rule_service.get_antecedent(user_id, rule_id, device_id)
+    if output == "error":
+        raise Exception()
+    else:
+        return json.dumps(output, default=lambda o: o.__dict__, indent=4)
+
+
+@rule.route('/consequents', methods=['GET'])
+@check_token
+def get_antecedents_list():
+    user_id = request.args.get("user_id")
+    rule_id = request.args.get("rule_id")
+    output = rule_service.get_rule_consequents(user_id, rule_id)
+    if output == "error":
+        raise Exception()
+    else:
+        return json.dumps(output, default=lambda o: o.__dict__, indent=4)
+
+
+@rule.route('/consequent', methods=['GET'])
+@check_token
+def get_antecedent():
+    user_id = request.args.get("user_id")
+    rule_id = request.args.get("rule_id")
+    device_id = request.args.get("device_id")
+    output = rule_service.get_consequent(user_id, rule_id, device_id)
+    if output == "error":
+        raise Exception()
+    else:
+        return json.dumps(output, default=lambda o: o.__dict__, indent=4)
 
 
 @rule.route('/create/<rule_name>', methods=['POST'])
@@ -94,7 +133,7 @@ def set_rule_name():
 
 @rule.route('/add/antecedent', methods=['POST'])
 @check_token
-def set_rule_antecedent():
+def add_rule_antecedent():
     user_id = request.args.get("user_id")
     rule_id = request.args.get("rule_id")
     device_id = request.args.get("device_id")
@@ -109,13 +148,54 @@ def set_rule_antecedent():
 
 @rule.route('/add/consequent', methods=['POST'])
 @check_token
-def set_rule_consequent():
+def add_rule_consequent():
     user_id = request.args.get("user_id")
     rule_id = request.args.get("rule_id")
     device_id = request.args.get("device_id")
     payload = request.get_json()
     consequent_json = json.loads(payload["consequent_json"])
     output = rule_service.add_rule_consequent(user_id, rule_id, device_id, consequent_json)
+    if output == "error":
+        raise Exception()
+    else:
+        return output
+
+
+@rule.route('/update/antecedent', methods=['POST'])
+@check_token
+def update_rule_antecedent():
+    user_id = request.args.get("user_id")
+    rule_id = request.args.get("rule_id")
+    device_id = request.args.get("device_id")
+    payload = request.get_json()
+    antecedent_json = json.loads(payload["antecedent_json"])
+    output = rule_service.update_rule_antecedent(user_id, rule_id, device_id, antecedent_json)
+    if output == "error":
+        raise Exception()
+    else:
+        return output
+
+
+@rule.route('/update/consequent', methods=['POST'])
+@check_token
+def update_rule_consequent():
+    user_id = request.args.get("user_id")
+    rule_id = request.args.get("rule_id")
+    device_id = request.args.get("device_id")
+    payload = request.get_json()
+    consequent_json = json.loads(payload["consequent_json"])
+    output = rule_service.update_rule_consequent(user_id, rule_id, device_id, consequent_json)
+    if output == "error":
+        raise Exception()
+    else:
+        return output
+
+
+@rule.route("/delete/<rule_id>", methods=['DELETE'])
+@check_token
+def delete_rule(rule_id):
+    user_id = request.args.get("user_id")
+    output = rule_service.delete_rule(user_id, rule_id)
     if output == "error":
         raise Exception()
     else:
