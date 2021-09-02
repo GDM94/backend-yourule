@@ -1,8 +1,6 @@
 import json
 from flask import request
 from flask import Blueprint
-from ..dto.AntecedentDTO import Antecedent
-from ..dto.ConsequentDTO import Consequent
 from .MQTTSubscriber import Subscriber
 from ..services.RuleServiceImpl import RuleService
 from .UserRESTController import check_token
