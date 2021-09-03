@@ -3,6 +3,7 @@ from ..devices.Timer.TimerAntecedentFunctions import TimerAntecedentFunction
 from ..devices.Alert.AlertConsequentFunctions import AlertConsequentFunction
 from ..devices.WaterLevel.WaterLevelAntecedentFunctions import WaterLevelAntecedentFunction
 from ..devices.Switch.SwitchConsequentFunctions import SwitchConsequentFunction
+from ..devices.Button.ButtonAntecedentFunctions import ButtonAntecedentFunction
 
 
 class RuleFunction(object):
@@ -12,6 +13,7 @@ class RuleFunction(object):
         self.alert_consequent_functions = AlertConsequentFunction(redis)
         self.waterlevel_antecedent_functions = WaterLevelAntecedentFunction(redis)
         self.switch_consequent_functions = SwitchConsequentFunction(redis)
+        self.button_antecedent_functions = ButtonAntecedentFunction(redis)
 
     def create_rule(self, user_id, rule_name):
         try:
@@ -85,6 +87,8 @@ class RuleFunction(object):
                 antecedent = self.timer_antecedent_functions.get_antecedent(user_id, rule_id, device_id)
             elif "WATERLEVEL" in device_id:
                 antecedent = self.waterlevel_antecedent_functions.get_antecedent(user_id, rule_id, device_id)
+            elif "BUTTON" in device_id:
+                antecedent = self.button_antecedent_functions.get_antecedent(user_id, rule_id, device_id)
             return antecedent
         except Exception as error:
             print(repr(error))
@@ -97,6 +101,8 @@ class RuleFunction(object):
                 antecedent = self.timer_antecedent_functions.get_antecedent_slim(user_id, rule_id, device_id)
             elif "WATERLEVEL" in device_id:
                 antecedent = self.waterlevel_antecedent_functions.get_antecedent_slim(user_id, rule_id, device_id)
+            elif "BUTTON" in device_id:
+                antecedent = self.button_antecedent_functions.get_antecedent_slim(user_id, rule_id, device_id)
             return antecedent
         except Exception as error:
             print(repr(error))
@@ -161,6 +167,8 @@ class RuleFunction(object):
                 return self.timer_antecedent_functions.delete_antecedent(user_id, rule_id, device_id)
             elif "WATERLEVEL" in device_id:
                 return self.waterlevel_antecedent_functions.delete_antecedent(user_id, rule_id, device_id)
+            elif "BUTTON" in device_id:
+                return self.button_antecedent_functions.delete_antecedent(user_id, rule_id, device_id)
         except Exception as error:
             print(repr(error))
             return "error"
@@ -211,6 +219,8 @@ class RuleFunction(object):
                 antecedent = self.timer_antecedent_functions.set_antecedent(user_id, rule_id, antecedent_json)
             elif "WATERLEVEL" in device_id:
                 antecedent = self.waterlevel_antecedent_functions.set_antecedent(user_id, rule_id, antecedent_json)
+            elif "BUTTON" in device_id:
+                antecedent = self.button_antecedent_functions.set_antecedent(user_id, rule_id, antecedent_json)
             return antecedent
         except Exception as error:
             print(repr(error))
