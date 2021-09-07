@@ -69,7 +69,7 @@ class ButtonAntecedentFunction(object):
             print(repr(error))
             return "error"
 
-    def evaluate_antecedent(self, user_id, rule_id, device_id, measure):
+    def antecedent_evaluation(self, user_id, rule_id, device_id, measure):
         try:
             measure_evaluation = self.evaluate_measure(measure)
             evaluation = "false"

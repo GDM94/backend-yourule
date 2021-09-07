@@ -6,7 +6,8 @@ from flask import request
 from werkzeug.datastructures import ImmutableMultiDict
 import jwt
 from .configuration.config import read_config
-from ..services.RedisConnectionImpl import RedisConnection
+from ruleapp.DBconnection.RedisConnectionImpl import RedisConnection
+
 
 config = read_config()
 redis = RedisConnection(config)

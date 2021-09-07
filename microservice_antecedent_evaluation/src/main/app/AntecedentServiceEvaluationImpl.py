@@ -1,6 +1,6 @@
 from .dto.AntecedentEvaluationDTO import AntecedentEvaluation
-from .dto.devices.WaterLevel.WaterLevelAntecedentFunctions import WaterLevelAntecedentFunction
-from .dto.devices.Button.ButtonAntecedentFunctions import ButtonAntecedentFunction
+from ruleapp.Devices.WaterLevel.WaterLevelAntecedentFunctions import WaterLevelAntecedentFunction
+from ruleapp.Devices.Button.ButtonAntecedentFunctions import ButtonAntecedentFunction
 
 
 class AntecedentServiceEvaluation(object):

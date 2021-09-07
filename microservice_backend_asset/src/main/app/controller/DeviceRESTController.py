@@ -8,7 +8,7 @@ from .RabbitMqClient import RabbitMQ
 import random
 import string
 from .configuration.config import read_config
-from ..services.RedisConnectionImpl import RedisConnection
+from ruleapp.DBconnection.RedisConnectionImpl import RedisConnection
 
 config = read_config()
 redis = RedisConnection(config)
