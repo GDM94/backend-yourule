@@ -68,9 +68,8 @@ class RabbitMQ(object):
         device_id = payload["device_id"]
         measure = payload["measure"]
         rules = payload["rules"]
-        trigger = self.service.antecedent_evaluation(user_id, device_id, measure, rules)
-
-        if len(trigger.rules) > 0:
-            output = json.dumps(trigger, default=lambda o: o.__dict__)
-            self.publish(output)
+        output_rules = self.service.antecedent_evaluation(user_id, device_id, measure, rules)
+        if len(output_rules) > 0:
+            output = {"user_id": user_id, "rules": output_rules}
+            self.publish(json.dumps(output))
         ch.basic_ack(delivery_tag=method.delivery_tag)

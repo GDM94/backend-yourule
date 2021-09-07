@@ -1,4 +1,3 @@
-from .dto.AntecedentEvaluationDTO import AntecedentEvaluation
 from ruleapp.Devices.WaterLevel.WaterLevelAntecedentFunctions import WaterLevelAntecedentFunction
 from ruleapp.Devices.Button.ButtonAntecedentFunctions import ButtonAntecedentFunction
 
@@ -10,7 +9,7 @@ class AntecedentServiceEvaluation(object):
         self.button_functions = ButtonAntecedentFunction(redis)
 
     def antecedent_evaluation(self, user_id, device_id, measure, rules):
-        output = AntecedentEvaluation(user_id, [])
+        output = []
         try:
             for rule_id in rules:
                 trigger = "false"
@@ -19,7 +18,7 @@ class AntecedentServiceEvaluation(object):
                 elif "BUTTON" in device_id:
                     trigger = self.button_functions.antecedent_evaluation(user_id, rule_id, device_id, measure)
                 if trigger == "true":
-                    output.rules.append(rule_id)
+                    output.append(rule_id)
             return output
         except Exception as error:
             print(repr(error))

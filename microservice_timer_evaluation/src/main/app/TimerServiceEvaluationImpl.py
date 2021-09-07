@@ -1,12 +1,13 @@
 import json
 from datetime import datetime
-from .dto.AntecedentEvaluationDTO import AntecedentEvaluation
+from ruleapp.Devices.Timer.TimerAntecedentFunctions import TimerAntecedentFunction
 
 
 class TimerServiceEvaluation(object):
     def __init__(self, mqtt_client, redis):
         self.r = redis
         self.mqtt_client = mqtt_client
+        self.timer_antecedent_functions = TimerAntecedentFunction(redis)
 
     def get_all_users(self):
         users_keys = self.r.scan("user:name:*:id")
@@ -28,39 +29,12 @@ class TimerServiceEvaluation(object):
     def timer_trigger(self):
         user_id_list = self.get_all_users()
         for user_id in user_id_list:
-            output = AntecedentEvaluation(user_id, [])
+            output = {"user_id": user_id, "rules": []}
             rule_id_list = self.get_rules_with_timer(user_id)
             for rule_id in rule_id_list:
-                trigger = self.timer_evaluation(user_id, rule_id)
-                if trigger:
-                    output.rules.append(rule_id)
-            if len(output.rules) > 0:
-                payload = json.dumps(output, default=lambda o: o.__dict__)
+                trigger = self.timer_antecedent_functions.antecedent_evaluation(user_id, rule_id)
+                if trigger == "true":
+                    output["rules"].append(rule_id)
+            if len(output["rules"]) > 0:
+                payload = json.dumps(output)
                 self.mqtt_client.publish(payload)
-
-    def timer_evaluation(self, user_id, rule_id):
-        trigger = False
-        timer_id = "timer" + user_id
-        pattern_key = "user:" + user_id + ":rule:" + rule_id + ":antecedent:" + timer_id
-        evaluation = "false"
-        old_evaluation = self.r.get(pattern_key + ":evaluation")
-        start_value_str = self.r.get(pattern_key + ":start_value")
-        start_value = datetime.strptime(start_value_str, '%H:%M').time()
-        measure_str = datetime.now().strftime("%H:%M")
-        measure_now = datetime.strptime(measure_str, '%H:%M').time()
-        condition = self.r.get(pattern_key + ":condition")
-        if condition == "between":
-            stop_value_str = self.r.get(pattern_key + ":stop_value")
-            stop_value = datetime.strptime(stop_value_str, '%H:%M').time()
-            if start_value <= measure_now < stop_value:
-                evaluation = "true"
-        elif condition == ">":
-            if measure_now > start_value:
-                evaluation = "true"
-        elif condition == "<":
-            if measure_now < start_value:
-                evaluation = "true"
-        if evaluation != old_evaluation:
-            self.r.set(pattern_key + ":evaluation", evaluation)
-            trigger = True
-        return trigger

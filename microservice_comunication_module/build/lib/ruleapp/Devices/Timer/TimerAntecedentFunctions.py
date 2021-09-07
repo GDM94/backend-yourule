@@ -86,8 +86,9 @@ class TimerAntecedentFunction(object):
             print(repr(error))
             return "error"
 
-    def evaluate_antecedent(self, user_id, rule_id, device_id):
+    def antecedent_evaluation(self, user_id, rule_id):
         try:
+            device_id = "timer-"+user_id
             time_evaluation = self.evaluate_time(user_id, rule_id, device_id)
             date_evaluation = self.evaluate_date(user_id, rule_id, device_id)
             evaluation = "false"
