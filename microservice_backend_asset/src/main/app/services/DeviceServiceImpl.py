@@ -1,8 +1,8 @@
 import json
-from ..dto.devices.Switch.SwitchFuntions import SwitchFunction
-from ..dto.devices.WaterLevel.WaterLevelFunctions import WaterLevelFunction
-from ..dto.devices.Timer.TimerFunctions import TimerFunction
-from ..dto.devices.Alert.AlertFunctions import AlertFunction
+from ruleapp.Devices.WaterLevel.WaterLevelFunctions import WaterLevelFunction
+from ruleapp.Devices.Timer.TimerFunctions import TimerFunction
+from ruleapp.Devices.Switch.SwitchFuntions import SwitchFunction
+from ruleapp.Devices.Alert.AlertFunctions import AlertFunction
 
 
 class DeviceService(object):

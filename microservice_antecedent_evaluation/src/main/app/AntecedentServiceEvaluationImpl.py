@@ -1,46 +1,26 @@
 from .dto.AntecedentEvaluationDTO import AntecedentEvaluation
+from .dto.devices.WaterLevel.WaterLevelAntecedentFunctions import WaterLevelAntecedentFunction
+from .dto.devices.Button.ButtonAntecedentFunctions import ButtonAntecedentFunction
 
 
 class AntecedentServiceEvaluation(object):
     def __init__(self, redis):
         self.r = redis
+        self.waterlevel_functions = WaterLevelAntecedentFunction(redis)
+        self.button_functions = ButtonAntecedentFunction(redis)
 
-    def antecedent_evaluation(self, trigger):
-        output = AntecedentEvaluation(trigger["user_id"], [])
+    def antecedent_evaluation(self, user_id, device_id, measure, rules):
+        output = AntecedentEvaluation(user_id, [])
         try:
-            for rule_id in trigger["rules"]:
-                if self.r.exists("user:" + trigger["user_id"] + ":rule:" + rule_id + ":name") == 1:
-                    key_pattern = "user:" + trigger["user_id"] + ":rule:" + rule_id + ":antecedent:" + trigger[
-                        "device_id"]
-                    evaluation = "false"
-                    old_evaluation = self.r.get(key_pattern + ":evaluation")
-                    condition = self.r.get(key_pattern + ":condition")
-                    start_value = self.r.get(key_pattern + ":start_value")
-                    measure = trigger["measure"]
-                    if condition == "between":
-                        stop_value = self.r.get(key_pattern + ":stop_value")
-                        if int(start_value) <= int(measure) < int(stop_value):
-                            evaluation = "true"
-                    elif condition == ">":
-                        if int(measure) > int(start_value):
-                            evaluation = "true"
-                    elif condition == "<":
-                        if int(measure) < int(start_value):
-                            evaluation = "true"
-                    elif condition == "=":
-                        if measure == start_value:
-                            evaluation = "true"
-                    elif condition == "isteresi":
-                        stop_value = self.r.get(key_pattern + ":stop_value")
-                        if int(measure) <= int(start_value):
-                            evaluation = "true"
-                        if old_evaluation == "true" and int(measure) <= int(stop_value):
-                            evaluation = "true"
-                    if evaluation != old_evaluation:
-                        self.r.set(key_pattern + ":evaluation", evaluation)
-                        output.rules.append(rule_id)
+            for rule_id in rules:
+                trigger = "false"
+                if "WATERLEVEL" in device_id:
+                    trigger = self.waterlevel_functions.antecedent_evaluation(user_id, rule_id, device_id, measure)
+                elif "BUTTON" in device_id:
+                    trigger = self.button_functions.antecedent_evaluation(user_id, rule_id, device_id, measure)
+                if trigger == "true":
+                    output.rules.append(rule_id)
+            return output
         except Exception as error:
             print(repr(error))
-            return output
-        else:
             return output
