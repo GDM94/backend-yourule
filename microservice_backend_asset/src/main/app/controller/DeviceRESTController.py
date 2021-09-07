@@ -137,3 +137,14 @@ def delete_alert_email(idx):
         raise Exception()
     else:
         return output
+
+@device.route('/rule/<device_id>', methods=['GET'])
+@check_token
+def get_rules_id_by_device_id(device_id):
+    user_id = request.args.get("user_id")
+    output = device_service.get_device_rules(device_id)
+    if output == "error":
+        raise Exception()
+    else:
+        json_output = {"rules": output}
+        return json.dumps(json_output)

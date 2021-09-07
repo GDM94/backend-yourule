@@ -1,10 +1,9 @@
-import jwt
-from ..dto.LocationDTO import Location
+from ruleapp.LocationDTO import Location
 import requests
-from ..dto.Profile.ProfileDTO import ProfileDto
-from ..dto.Profile.ProfileFunctions import ProfileFunction
-from ..dto.devices.Timer.TimerFunctions import TimerFunction
-from ..dto.devices.Alert.AlertFunctions import AlertFunction
+from ruleapp.Profile.ProfileDTO import ProfileDto
+from ruleapp.Profile.ProfileFunctions import ProfileFunction
+from ruleapp.Devices.Alert.AlertFunctions import AlertFunction
+from ruleapp.Devices.Timer.TimerFunctions import TimerFunction
 
 
 class UserService(object):

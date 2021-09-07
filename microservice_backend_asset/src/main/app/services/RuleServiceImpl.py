@@ -1,5 +1,5 @@
 import json
-from ..dto.Rule.RuleFunctions import RuleFunction
+from ruleapp.Rule.RuleFunctions import RuleFunction
 
 
 class RuleService(object):

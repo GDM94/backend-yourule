@@ -130,3 +130,12 @@ class DeviceService(object):
 
     def modify_alert_email(self, user_id, email, idx):
         return self.alert_functions.modify_alert_email(user_id, email, idx)
+
+    def get_device_rules(self, user_id, device_id):
+        try:
+            output = list(self.r.smembers("device:" + device_id + ":rules"))
+            return output
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
