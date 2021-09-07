@@ -6,6 +6,8 @@ ruleapp.egg-info/PKG-INFO
 ruleapp.egg-info/SOURCES.txt
 ruleapp.egg-info/dependency_links.txt
 ruleapp.egg-info/top_level.txt
+ruleapp/DBconnection/RedisConnectionImpl.py
+ruleapp/DBconnection/__init__.py
 ruleapp/Devices/DeviceEvaluationDTO.py
 ruleapp/Devices/__init__.py
 ruleapp/Devices/Alert/AlertConsequentDTO.py

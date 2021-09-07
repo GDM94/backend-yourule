@@ -1,7 +1,7 @@
-from .dto.devices.DeviceEvaluationDTO import DeviceEvaluation
-from .dto.devices.WaterLevel.WaterLevelFunctions import WaterLevelFunction
-from .dto.devices.Switch.SwitchFuntions import SwitchFunction
-from .dto.devices.Button.ButtonFunctions import ButtonFunction
+from ruleapp.Devices.DeviceEvaluationDTO import DeviceEvaluation
+from ruleapp.Devices.WaterLevel.WaterLevelFunctions import WaterLevelFunction
+from ruleapp.Devices.Button.ButtonFunctions import ButtonFunction
+from ruleapp.Devices.Switch.SwitchFuntions import SwitchFunction
 
 
 class DeviceServiceEvaluation(object):
