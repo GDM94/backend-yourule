@@ -12,40 +12,37 @@ class UserService(object):
         self.r = redis
         self.api_key = config.get("OPEN_WEATHER", "api_key")
         self.api_location_url = config.get("OPEN_WEATHER", "api_location_url")
-        self.profile_functions = ProfileFunction(redis, config)
+        password_key = config.get("OAUTH", "password_key")
+        token_key = config.get("OAUTH", "token_key")
+        self.profile_functions = ProfileFunction(redis, password_key, token_key)
         self.timer_functions = TimerFunction(redis)
         self.alert_functions = AlertFunction(redis)
 
     def user_login(self, profile_map):
         try:
-            output = {"tokenId": "false"}
             profile = ProfileDto()
             profile.constructor_map(profile_map)
-            token = self.profile_functions.login(profile)
-            output["tokenId"] = token
+            output = self.profile_functions.login(profile)
+            return output
         except Exception as error:
             print(repr(error))
             return "error"
-        else:
-            return output
 
     def user_registration(self, profile_map):
         try:
-            output = {"tokenId": "false"}
             profile = ProfileDto()
             profile.constructor_map(profile_map)
-            token = self.profile_functions.login(profile)
-            output["tokenId"] = token
-            if profile.user_id:
+            output = self.profile_functions.register(profile)
+            print(output)
+            if output != "false" and output != "error":
                 self.timer_functions.register(profile.user_id)
                 # self.weather_registration(profile.user_id)
                 self.alert_functions.register(profile.user_id, profile.email)
                 self.set_user_location(profile.user_id, "Torino", "IT", "45.1333", "7.3667")
+            return output
         except Exception as error:
             print(repr(error))
             return "error"
-        else:
-            return output
 
     def get_user_id(self, user_name):
         try:

@@ -60,10 +60,10 @@ class WaterLevelFunction(object):
             print(repr(error))
             return "error"
 
-    def update_device(self, device_json):
+    def update_device(self, new_device):
         try:
             dto = WaterLevel()
-            dto.json_mapping(device_json)
+            dto.device_mapping(new_device)
             key_pattern = "device:" + dto.device_id
             self.r.set(key_pattern + ":name", dto.name)
             self.r.set(key_pattern + ":setting:max", dto.setting_max)

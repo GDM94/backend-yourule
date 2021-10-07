@@ -1,4 +1,3 @@
-README.md
 setup.py
 ruleapp/LocationDTO.py
 ruleapp/__init__.py

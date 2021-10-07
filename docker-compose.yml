@@ -8,7 +8,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - 5000:5000
+      - "5000:5000"
     depends_on:
       - redis
       - rabbitmq
@@ -94,14 +94,14 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - 15672:15672
-      - 5672:5672
+      - "15672:15672"
+      - "5672:5672"
 
   redis:
     container_name: redis
     image: dimax94/redis
     ports:
-      - 6379:6379
+      - "6379:6379"
 
   frontend:
     container_name: frontend
@@ -110,7 +110,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - 8084:8084
+      - "8084:8084"
 
   reverse_proxy:
     container_name: reverse_proxy
@@ -118,7 +118,7 @@ services:
     depends_on:
       - backend_asset
     ports:
-      - 8081:8081
+      - "8081:8081"
 
 
 

@@ -18,30 +18,44 @@ class DeviceService(object):
         self.timer_functions = TimerFunction(redis)
         self.alert_functions = AlertFunction(redis)
 
+    def get_device(self, device_id):
+        try:
+            device = {}
+            if "SWITCH" in device_id:
+                device = self.switch_functions.get_device(device_id)
+            elif "WATERLEVEL" in device_id:
+                device = self.waterlevel_functions.get_device(device_id)
+            elif "timer" in device_id:
+                device = self.timer_functions.get_device(device_id)
+            elif "alert" in device_id:
+                device = self.alert_functions.get_device(device_id)
+            return device
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
     def device_registration(self, user_id, device_id):
         try:
-            prefix = device_id.split("-")[0]
-            if prefix == "SWITCH":
+            if "SWITCH" in device_id:
                 self.switch_functions.register(user_id, device_id)
-            elif prefix == "WATERLEVEL":
+            elif "WATERLEVEL" in device_id:
                 self.waterlevel_functions.register(user_id, device_id)
             return "true"
         except Exception as error:
             print(repr(error))
             return "error"
 
-    def device_update(self, user_id, device_id, device_json):
+    def device_update(self, device_id, new_device):
         try:
-            prefix = device_id.split("-")[0]
-            if prefix == "SWITCH":
-                self.switch_functions.update_device(device_json)
-            elif prefix == "WATERLEVEL":
-                self.waterlevel_functions.update_device(device_json)
-            elif prefix == "timer":
-                self.timer_functions.update_device(device_json)
-            elif prefix == "alert":
-                self.alert_functions.update_device(device_json)
-            return "updated"
+            if "SWITCH" in device_id:
+                self.switch_functions.update_device(new_device)
+            elif "WATERLEVEL" in device_id:
+                self.waterlevel_functions.update_device(new_device)
+            elif "timer" in device_id:
+                self.timer_functions.update_device(new_device)
+            elif "alert" in device_id:
+                self.alert_functions.update_device(new_device)
+            return "true"
         except Exception as error:
             print(repr(error))
             return "error"
@@ -74,7 +88,7 @@ class DeviceService(object):
             for device_id in device_id_keys:
                 key_pattern = "device:" + device_id
                 device_name = self.r.get(key_pattern + ":name")
-                output.append(device_name)
+                output.append({"device_id": device_id, "name": device_name})
         except Exception as error:
             print(repr(error))
             return "error"
@@ -89,7 +103,7 @@ class DeviceService(object):
             for device_id in device_id_keys:
                 key_pattern = "device:" + device_id
                 device_name = self.r.get(key_pattern + ":name")
-                output.append(device_name)
+                output.append({"device_id": device_id, "name": device_name})
         except Exception as error:
             print(repr(error))
             return "error"
@@ -138,4 +152,3 @@ class DeviceService(object):
         except Exception as error:
             print(repr(error))
             return "error"
-

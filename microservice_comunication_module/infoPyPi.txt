@@ -1,0 +1,4 @@
+1) To create a source archive and a wheel for your package (remeber to change the version in setup)
+	python setup.py sdist bdist_wheel
+2) publish
+	twine upload dist/*

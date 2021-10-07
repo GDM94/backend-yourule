@@ -1,5 +1,3 @@
-import json
-
 
 class SwitchConsequent(object):
     def __init__(self):
@@ -12,13 +10,8 @@ class SwitchConsequent(object):
         self.order = ""
         self.automatic = "true"
 
-    def json_mapping(self, device_json):
-        x = json.loads(device_json)
-        if "device_id" in x.keys():
-            self.device_id = x["device_id"]
-        if "device_name" in x.keys():
-            self.device_name = x["device_name"]
-        if "delay" in x.keys():
-            self.delay = x["delay"]
-        if "order" in x.keys():
-            self.order = x["order"]
+    def consequent_mapping(self, consequent):
+        self.device_id = consequent["device_id"]
+        self.device_name = consequent["device_name"]
+        self.delay = consequent["delay"]
+        self.order = consequent["order"]

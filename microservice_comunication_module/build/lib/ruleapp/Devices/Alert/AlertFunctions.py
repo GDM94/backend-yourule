@@ -43,10 +43,10 @@ class AlertFunction(object):
                 for email in email_list:
                     self.r.lrem(key_pattern + ":email_list", email)
 
-    def update_device(self, device_json):
+    def update_device(self, new_device):
         try:
             dto = Alert()
-            dto.json_mapping(device_json)
+            dto.device_mapping(new_device)
             key_pattern = "device:" + dto.device_id
             self.r.set(key_pattern + ":name", dto.name)
             self.delete_all_email(dto.device_id)

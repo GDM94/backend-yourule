@@ -4,7 +4,7 @@ import time
 import random
 import string
 from configuration.config import read_config
-from app.RedisConnectionImpl import RedisConnection
+from ruleapp.DBconnection.RedisConnectionImpl import RedisConnection
 
 client_id = random_client_id = 'rule_subscriber'.join(random.choices(string.ascii_letters + string.digits, k=8))
 config = read_config()

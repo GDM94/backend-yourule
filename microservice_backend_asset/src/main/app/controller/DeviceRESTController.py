@@ -21,6 +21,16 @@ rabbitmq.start_connection()
 device_service = DeviceService(mqtt_client, rabbitmq, redis, config)
 
 
+@device.route('/get/<device_id>', methods=['GET'])
+@check_token
+def get_device(device_id):
+    output = device_service.get_device(device_id)
+    if output == "error":
+        raise Exception()
+    else:
+        return json.dumps(output)
+
+
 @device.route('/register', methods=['POST'])
 @check_token
 def device_registration():
@@ -35,7 +45,7 @@ def device_registration():
 
 @device.route('/get/antecedents', methods=['GET'])
 @check_token
-def get_antecedent_by_user():
+def get_all_antecedents():
     user_id = request.args.get("user_id")
     output = device_service.get_all_sensors(user_id)
     if output == "error":
@@ -46,9 +56,8 @@ def get_antecedent_by_user():
 
 @device.route('/get/consequents', methods=['GET'])
 @check_token
-def get_consequent_by_user():
+def get_all_consequents():
     user_id = request.args.get("user_id")
-    print(user_id)
     output = device_service.get_all_switches(user_id)
     if output == "error":
         raise Exception()
@@ -67,14 +76,12 @@ def delete_device(device_id):
         return output
 
 
-@device.route('/update', methods=['POST'])
+@device.route('/update/<device_id>', methods=['POST'])
 @check_token
-def device_update():
-    user_id = request.args.get("user_id")
-    device_id = request.args.get("device_id")
+def device_update(device_id):
     payload = request.get_json()
-    device_json = json.loads(payload["device_json"])
-    output = device_service.device_update(user_id, device_id, device_json)
+    new_device = json.loads(payload)
+    output = device_service.device_update(device_id, new_device)
     if output == "error":
         raise Exception()
     else:
@@ -137,14 +144,3 @@ def delete_alert_email(idx):
         raise Exception()
     else:
         return output
-
-@device.route('/rule/<device_id>', methods=['GET'])
-@check_token
-def get_rules_id_by_device_id(device_id):
-    user_id = request.args.get("user_id")
-    output = device_service.get_device_rules(device_id)
-    if output == "error":
-        raise Exception()
-    else:
-        json_output = {"rules": output}
-        return json.dumps(json_output)

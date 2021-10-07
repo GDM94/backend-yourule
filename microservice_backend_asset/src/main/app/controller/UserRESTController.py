@@ -8,7 +8,6 @@ import jwt
 from .configuration.config import read_config
 from ruleapp.DBconnection.RedisConnectionImpl import RedisConnection
 
-
 config = read_config()
 redis = RedisConnection(config)
 user = Blueprint('user', __name__)
@@ -19,13 +18,13 @@ user_service = UserService(secret_key, redis, config)
 def check_token(f):
     @wraps(f)
     def wrap(*args, **kwargs):
-        if not request.headers.get('Authorization'):
+        if not request.headers.get('token'):
             return {'message': 'No token provided'}, 400
         try:
             params = request.args.to_dict()
-            token_id = request.headers['Authorization']
+            token_id = request.headers['token']
             claims = jwt.decode(token_id, secret_key, algorithms=["HS256"])
-            params["user_id"] = claims["uid"]
+            params["user_id"] = claims["user_id"]
             request.args = ImmutableMultiDict(params)
         except Exception as error:
             print(repr(error))
@@ -42,11 +41,10 @@ def user_login():
         access_token = request.args.get("access_token")
         profile_map = jwt.decode(access_token, secret_key, algorithms=["HS256"])
         output = user_service.user_login(profile_map)
+        return output
     except Exception as error:
         print(repr(error))
         raise Exception()
-    else:
-        return json.dumps(output)
 
 
 @user.route('/registration', methods=["GET"])
@@ -55,12 +53,10 @@ def user_registration():
         access_token = request.args.get("access_token")
         profile_map = jwt.decode(access_token, secret_key, algorithms=["HS256"])
         output = user_service.user_registration(profile_map)
-        print(output)
+        return output
     except Exception as error:
         print(repr(error))
         raise Exception()
-    else:
-        return json.dumps(output)
 
 
 @user.route('/get/id/<user_name>', methods=["GET"])

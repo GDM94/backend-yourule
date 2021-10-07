@@ -60,7 +60,7 @@ def get_antecedent():
 
 @rule.route('/consequents', methods=['GET'])
 @check_token
-def get_antecedents_list():
+def get_consequent_list():
     user_id = request.args.get("user_id")
     rule_id = request.args.get("rule_id")
     output = rule_service.get_rule_consequents(user_id, rule_id)
@@ -72,7 +72,7 @@ def get_antecedents_list():
 
 @rule.route('/consequent', methods=['GET'])
 @check_token
-def get_antecedent():
+def get_consequent():
     user_id = request.args.get("user_id")
     rule_id = request.args.get("rule_id")
     device_id = request.args.get("device_id")

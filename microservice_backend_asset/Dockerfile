@@ -9,6 +9,7 @@ RUN pip install pika;
 RUN pip install gunicorn;
 RUN pip install requests;
 RUN pip install cryptography;
+RUN pip install ruleapp;
 
 
 ADD ./src /backend/microservice_backend_asset/src/

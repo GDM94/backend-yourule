@@ -6,7 +6,7 @@ from ..DeviceEvaluationDTO import DeviceEvaluation
 class SwitchFunction(object):
     def __init__(self, redis):
         self.r = redis
-        self.switch_consequent_functions = SwitchConsequentFunction()
+        self.switch_consequent_functions = SwitchConsequentFunction(redis)
 
     def register(self, user_id, device_id):
         try:
@@ -57,10 +57,10 @@ class SwitchFunction(object):
             print(repr(error))
             return "error"
 
-    def update_device(self, device_json):
+    def update_device(self, new_device):
         try:
             dto = Switch()
-            dto.json_mapping(device_json)
+            dto.device_mapping(new_device)
             key_pattern = "device:" + dto.device_id
             self.r.set(key_pattern + ":name", dto.name)
             self.r.set(key_pattern + ":automatic", dto.automatic)

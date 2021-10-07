@@ -14,13 +14,13 @@ class ProfileDto(object):
         self.password = password
 
     def constructor_map(self, profile_map):
-        if "email" in profile_map.keys:
+        if "email" in profile_map.keys():
             self.email = profile_map["email"]
-        if "name" in profile_map.keys:
+        if "name" in profile_map.keys():
             self.name = profile_map["name"]
-        if "surname" in profile_map.keys:
+        if "surname" in profile_map.keys():
             self.surname = profile_map["surname"]
-        if "password" in profile_map.keys:
+        if "password" in profile_map.keys():
             self.password = profile_map["password"]
 
 

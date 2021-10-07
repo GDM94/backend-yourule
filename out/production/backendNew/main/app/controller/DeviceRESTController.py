@@ -8,7 +8,7 @@ from .RabbitMqClient import RabbitMQ
 import random
 import string
 from .configuration.config import read_config
-from ..services.RedisConnectionImpl import RedisConnection
+from ruleapp.DBconnection.RedisConnectionImpl import RedisConnection
 
 config = read_config()
 redis = RedisConnection(config)
@@ -21,23 +21,22 @@ rabbitmq.start_connection()
 device_service = DeviceService(mqtt_client, rabbitmq, redis, config)
 
 
+@device.route('/get/<device_id>', methods=['GET'])
+@check_token
+def get_device(device_id):
+    output = device_service.get_device(device_id)
+    if output == "error":
+        raise Exception()
+    else:
+        return json.dumps(output)
+
+
 @device.route('/register', methods=['POST'])
 @check_token
 def device_registration():
     user_id = request.args.get("user_id")
     device_id = request.args.get("device_id")
-    device_name = request.args.get("device_name")
-    output = device_service.device_registration(user_id, device_id, device_name)
-    if output == "error":
-        raise Exception()
-    else:
-        return output
-
-
-@device.route('/setting/<device_id>/<max_measure>/<error>', methods=['POST'])
-@check_token
-def device_update_setting(device_id, max_measure, error):
-    output = device_service.device_update_setting(device_id, max_measure, error)
+    output = device_service.device_registration(user_id, device_id)
     if output == "error":
         raise Exception()
     else:
@@ -46,9 +45,9 @@ def device_update_setting(device_id, max_measure, error):
 
 @device.route('/get/antecedents', methods=['GET'])
 @check_token
-def get_antecedent_by_user():
+def get_all_antecedents():
     user_id = request.args.get("user_id")
-    output = device_service.get_user_antecedent_list(user_id)
+    output = device_service.get_all_sensors(user_id)
     if output == "error":
         raise Exception()
     else:
@@ -57,10 +56,10 @@ def get_antecedent_by_user():
 
 @device.route('/get/consequents', methods=['GET'])
 @check_token
-def get_consequent_by_user():
+def get_all_consequents():
     user_id = request.args.get("user_id")
     print(user_id)
-    output = device_service.get_user_consequent_list(user_id)
+    output = device_service.get_all_switches(user_id)
     if output == "error":
         raise Exception()
     else:
@@ -78,50 +77,16 @@ def delete_device(device_id):
         return output
 
 
-@device.route('/update', methods=['POST'])
+@device.route('/update/<device_id>', methods=['POST'])
 @check_token
-def device_update():
-    device_id = request.args.get("device_id")
-    device_name = request.args.get("device_name")
-    max_measure = request.args.get("setting")
-    error = request.args.get("error")
-    output = device_service.device_update(device_id, device_name, max_measure, error)
+def device_update(device_id):
+    payload = request.get_json()
+    new_device = json.loads(payload)
+    output = device_service.device_update(device_id, new_device)
     if output == "error":
         raise Exception()
     else:
         return output
-
-
-@device.route('/measure/<device_id>', methods=['GET'])
-@check_token
-def get_device_measure(device_id):
-    output = device_service.get_device_measure(device_id)
-    if output == "error":
-        raise Exception()
-    else:
-        return output
-
-
-@device.route('/antecedent/id/<device_id>', methods=['GET'])
-@check_token
-def get_antecedent_by_id(device_id):
-    user_id = request.args.get("user_id")
-    output = device_service.get_antecedent_device(user_id, device_id)
-    if output == "error":
-        raise Exception()
-    else:
-        return json.dumps(output, default=lambda o: o.__dict__, indent=4)
-
-
-@device.route('/consequent/id/<device_id>', methods=['GET'])
-@check_token
-def get_consequent_by_id(device_id):
-    user_id = request.args.get("user_id")
-    output = device_service.get_consequent_device(user_id, device_id)
-    if output == "error":
-        raise Exception()
-    else:
-        return json.dumps(output, default=lambda o: o.__dict__, indent=4)
 
 
 @device.route('/consequent/automatic', methods=['POST'])
@@ -147,16 +112,6 @@ def set_consequent_manual_measure():
         raise Exception()
     else:
         return output
-
-
-@device.route('/id/all', methods=['GET'])
-@check_token
-def get_all_devices_id():
-    output = device_service.get_all_devices_id()
-    if output == "error":
-        raise Exception()
-    else:
-        return json.dumps(output)
 
 
 @device.route('/alert/add/', methods=['POST'])

@@ -1,5 +1,3 @@
-import json
-
 
 class Switch(object):
     def __init__(self):
@@ -17,15 +15,9 @@ class Switch(object):
         self.color = "red"
         self.expire_time = "10"
 
-    def json_mapping(self, device_json):
-        x = json.loads(device_json)
-        if "device_id" in x.keys():
-            self.device_id = x["device_id"]
-        if "name" in x.keys():
-            self.name = x["name"]
-        if "rules" in x.keys():
-            self.rules = x["rules"]
-        if "automatic" in x.keys():
-            self.automatic = x["automatic"]
-        if "manual_measure" in x.keys():
-            self.manual_measure = x["manual_measure"]
+    def device_mapping(self, device):
+        self.device_id = device["device_id"]
+        self.name = device["name"]
+        self.rules = device["rules"]
+        self.automatic = device["automatic"]
+        self.manual_measure = device["manual_measure"]

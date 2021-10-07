@@ -55,10 +55,10 @@ class ButtonAntecedentFunction(object):
             print(repr(error))
             return "error"
 
-    def set_antecedent(self, user_id, rule_id, antecedent_json):
+    def set_antecedent(self, user_id, rule_id, new_antecedent):
         try:
             antecedent = ButtonAntecedent()
-            antecedent.json_mapping(antecedent_json)
+            antecedent.antecedent_mapping(new_antecedent)
             self.r.rpush("device:" + antecedent.device_id + ":rules", rule_id)
             self.r.rpush("user:" + user_id + ":rule:" + rule_id + ":device_antecedents", antecedent.device_id)
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + antecedent.device_id
