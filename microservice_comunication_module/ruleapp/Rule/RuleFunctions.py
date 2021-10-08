@@ -19,10 +19,10 @@ class RuleFunction(object):
     def create_rule(self, user_id, rule_name):
         try:
             rule_id = str(self.r.incr("user:" + user_id + ":rule:counter"))
-            key_pattern = "user:"+user_id+":rule:"+rule_id
-            self.r.rpush("user:"+user_id+":rules", rule_id)
-            self.r.set(key_pattern+":rule_name", rule_name)
-            self.r.set(key_pattern+":evaluation", "false")
+            key_pattern = "user:" + user_id + ":rule:" + rule_id
+            self.r.rpush("user:" + user_id + ":rules", rule_id)
+            self.r.set(key_pattern + ":rule_name", rule_name)
+            self.r.set(key_pattern + ":evaluation", "false")
             return rule_id
         except Exception as error:
             print(repr(error))
@@ -36,8 +36,8 @@ class RuleFunction(object):
             for rule_id in rules_id_list:
                 key_pattern = "user:" + user_id + ":rule:" + rule_id
                 if self.r.exists(key_pattern + ":name") == 1:
-                    rule.rule_name = self.r.get(key_pattern + ":name")
-                    rule.rule_id = rule_id
+                    rule.name = self.r.get(key_pattern + ":name")
+                    rule.id = rule_id
                     rule.evaluation = self.r.get(key_pattern + ":evaluation")
                     output.append(rule)
             return output
@@ -47,19 +47,19 @@ class RuleFunction(object):
 
     def get_rule(self, user_id, rule_id):
         try:
-            key_pattern = "user:"+user_id+":rule:"+rule_id
+            key_pattern = "user:" + user_id + ":rule:" + rule_id
             rule = Rule()
-            rule.rule_id = rule_id
-            rule.rule_name = self.r.get(key_pattern+":rule_name")
-            rule.last_time_on = self.r.get(key_pattern+":last_time_on")
-            rule.last_time_off = self.r.get(key_pattern+":last_time_off")
-            rule.last_date_on = self.r.get(key_pattern+":last_date_on")
-            rule.last_date_off = self.r.get(key_pattern+":last_date_off")
-            rule.device_antecedents = self.r.lrange(key_pattern+":device_antecedents")
-            rule.device_consequents = self.r.lrange(key_pattern+":device_consequents")
-            rule.evaluation = self.r.get(key_pattern+":evaluation")
+            rule.id = rule_id
+            rule.name = self.r.get(key_pattern + ":rule_name")
+            rule.last_time_on = self.r.get(key_pattern + ":last_time_on")
+            rule.last_time_off = self.r.get(key_pattern + ":last_time_off")
+            rule.last_date_on = self.r.get(key_pattern + ":last_date_on")
+            rule.last_date_off = self.r.get(key_pattern + ":last_date_off")
+            rule.device_antecedents = self.r.lrange(key_pattern + ":device_antecedents")
+            rule.device_consequents = self.r.lrange(key_pattern + ":device_consequents")
+            rule.evaluation = self.r.get(key_pattern + ":evaluation")
             rule.rule_antecedents = self.get_rule_antecedents(user_id, rule_id)
-            rule.rule_consequents = self.get_rules_consequents(user_id, rule_id)
+            rule.rule_consequents = self.get_rule_consequents(user_id, rule_id)
             return rule
         except Exception as error:
             print(repr(error))
@@ -67,8 +67,8 @@ class RuleFunction(object):
 
     def get_rule_antecedents(self, user_id, rule_id):
         try:
-            key_pattern = "user:"+user_id+":rule:"+rule_id
-            device_antecedents = self.r.lrange(key_pattern+":device_antecedents")
+            key_pattern = "user:" + user_id + ":rule:" + rule_id
+            device_antecedents = self.r.lrange(key_pattern + ":device_antecedents")
             rule_antecedents = []
             for device_id in device_antecedents:
                 antecedent = self.get_rule_antecedent_slim(user_id, rule_id, device_id)
@@ -110,8 +110,8 @@ class RuleFunction(object):
             return "error"
 
     def get_rule_consequents(self, user_id, rule_id):
-        key_pattern = "user:"+user_id+":rule:"+rule_id
-        device_consequents = self.r.lrange(key_pattern+":device_consequents")
+        key_pattern = "user:" + user_id + ":rule:" + rule_id
+        device_consequents = self.r.lrange(key_pattern + ":device_consequents")
         rule_consequents = []
         for device_id in device_consequents:
             consequent = self.get_rule_consequent_slim(user_id, rule_id, device_id)
@@ -146,24 +146,24 @@ class RuleFunction(object):
             return "error"
 
     def delete_rule(self, user_id, rule_id):
-        key_pattern = "user:"+user_id+":rule:"+rule_id
-        self.r.lrem("user:"+user_id+":rules", rule_id)
-        self.r.delete(key_pattern+":rule_name")
-        self.r.delete(key_pattern+":last_time_on")
-        self.r.delete(key_pattern+":last_time_off")
-        self.r.delete(key_pattern+":last_date_on")
-        self.r.delete(key_pattern+":last_date_off")
-        device_antecedents = self.r.lrange(key_pattern+":device_antecedents")
+        key_pattern = "user:" + user_id + ":rule:" + rule_id
+        self.r.lrem("user:" + user_id + ":rules", rule_id)
+        self.r.delete(key_pattern + ":rule_name")
+        self.r.delete(key_pattern + ":last_time_on")
+        self.r.delete(key_pattern + ":last_time_off")
+        self.r.delete(key_pattern + ":last_date_on")
+        self.r.delete(key_pattern + ":last_date_off")
+        device_antecedents = self.r.lrange(key_pattern + ":device_antecedents")
         for device_id in device_antecedents:
             self.delete_rule_antecedent(user_id, rule_id, device_id)
-        device_consequents = self.r.lrange(key_pattern+":device_consequents")
+        device_consequents = self.r.lrange(key_pattern + ":device_consequents")
         for device_id in device_consequents:
             self.delete_rule_consequent(user_id, rule_id, device_id)
 
     def delete_rule_antecedent(self, user_id, rule_id, device_id):
         try:
-            key_pattern = "user:"+user_id+":rule:"+rule_id
-            self.r.lrem(key_pattern+":device_antecedents", device_id)
+            key_pattern = "user:" + user_id + ":rule:" + rule_id
+            self.r.lrem(key_pattern + ":device_antecedents", device_id)
             if "timer" in device_id:
                 return self.timer_antecedent_functions.delete_antecedent(user_id, rule_id, device_id)
             elif "WATERLEVEL" in device_id:
@@ -176,8 +176,8 @@ class RuleFunction(object):
 
     def delete_rule_consequent(self, user_id, rule_id, device_id):
         try:
-            key_pattern = "user:"+user_id+":rule:"+rule_id
-            self.r.lrem(key_pattern+":device_consequents", device_id)
+            key_pattern = "user:" + user_id + ":rule:" + rule_id
+            self.r.lrem(key_pattern + ":device_consequents", device_id)
             if "alert" in device_id:
                 return self.alert_consequent_functions.delete_consequent(user_id, rule_id, device_id)
             elif "SWITCH" in device_id:
@@ -188,8 +188,8 @@ class RuleFunction(object):
 
     def update_rule_name(self, user_id, rule_id, rule_name):
         try:
-            key_pattern = "user:"+user_id+":rule:"+rule_id
-            self.r.set(key_pattern+":rule_name", rule_name)
+            key_pattern = "user:" + user_id + ":rule:" + rule_id
+            self.r.set(key_pattern + ":rule_name", rule_name)
             return "true"
         except Exception as error:
             print(repr(error))
@@ -197,8 +197,8 @@ class RuleFunction(object):
 
     def add_rule_antecedent(self, user_id, rule_id, device_id, antecedent_json):
         try:
-            key_pattern = "user:"+user_id+":rule:"+rule_id
-            self.r.rpush(key_pattern+":device_antecedents", device_id)
+            key_pattern = "user:" + user_id + ":rule:" + rule_id
+            self.r.rpush(key_pattern + ":device_antecedents", device_id)
             return self.update_rule_antecedent(user_id, rule_id, device_id, antecedent_json)
         except Exception as error:
             print(repr(error))
@@ -206,8 +206,8 @@ class RuleFunction(object):
 
     def add_rule_consequent(self, user_id, rule_id, device_id, consequent_json):
         try:
-            key_pattern = "user:"+user_id+":rule:"+rule_id
-            self.r.rpush(key_pattern+":device_consequents", device_id)
+            key_pattern = "user:" + user_id + ":rule:" + rule_id
+            self.r.rpush(key_pattern + ":device_consequents", device_id)
             return self.update_rule_consequent(user_id, rule_id, device_id, consequent_json)
         except Exception as error:
             print(repr(error))
@@ -263,21 +263,18 @@ class RuleFunction(object):
         if new_evaluation == "true":
             for key in antecedent_keys:
                 antecedent_device_id = key.split(":")[-2]
-                if "timer" not in antecedent_device_id:
-                    if self.r.exists("device:" + antecedent_device_id + ":measure") == 0:
-                        new_evaluation = "false"
-                        break
+                if "timer" not in antecedent_device_id and self.r.exists(
+                        "device:" + antecedent_device_id + ":measure") == 0:
+                    new_evaluation = "false"
+                    break
         return new_evaluation
 
     def update_evaluation_timestamp(self, pattern_key, evaluation):
         time_str = datetime.now().strftime("%%H:%M:%S")
         date_str = datetime.now().strftime("%d/%m/%Y")
         if evaluation == "true":
-            self.r.set(pattern_key+":last_time_on", time_str)
-            self.r.set(pattern_key+":last_date_on", date_str)
+            self.r.set(pattern_key + ":last_time_on", time_str)
+            self.r.set(pattern_key + ":last_date_on", date_str)
         else:
-            self.r.set(pattern_key+":last_time_off", time_str)
-            self.r.set(pattern_key+":last_date_off", date_str)
-
-
-
+            self.r.set(pattern_key + ":last_time_off", time_str)
+            self.r.set(pattern_key + ":last_date_off", date_str)

@@ -30,7 +30,7 @@ class ButtonFunction(object):
         try:
             key_pattern = "device:" + device_id
             dto = Button()
-            dto.device_id = device_id
+            dto.id = device_id
             dto.name = self.r.get(key_pattern + ":name")
             if self.r.exists(key_pattern + ":rules") == 1:
                 dto.rules = self.r.lrange(key_pattern + ":rules")
@@ -57,7 +57,7 @@ class ButtonFunction(object):
         try:
             dto = Button()
             dto.device_mapping(new_device)
-            key_pattern = "device:" + dto.device_id
+            key_pattern = "device:" + dto.id
             self.r.set(key_pattern + ":name", dto.name)
             return dto
         except Exception as error:

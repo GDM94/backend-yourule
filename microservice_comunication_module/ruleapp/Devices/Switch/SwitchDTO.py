@@ -1,7 +1,7 @@
 
 class Switch(object):
     def __init__(self):
-        self.device_id = ""
+        self.id = ""
         self.name = "switch"
         self.measure = "-"
         self.rules = []
@@ -16,7 +16,7 @@ class Switch(object):
         self.expire_time = "10"
 
     def device_mapping(self, device):
-        self.device_id = device["device_id"]
+        self.id = device["id"]
         self.name = device["name"]
         self.rules = device["rules"]
         self.automatic = device["automatic"]

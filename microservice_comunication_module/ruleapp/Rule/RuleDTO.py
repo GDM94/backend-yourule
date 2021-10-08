@@ -1,7 +1,7 @@
 class Rule(object):
     def __init__(self):
-        self.rule_id = ""
-        self.rule_name = ""
+        self.id = ""
+        self.name = ""
         self.last_time_on = ""
         self.last_time_off = ""
         self.last_date_on = ""
@@ -13,8 +13,10 @@ class Rule(object):
         self.evaluation = "false"
 
     def json_mapping(self, rule_json):
-        if "rule_name" in rule_json.keys():
-            self.rule_name = rule_json["rule_name"]
+        if "id" in rule_json.keys():
+            self.id = rule_json["id"]
+        if "name" in rule_json.keys():
+            self.name = rule_json["name"]
         if "device_antecedents" in rule_json.keys():
             self.device_antecedents = rule_json["device_antecedents"]
         if "device_consequents" in rule_json.keys():

@@ -25,7 +25,7 @@ class AlertFunction(object):
             device_id = "alert-" + user_id
             key_pattern = "device:" + device_id
             dto = Alert()
-            dto.device_id = device_id
+            dto.id = device_id
             dto.name = self.r.get(key_pattern + ":name")
             dto.email_list = self.r.lrange(key_pattern + ":email_list")
             dto.rules = self.r.lrange(key_pattern + ":rules")

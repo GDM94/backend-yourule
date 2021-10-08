@@ -23,7 +23,7 @@ class TimerFunction(object):
     def get_device(self, device_id):
         try:
             dto = Timer()
-            dto.device_id = device_id
+            dto.id = device_id
             dto.name = self.r.get("device:" + device_id + ":name")
             if self.r.exists("device:" + device_id + ":rules") == 1:
                 dto.rules = self.r.lrange("device:" + device_id + ":rules")
@@ -38,7 +38,7 @@ class TimerFunction(object):
         try:
             dto = Timer()
             dto.device_mapping(new_device)
-            key_pattern = "device:" + dto.device_id
+            key_pattern = "device:" + dto.id
             self.r.set(key_pattern + ":name", dto.name)
             return dto
         except Exception as error:

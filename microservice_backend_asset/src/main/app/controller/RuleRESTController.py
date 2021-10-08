@@ -96,7 +96,7 @@ def create_rule(rule_name):
 
 @rule.route('/user', methods=['GET'])
 @check_token
-def get_rules_by_user_id():
+def get_rules_list():
     user_id = request.args.get("user_id")
     output = rule_service.get_user_rules(user_id)
     if output == "error":

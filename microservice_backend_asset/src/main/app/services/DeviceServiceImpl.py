@@ -88,7 +88,7 @@ class DeviceService(object):
             for device_id in device_id_keys:
                 key_pattern = "device:" + device_id
                 device_name = self.r.get(key_pattern + ":name")
-                output.append({"device_id": device_id, "name": device_name})
+                output.append({"id": device_id, "name": device_name})
         except Exception as error:
             print(repr(error))
             return "error"
@@ -103,7 +103,7 @@ class DeviceService(object):
             for device_id in device_id_keys:
                 key_pattern = "device:" + device_id
                 device_name = self.r.get(key_pattern + ":name")
-                output.append({"device_id": device_id, "name": device_name})
+                output.append({"id": device_id, "name": device_name})
         except Exception as error:
             print(repr(error))
             return "error"

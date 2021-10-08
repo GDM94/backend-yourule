@@ -31,7 +31,7 @@ class WaterLevelFunction(object):
         try:
             key_pattern = "device:" + device_id
             dto = WaterLevel()
-            dto.device_id = device_id
+            dto.id = device_id
             dto.name = self.r.get(key_pattern + ":name")
             dto.setting_max = self.r.get(key_pattern + ":setting:max")
             dto.setting_error = self.r.get(key_pattern + ":setting:error")
@@ -64,7 +64,7 @@ class WaterLevelFunction(object):
         try:
             dto = WaterLevel()
             dto.device_mapping(new_device)
-            key_pattern = "device:" + dto.device_id
+            key_pattern = "device:" + dto.id
             self.r.set(key_pattern + ":name", dto.name)
             self.r.set(key_pattern + ":setting:max", dto.setting_max)
             self.r.set(key_pattern + ":setting:error", dto.setting_error)
