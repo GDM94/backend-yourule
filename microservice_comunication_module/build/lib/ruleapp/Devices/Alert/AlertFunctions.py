@@ -20,22 +20,24 @@ class AlertFunction(object):
             print(repr(error))
             return "error"
 
-    def get_device(self, user_id):
+    def get_device(self, user_id, device_id):
         try:
-            device_id = "alert-" + user_id
             key_pattern = "device:" + device_id
             dto = Alert()
-            dto.device_id = device_id
+            dto.id = device_id
             dto.name = self.r.get(key_pattern + ":name")
             dto.email_list = self.r.lrange(key_pattern + ":email_list")
-            dto.rules = self.r.lrange(key_pattern + ":rules")
+            if self.r.exists(key_pattern + ":rules") == 1:
+                rules_id = self.r.lrange(key_pattern + ":rules")
+                for rule_id in rules_id:
+                    rule_name = self.r.get("user:" + user_id + ":rule:" + rule_id + ":name")
+                    dto.rules.append({"id": rule_id, "name": rule_name})
             return dto
         except Exception as error:
             print(repr(error))
             return "error"
 
-    def delete_all_email(self, user_id):
-        device_id = "alert-" + user_id
+    def delete_all_email(self, device_id):
         key_pattern = "device:" + device_id
         if self.r.exists(key_pattern + ":email_list"):
             email_list = self.r.lrange(key_pattern + ":email_list")
@@ -47,9 +49,9 @@ class AlertFunction(object):
         try:
             dto = Alert()
             dto.device_mapping(new_device)
-            key_pattern = "device:" + dto.device_id
+            key_pattern = "device:" + dto.id
             self.r.set(key_pattern + ":name", dto.name)
-            self.delete_all_email(dto.device_id)
+            self.delete_all_email(dto.id)
             if len(dto.email_list) > 0:
                 for email in dto.email_list:
                     self.r.rpush(key_pattern + ":email_list", email)
@@ -62,11 +64,10 @@ class AlertFunction(object):
         try:
             alert_id = "alert-" + user_id
             self.r.rpush("device:" + alert_id + ":email_list", "")
+            return "true"
         except Exception as error:
             print(repr(error))
             return "error"
-        else:
-            return "added"
 
     def delete_alert_email(self, user_id, index):
         try:
@@ -74,18 +75,16 @@ class AlertFunction(object):
             email_list = self.r.lrange("device:" + alert_id + ":email_list")
             email = email_list[index]
             self.r.lrem("device:" + alert_id + ":email_list", email)
+            return "true"
         except Exception as error:
             print(repr(error))
             return "error"
-        else:
-            return "deleted"
 
     def modify_alert_email(self, user_id, email, idx):
         try:
             alert_id = "alert-" + user_id
             self.r.lset("device:" + alert_id + ":email_list", idx, email)
+            return "true"
         except Exception as error:
             print(repr(error))
             return "error"
-        else:
-            return "deleted"

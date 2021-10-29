@@ -19,17 +19,35 @@ class RuleService(object):
     def update_rule_name(self, user_id, rule_id, name):
         return self.rule_functions.update_rule_name(user_id, rule_id, name)
 
-    def add_rule_antecedent(self, user_id, rule_id, device_id, antecedent_json):
-        return self.rule_functions.add_rule_antecedent(user_id, rule_id, device_id, antecedent_json)
+    def add_rule_antecedent(self, user_id, rule_id, device_id):
+        result = self.rule_functions.add_rule_antecedent(user_id, rule_id, device_id)
+        if result != "error":
+            result = self.get_rule_by_id(user_id, rule_id)
+        return result
 
-    def add_rule_consequent(self, user_id, rule_id, device_id, consequent_json):
-        return self.rule_functions.add_rule_consequent(user_id, rule_id, device_id, consequent_json)
+    def add_rule_consequent(self, user_id, rule_id, device_id):
+        result = self.rule_functions.add_rule_consequent(user_id, rule_id, device_id)
+        if result != "error":
+            result = self.get_rule_by_id(user_id, rule_id)
+        return result
 
     def update_rule_antecedent(self, user_id, rule_id, device_id, antecedent_json):
-        return self.rule_functions.update_rule_antecedent(user_id, rule_id, device_id, antecedent_json)
+        output = self.rule_functions.update_rule_antecedent(user_id, rule_id, device_id, antecedent_json)
+        if output != "error":
+            output = self.get_rule_by_id(user_id, rule_id)
+        return output
 
     def update_rule_consequent(self, user_id, rule_id, device_id, consequent_json):
-        return self.rule_functions.update_rule_consequent(user_id, rule_id, device_id, consequent_json)
+        output = self.rule_functions.update_rule_consequent(user_id, rule_id, device_id, consequent_json)
+        if output != "error":
+            output = self.get_rule_by_id(user_id, rule_id)
+        return output
+
+    def update_rule_consequents_order(self, user_id, rule_id, consequents_id_list):
+        output = self.rule_functions.update_rule_consequents_order(user_id, rule_id, consequents_id_list)
+        if output != "error":
+            output = self.get_rule_by_id(user_id, rule_id)
+        return output
 
     def delete_rule(self, user_id, rule_id):
         return self.rule_functions.delete_rule(user_id, rule_id)
@@ -42,6 +60,8 @@ class RuleService(object):
                 trigger_message = {"user_id": user_id, "rules": [rule_id]}
                 payload = json.dumps(trigger_message)
                 self.rabbitmq.publish(self.publish_rule, payload)
+                # get rule by id
+                output = self.get_rule_by_id(user_id, rule_id)
             return output
         except Exception as error:
             print(repr(error))
@@ -53,6 +73,8 @@ class RuleService(object):
             if output != "error":
                 # trigger device off
                 self.mqtt_client.publish(device_id, "off/0")
+                # get rule by id
+                output = self.get_rule_by_id(user_id, rule_id)
             return output
         except Exception as error:
             print(repr(error))

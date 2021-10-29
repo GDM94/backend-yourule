@@ -3,6 +3,7 @@ from ruleapp.Devices.WaterLevel.WaterLevelFunctions import WaterLevelFunction
 from ruleapp.Devices.Timer.TimerFunctions import TimerFunction
 from ruleapp.Devices.Switch.SwitchFuntions import SwitchFunction
 from ruleapp.Devices.Alert.AlertFunctions import AlertFunction
+from ruleapp.Devices.Button.ButtonFunctions import ButtonFunction
 
 
 class DeviceService(object):
@@ -17,18 +18,21 @@ class DeviceService(object):
         self.waterlevel_functions = WaterLevelFunction(redis)
         self.timer_functions = TimerFunction(redis)
         self.alert_functions = AlertFunction(redis)
+        self.button_functions = ButtonFunction(redis)
 
-    def get_device(self, device_id):
+    def get_device(self, user_id, device_id):
         try:
             device = {}
             if "SWITCH" in device_id:
-                device = self.switch_functions.get_device(device_id)
+                device = self.switch_functions.get_device(user_id, device_id)
             elif "WATERLEVEL" in device_id:
-                device = self.waterlevel_functions.get_device(device_id)
+                device = self.waterlevel_functions.get_device(user_id, device_id)
             elif "timer" in device_id:
-                device = self.timer_functions.get_device(device_id)
+                device = self.timer_functions.get_device(user_id, device_id)
             elif "alert" in device_id:
-                device = self.alert_functions.get_device(device_id)
+                device = self.alert_functions.get_device(user_id, device_id)
+            elif "BUTTON" in device_id:
+                device = self.button_functions.get_device(user_id, device_id)
             return device
         except Exception as error:
             print(repr(error))
@@ -37,10 +41,11 @@ class DeviceService(object):
     def device_registration(self, user_id, device_id):
         try:
             if "SWITCH" in device_id:
-                self.switch_functions.register(user_id, device_id)
+                return self.switch_functions.register(user_id, device_id)
             elif "WATERLEVEL" in device_id:
-                self.waterlevel_functions.register(user_id, device_id)
-            return "true"
+                return self.waterlevel_functions.register(user_id, device_id)
+            elif "BUTTON" in device_id:
+                return self.button_functions.register(user_id, device_id)
         except Exception as error:
             print(repr(error))
             return "error"
@@ -55,6 +60,8 @@ class DeviceService(object):
                 self.timer_functions.update_device(new_device)
             elif "alert" in device_id:
                 self.alert_functions.update_device(new_device)
+            elif "BUTTON" in device_id:
+                self.button_functions.update_device(new_device)
             return "true"
         except Exception as error:
             print(repr(error))
@@ -62,20 +69,21 @@ class DeviceService(object):
 
     def delete_device(self, user_id, device_id):
         try:
-            prefix = device_id.split("-")[0]
-            if prefix == "SWITCH":
+            if "SWITCH" in device_id:
                 self.switch_functions.delete_device(user_id, device_id)
                 # trigger setting device
                 self.mqtt_client.publish(device_id, "off/0")
             else:
                 rules = self.r.lrange("device:" + device_id + ":rules")
-                if prefix == "WATERLEVEL":
+                if "WATERLEVEL" in device_id:
                     self.waterlevel_functions.delete_device(user_id, device_id)
+                if "BUTTON" in device_id:
+                    self.button_functions.delete_device(user_id, device_id)
                 # trigger rule evaluation
                 trigger_message = {"user_id": user_id, "rules": rules}
                 payload = json.dumps(trigger_message)
                 self.rabbitmq.publish(self.publish_rule, payload)
-            return "deleted"
+            return "true"
         except Exception as error:
             print(repr(error))
             return "error"
@@ -121,7 +129,7 @@ class DeviceService(object):
                     trigger["rule_id"] = rule
                     payload = json.dumps(trigger)
                     self.rabbitmq.publish(self.publish_consequent, payload)
-            return "true"
+            return self.switch_functions.get_device(device_id)
         except Exception as error:
             print(repr(error))
             return "error"
@@ -131,7 +139,7 @@ class DeviceService(object):
             self.r.set("device:" + device_id + ":manual_measure", manual_measure)
             # trigger setting device
             self.mqtt_client.publish(device_id, manual_measure + "/0")
-            return "true"
+            return self.switch_functions.get_device(device_id)
         except Exception as error:
             print(repr(error))
             return "error"

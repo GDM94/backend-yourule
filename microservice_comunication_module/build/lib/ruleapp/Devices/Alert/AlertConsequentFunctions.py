@@ -21,7 +21,8 @@ class AlertConsequentFunction(object):
         try:
             consequent = AlertConsequent()
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_consequents:" + device_id
-            consequent.device_name = self.r.get(key_pattern + ":device_name")
+            consequent.device_id = device_id
+            consequent.device_name = self.r.get("device:" + device_id + ":name")
             consequent.message = self.r.get(key_pattern + ":message")
             consequent.delay = self.r.get(key_pattern + ":delay")
             consequent.order = self.r.get(key_pattern + ":order")
@@ -34,8 +35,10 @@ class AlertConsequentFunction(object):
         try:
             consequent = AlertConsequent()
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_consequents:" + device_id
-            consequent.device_name = self.r.get(key_pattern + ":device_name")
+            consequent.device_id = device_id
+            consequent.device_name = self.r.get("device:" + device_id + ":name")
             consequent.order = self.r.get(key_pattern + ":order")
+            consequent.delay = self.r.get(key_pattern + ":delay")
             return consequent
         except Exception as error:
             print(repr(error))
@@ -46,7 +49,6 @@ class AlertConsequentFunction(object):
             self.r.lrem("device:" + device_id + ":rules", rule_id)
             self.r.lrem("user:" + user_id + ":rule:" + rule_id + ":device_consequents", device_id)
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_consequents:" + device_id
-            self.r.delete(key_pattern + ":device_name")
             self.r.delete(key_pattern + ":message")
             self.r.delete(key_pattern + ":delay")
             self.r.delete(key_pattern + ":order")
@@ -55,18 +57,38 @@ class AlertConsequentFunction(object):
             print(repr(error))
             return "error"
 
-    def set_consequent(self, user_id, rule_id, new_consequent):
+    def add_consequent(self, user_id, rule_id, device_id):
+        try:
+            device_consequents = self.r.lrange("user:" + user_id + ":rule:" + rule_id + ":device_consequents")
+            result = "false"
+            if device_id not in device_consequents:
+                consequent = AlertConsequent()
+                consequent.order = str(len(device_consequents))
+                self.r.rpush("device:" + device_id + ":rules", rule_id)
+                self.r.rpush("user:" + user_id + ":rule:" + rule_id + ":device_consequents", device_id)
+                key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_consequents:" + device_id
+                self.r.set(key_pattern + ":message", consequent.message)
+                self.r.set(key_pattern + ":delay", consequent.delay)
+                self.r.set(key_pattern + ":order", consequent.order)
+                result = "true"
+            return result
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
+    def update_consequent(self, user_id, rule_id, new_consequent):
         try:
             consequent = AlertConsequent()
             consequent.consequent_mapping(new_consequent)
-            self.r.rpush("device:" + consequent.device_id + ":rules", rule_id)
-            self.r.rpush("user:" + user_id + ":rule:" + rule_id + ":device_consequents", consequent.device_id)
-            key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_consequents:" + consequent.device_id
-            self.r.set(key_pattern + ":device_name", consequent.device_name)
-            self.r.set(key_pattern + ":message", consequent.message)
-            self.r.set(key_pattern + ":delay", consequent.delay)
-            self.r.set(key_pattern + ":order", consequent.order)
-            return "true"
+            device_consequents = self.r.lrange("user:" + user_id + ":rule:" + rule_id + ":device_consequents")
+            result = "false"
+            if consequent.device_id in device_consequents:
+                key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_consequents:" + consequent.device_id
+                self.r.set(key_pattern + ":message", consequent.message)
+                self.r.set(key_pattern + ":delay", consequent.delay)
+                self.r.set(key_pattern + ":order", consequent.order)
+                result = "true"
+            return result
         except Exception as error:
             print(repr(error))
             return "error"

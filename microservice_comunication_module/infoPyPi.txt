@@ -2,3 +2,9 @@
 	python setup.py sdist bdist_wheel
 2) publish
 	twine upload dist/*
+
+username: dimax
+password: Giomartagio1.
+
+3) install package in python environment
+	pip install ruleapp=={setup.version}

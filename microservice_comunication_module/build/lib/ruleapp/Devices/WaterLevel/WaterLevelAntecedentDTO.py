@@ -12,7 +12,6 @@ class WaterLevelAntecedent(object):
         self.last_date_on = "-"
         self.last_date_off = "-"
         self.evaluation = "false"
-        self.order = ""
 
     def antecedent_mapping(self, antecedent):
         self.device_id = antecedent["device_id"]
@@ -20,4 +19,3 @@ class WaterLevelAntecedent(object):
         self.condition_measure = antecedent["condition_measure"]
         self.start_value = antecedent["start_value"]
         self.stop_value = antecedent["stop_value"]
-        self.order = antecedent["order"]

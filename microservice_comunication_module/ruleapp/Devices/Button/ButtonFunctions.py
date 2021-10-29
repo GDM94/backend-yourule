@@ -9,31 +9,40 @@ class ButtonFunction(object):
         self.r = redis
         self.button_antecedent_functions = ButtonAntecedentFunction(redis)
 
-    def register(self, user_id, device_id):
+    def register(self, user_id: str, device_id: str) -> str:
         try:
-            if self.r.exists("device:" + device_id + ":name") == 0:
-                key_pattern = "device:" + device_id
-                device_id_keys = self.r.lrange("user:" + user_id + ":sensors")
-                device_name = "WATERLEVEL " + str(len(device_id_keys))
-                self.r.set(key_pattern + ":name", device_name)
-                self.r.set(key_pattern + ":user_id", user_id)
-                self.r.set(key_pattern + ":measure", "-")
+            result = "false"
+            key_pattern = "device:" + device_id
+            if self.r.exists(key_pattern + ":name") == 0:
                 self.r.rpush("user:" + user_id + ":sensors", device_id)
-                return "true"
-            else:
-                return "false"
+                device = Button()
+                device.id = device_id
+                device_id_keys = self.r.lrange("user:" + user_id + ":sensors")
+                device.name = "BUTTON " + str(len(device_id_keys))
+                self.r.set(key_pattern + ":user_id", user_id)
+                self.r.set(key_pattern + ":name", device.name)
+                self.r.set(key_pattern + ":measure", device.measure)
+                self.r.set(key_pattern + ":last_time_on", device.last_time_on)
+                self.r.set(key_pattern + ":last_time_off", device.last_time_off)
+                self.r.set(key_pattern + ":last_date_on", device.last_date_on)
+                self.r.set(key_pattern + ":last_date_off", device.last_date_off)
+                result = device
+            return result
         except Exception as error:
             print(repr(error))
             return "error"
 
-    def get_device(self, device_id):
+    def get_device(self, user_id, device_id):
         try:
             key_pattern = "device:" + device_id
             dto = Button()
             dto.id = device_id
             dto.name = self.r.get(key_pattern + ":name")
             if self.r.exists(key_pattern + ":rules") == 1:
-                dto.rules = self.r.lrange(key_pattern + ":rules")
+                rules_id = self.r.lrange(key_pattern + ":rules")
+                for rule_id in rules_id:
+                    rule_name = self.r.get("user:" + user_id + ":rule:" + rule_id + ":name")
+                    dto.rules.append({"id": rule_id, "name": rule_name})
             if self.r.exists(key_pattern + ":measure") == 1:
                 measure = self.r.get(key_pattern + ":measure")
                 if measure == "-":

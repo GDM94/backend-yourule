@@ -11,7 +11,6 @@ class TimerAntecedent(object):
         self.time_start_value = ""
         self.time_stop_value = ""
         self.evaluation = "false"
-        self.order = ""
         self.check_time = "true"
         self.check_date = "true"
 
@@ -25,4 +24,3 @@ class TimerAntecedent(object):
         self.day_start_value = antecedent["day_start_value"]
         self.time_start_value = antecedent["time_start_value"]
         self.time_stop_value = antecedent["time_stop_value"]
-        self.order = antecedent["order"]

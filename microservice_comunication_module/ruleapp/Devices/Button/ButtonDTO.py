@@ -7,7 +7,6 @@ class Button(object):
         self.rules = []
         self.status = "disconnected"
         self.color = "red"
-        self.unit_measure = ""
         self.last_time_on = "-"
         self.last_time_off = "-"
         self.last_date_on = "-"
@@ -17,5 +16,4 @@ class Button(object):
     def device_mapping(self, device):
         self.id = device["id"]
         self.name = device["name"]
-        self.expiration = device["expiration"]
         self.rules = device["rules"]

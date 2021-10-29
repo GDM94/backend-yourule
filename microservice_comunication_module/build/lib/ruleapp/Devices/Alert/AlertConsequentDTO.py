@@ -11,8 +11,8 @@ class AlertConsequent(object):
         self.order = ""
 
     def consequent_mapping(self, consequent):
-        self.device_name = consequent["device_id"]
+        self.device_id = consequent["device_id"]
         self.device_name = consequent["device_name"]
-        self.device_name = consequent["message"]
+        self.message = consequent["message"]
         self.delay = consequent["delay"]
         self.order = consequent["order"]
