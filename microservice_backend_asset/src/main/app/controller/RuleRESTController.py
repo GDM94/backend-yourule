@@ -49,7 +49,7 @@ def get_antecedents_list():
 @check_token
 def get_antecedent(rule_id, device_id):
     user_id = request.args.get("user_id")
-    output = rule_service.get_antecedent(user_id, rule_id, device_id)
+    output = rule_service.get_rule_antecedent(user_id, rule_id, device_id)
     if output == "error":
         raise Exception()
     else:
@@ -72,7 +72,7 @@ def get_consequent_list():
 @check_token
 def get_consequent(rule_id, device_id):
     user_id = request.args.get("user_id")
-    output = rule_service.get_consequent(user_id, rule_id, device_id)
+    output = rule_service.get_rule_consequent(user_id, rule_id, device_id)
     if output == "error":
         raise Exception()
     else:
@@ -83,7 +83,7 @@ def get_consequent(rule_id, device_id):
 @check_token
 def create_rule(rule_name):
     user_id = request.args.get("user_id")
-    output = rule_service.create_new_rule(user_id, rule_name)
+    output = rule_service.create_rule(user_id, rule_name)
     if output == "error":
         raise Exception()
     else:
