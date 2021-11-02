@@ -11,9 +11,12 @@ client_id = random_client_id = 'consequent'.join(random.choices(string.ascii_let
 
 config = read_config()
 redis = RedisConnection(config)
+
 mqtt = Subscriber(client_id, config)
 mqtt.start_connection()
+
 consequent = ConsequentServiceEvaluation(config, redis)
+
 rabbitmq = RabbitMQ(client_id, consequent, mqtt, config)
 rabbitmq.start_connection()
 rabbitmq.subscribe()

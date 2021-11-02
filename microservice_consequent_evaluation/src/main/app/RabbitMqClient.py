@@ -1,5 +1,6 @@
 import pika
 import time
+import json
 
 
 class RabbitMQ(object):
@@ -17,6 +18,7 @@ class RabbitMQ(object):
                                                            heartbeat=0)
         self.subscribe_queue = config.get("RABBITMQ", "subscribe_queue")
         self.publish_queue = config.get("RABBITMQ", "publish_queue")
+        self.mqtt_publish_topic = config.get("MQTT", "publish_topic")
         self.channel = None
         self.connection = None
         self.service = service
@@ -62,13 +64,12 @@ class RabbitMQ(object):
     def on_message_callback(self, ch, method, properties, body):
         message = body.decode()
         print("[x] received message " + message)
-        output = self.service.consequent_evaluation(message)
-        n = len(output["device_id"])
-        if n > 0:
-            for idx in range(n):
-                device_id = output["device_id"][idx]
-                measure = output["measure"][idx]
-                delay = output["delay"][idx]
-                payload = measure+"/"+delay
-                self.mqtt.publish(device_id, payload)
+        trigger = json.loads(message)
+        user_id = str(trigger["user_id"])
+        rule_id = str(trigger["rule_id"])
+        output = self.service.consequent_evaluation(user_id, rule_id)
+        for trigger in output:
+            topic = self.mqtt_publish_topic + trigger["device_id"]
+            payload = trigger["measure"]+"/"+trigger["delay"]
+            self.mqtt.publish(topic, payload)
         ch.basic_ack(delivery_tag=method.delivery_tag)

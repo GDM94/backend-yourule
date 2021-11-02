@@ -1,22 +1,31 @@
-import paho.mqtt.client as mqtt
+import paho.mqtt.client as PahoMQTT
+from os.path import dirname, join, abspath
+import configparser
 
 
-class SubscriberInitialization(object):
-    def __init__(self, config, client_id, service):
-        self.client = mqtt.Client(client_id, True)
+class Subscriber(object):
+    def __init__(self, client_id):
+        config = self.read_config()
+        self.client = PahoMQTT.Client(client_id, True)
         self.BROKER = config.get("MQTT", "broker")
         self.PORT = int(config.get("MQTT", "port"))
-        self.SUBSCRIBE_TOPIC = config.get("MQTT", "subscribe_topic_init")
-        self.IS_SUBSCRIBER = True
-        self.service = service
+        self.PUBLISH_TOPIC_SWITCH = config.get("MQTT", "publish_topic_switch")
+        self.PUBLISH_TOPIC_EXPIRATION = config.get("MQTT", "publish_topic_expiration")
+        self.SUBSCRIBE_TOPIC = ""
+        self.IS_SUBSCRIBER = False
         # register the callback
         self.client.on_connect = self.callback_on_connect
-        self.client.on_message = self.callback_on_message_received
         self.client.on_disconnect = self.callback_on_disconnect
+
+    def read_config(self):
+        d = dirname(dirname(dirname(abspath(__file__))))
+        config_path = join(d, 'properties', 'app-config.ini')
+        config = configparser.ConfigParser()
+        config.read(config_path)
+        return config
 
     def start_connection(self):
         # manage connection to broker
-        self.client.username_pw_set("subscriber", "mqtt")
         self.client.connect(self.BROKER, self.PORT)
         self.client.loop_start()
 
@@ -31,19 +40,12 @@ class SubscriberInitialization(object):
     def subscribe(self):
         self.client.subscribe(self.SUBSCRIBE_TOPIC, 2)
 
-    def publish(self, topic, payload):
-        print("publish")
-        self.client.publish(topic, payload, 2)
+    def publish(self, topic, msg):
+        # print("publish")
+        self.client.publish(topic, msg, 2)
 
     def callback_on_connect(self, paho_mqtt, userdata, flags, rc):
         print("Connected to %s with result code: %d" % (self.BROKER, rc))
-
-    def callback_on_message_received(self, paho_mqtt, userdata, msg):
-        message_payload = msg.payload.decode("utf-8")
-        print("[x] received topic: {}; payload: {}".format(msg.topic, message_payload))
-        keys = msg.topic.split("/")
-        device_id = keys[-1]
-        self.service.initialization(device_id, message_payload)
 
     def callback_on_disconnect(self, paho_mqtt, userdata, rc):
         print("MQTT Subscriber successfull disconnected")

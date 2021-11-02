@@ -31,6 +31,7 @@ class WaterLevelFunction(object):
                 self.r.set(key_pattern + ":min_measure", device.min_measure)
                 self.r.set(key_pattern + ":min_measure_time", device.min_measure_time)
                 self.r.set(key_pattern + ":min_measure_date", device.min_measure_date)
+                self.r.set(key_pattern + ":expiration", device.expiration)
                 result = device
             return result
         except Exception as error:
@@ -49,6 +50,7 @@ class WaterLevelFunction(object):
             dto.max_measure_time = self.r.get(key_pattern + ":max_measure_time")
             dto.min_measure = self.r.get(key_pattern + ":min_measure")
             dto.min_measure_time = self.r.get(key_pattern + ":min_measure_time")
+            dto.expiration = self.r.get(key_pattern + ":expiration")
             if self.r.exists(key_pattern + ":rules") == 1:
                 rules_id = self.r.lrange(key_pattern + ":rules")
                 for rule_id in rules_id:
@@ -115,9 +117,9 @@ class WaterLevelFunction(object):
         error_setting = int(self.r.get(key_pattern + ":setting:error"))
         scaled_measure = float(absolute_measure) - float(error_setting)
         relative_measure = str(round((1 - (scaled_measure / float(max_measure))) * 100.0))
-        expiration_time = 10
-        self.r.setex(key_pattern + ":measure", relative_measure, expiration_time)
-        self.r.setex(key_pattern + ":absolute_measure", absolute_measure, expiration_time)
+        expiration = int(self.r.get(key_pattern + ":expiration")) + 2
+        self.r.setex(key_pattern + ":measure", expiration, relative_measure)
+        self.r.setex(key_pattern + ":absolute_measure", expiration, absolute_measure)
         self.device_max_measure_range(device_id, absolute_measure)
         self.device_min_measure_range(device_id, absolute_measure)
         return relative_measure

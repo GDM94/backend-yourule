@@ -30,10 +30,8 @@ class Subscriber(object):
     def subscribe(self):
         self.client.subscribe(self.SUBSCRIBE_TOPIC, 2)
 
-    def publish(self, device_id, msg):
-        print("publish message: {} to device: {}".format(msg, device_id))
-        #topic = self.PUBLISH_TOPIC+device_id
-        topic = device_id
+    def publish(self, topic, msg):
+        print("publish message: {} to topic: {}".format(msg, topic))
         self.client.publish(topic, msg, 2)
 
     def callback_on_connect(self, paho_mqtt, userdata, flags, rc):

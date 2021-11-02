@@ -4,13 +4,15 @@ import time
 
 
 class RabbitMQ(object):
-    def __init__(self, app_id, service, config):
+    def __init__(self, app_id, service, config, mqtt):
         rabbitmq_server = config.get("RABBITMQ", "server")
         rabbitmq_port = int(config.get("RABBITMQ", "port"))
         virtual_host = config.get("RABBITMQ", "virtual_host")
         username = config.get("RABBITMQ", "username")
         password = config.get("RABBITMQ", "password")
         credentials = pika.PlainCredentials(username, password)
+        self.mqtt_topic_switch = config.get("MQTT", "publish_topic_switch")
+        self.mqtt_topic_expiration = config.get("MQTT", "publish_topic_expiration")
         self.params = pika.connection.ConnectionParameters(host=rabbitmq_server,
                                                            port=rabbitmq_port,
                                                            virtual_host=virtual_host,
@@ -18,10 +20,10 @@ class RabbitMQ(object):
                                                            heartbeat=0)
         self.subscribe_queue = config.get("RABBITMQ", "subscribe_queue")
         self.publish_queue = config.get("RABBITMQ", "publish_queue")
-        self.publish_queue_switch_sync = config.get("RABBITMQ", "publish_queue_switch_sync")
         self.channel = None
         self.connection = None
         self.service = service
+        self.mqtt = mqtt
         self.properties = pika.BasicProperties(
             app_id=app_id,
             content_type='application/json',
@@ -66,12 +68,17 @@ class RabbitMQ(object):
         # print("[x] received message " + str(payload))
         device_id = payload["id"]
         measure = payload["measure"]
-        trigger = self.service.device_evaluation(device_id, measure)
+        expiration = payload["expiration"]
+        expiration_sync = self.service.expiration_evaluation(device_id, expiration)
+        if expiration_sync != "false":
+            topic = self.mqtt_topic_expiration + device_id
+            self.mqtt.publish(topic, expiration_sync)
+        trigger = self.service.measure_evaluation(device_id, measure)
         if trigger.type == "antecedent":
             if len(trigger.rules) > 0:
                 output = json.dumps(trigger, default=lambda o: o.__dict__)
                 self.publish(output, self.publish_queue)
-        elif trigger.type == "consequent":
-            output = json.dumps(trigger, default=lambda o: o.__dict__)
-            self.publish(output, self.publish_queue_switch_sync)
+        elif trigger.type == "switch":
+            topic = self.mqtt_topic_switch + device_id
+            self.mqtt.publish(topic, trigger.measure)
         ch.basic_ack(delivery_tag=method.delivery_tag)

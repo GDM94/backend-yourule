@@ -106,9 +106,10 @@ def set_consequent_automatic():
 @device.route('/consequent/manual', methods=['POST'])
 @check_token
 def set_consequent_manual_measure():
+    user_id = request.args.get("user_id")
     device_id = request.args.get("device_id")
     manual_measure = request.args.get("manual_measure")
-    output = device_service.set_consequent_manual_measure(device_id, manual_measure)
+    output = device_service.set_consequent_manual_measure(user_id, device_id, manual_measure)
     if output == "error":
         raise Exception()
     else:

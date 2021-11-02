@@ -26,6 +26,7 @@ class ButtonFunction(object):
                 self.r.set(key_pattern + ":last_time_off", device.last_time_off)
                 self.r.set(key_pattern + ":last_date_on", device.last_date_on)
                 self.r.set(key_pattern + ":last_date_off", device.last_date_off)
+                self.r.set(key_pattern + ":expiration", device.expiration)
                 result = device
             return result
         except Exception as error:
@@ -38,6 +39,7 @@ class ButtonFunction(object):
             dto = Button()
             dto.id = device_id
             dto.name = self.r.get(key_pattern + ":name")
+            dto.expiration = self.r.get(key_pattern + ":expiration")
             if self.r.exists(key_pattern + ":rules") == 1:
                 rules_id = self.r.lrange(key_pattern + ":rules")
                 for rule_id in rules_id:
@@ -97,6 +99,8 @@ class ButtonFunction(object):
         time_str = datetime.now().strftime("%H:%M:%S")
         date_str = datetime.now().strftime("%d/%m/%Y")
         key_pattern = "device:" + device_id
+        expiration = int(self.r.get(key_pattern + ":expiration")) + 2
+        self.r.setex(key_pattern + ":measure", expiration, measure)
         if measure == "on":
             self.r.set(key_pattern + ":last_time_on", time_str)
             self.r.set(key_pattern + ":last_date_on", date_str)

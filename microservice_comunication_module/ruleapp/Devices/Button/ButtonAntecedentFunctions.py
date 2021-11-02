@@ -79,10 +79,9 @@ class ButtonAntecedentFunction(object):
 
     def antecedent_evaluation(self, user_id, rule_id, device_id, measure):
         try:
-            measure_evaluation = self.evaluate_measure(measure)
             evaluation = "false"
-            if measure_evaluation == "true":
-                evaluation = "true"
+            if self.r.exists("device:" + device_id + ":measure") == 1:
+                evaluation = self.evaluate_measure(measure)
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
             old_evaluation = self.r.get(key_pattern + ":evaluation")
             trigger = "false"

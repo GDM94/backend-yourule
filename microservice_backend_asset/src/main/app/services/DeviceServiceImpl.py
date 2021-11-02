@@ -129,17 +129,17 @@ class DeviceService(object):
                     trigger["rule_id"] = rule
                     payload = json.dumps(trigger)
                     self.rabbitmq.publish(self.publish_consequent, payload)
-            return self.switch_functions.get_device(device_id)
+            return self.switch_functions.get_device(user_id, device_id)
         except Exception as error:
             print(repr(error))
             return "error"
 
-    def set_consequent_manual_measure(self, device_id, manual_measure):
+    def set_consequent_manual_measure(self, user_id, device_id, manual_measure):
         try:
             self.r.set("device:" + device_id + ":manual_measure", manual_measure)
             # trigger setting device
             self.mqtt_client.publish(device_id, manual_measure + "/0")
-            return self.switch_functions.get_device(device_id)
+            return self.switch_functions.get_device(user_id, device_id)
         except Exception as error:
             print(repr(error))
             return "error"

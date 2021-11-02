@@ -4,7 +4,7 @@ import time
 
 
 class RabbitMQ(object):
-    def __init__(self, config):
+    def __init__(self, config, app_id):
         rabbitmq_server = config.get("RABBITMQ", "server")
         rabbitmq_port = int(config.get("RABBITMQ", "port"))
         virtual_host = config.get("RABBITMQ", "virtual_host")
@@ -20,7 +20,7 @@ class RabbitMQ(object):
         self.channel = None
         self.connection = None
         self.properties = pika.BasicProperties(
-            app_id="device-entrypoint",
+            app_id=app_id,
             content_type='application/json',
             content_encoding='utf-8',
             delivery_mode=2)
@@ -54,6 +54,7 @@ class RabbitMQ(object):
     def data_device_ingestion(self, topic, message):
         keys = topic.split("/")
         device_id = keys[-1]
-        output = {"id": device_id, "measure": message}
+        message_info = message.split("/")
+        output = {"id": device_id, "measure": message_info[-1], "expiration": message_info[0]}
         payload = json.dumps(output)
         self.publish(payload)

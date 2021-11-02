@@ -6,14 +6,14 @@ class Switch(object):
         self.measure = "-"
         self.rules = []
         self.automatic = "true"
-        self.manual_measure = "false"
+        self.manual_measure = "off"
         self.last_date_on = "-"
         self.last_date_off = "-"
         self.last_time_on = "-"
         self.last_time_off = "-"
         self.status = "disconnected"
         self.color = "red"
-        self.expire_time = "10"
+        self.expiration = "10"
 
     def device_mapping(self, device):
         self.id = device["id"]
