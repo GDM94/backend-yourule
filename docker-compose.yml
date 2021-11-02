@@ -80,13 +80,6 @@ services:
       - redis
       - rabbitmq
 
-  switch_sync:
-    container_name: switch_sync
-    image: dimax94/microservice_switch_sync
-    depends_on:
-      - redis
-      - rabbitmq
-
   rabbitmq:
     container_name: rabbitmq
     image: dimax94/rabbitmq

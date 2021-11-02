@@ -41,7 +41,12 @@ class Subscriber(object):
     def callback_on_message_received(self, paho_mqtt, userdata, msg):
         message_payload = msg.payload.decode("utf-8")
         print("[x] received topic: {}; payload: {}".format(msg.topic, message_payload))
-        self.service.data_device_ingestion(msg.topic, message_payload)
+        keys = msg.topic.split("/")
+        device_id = keys[-1]
+        message_info = message_payload.split("/")
+        measure = message_info[-1]
+        expiration = message_info[0]
+        self.service.data_device_ingestion(device_id, measure, expiration)
 
     def callback_on_disconnect(self, paho_mqtt, userdata, rc):
         print("MQTT Subscriber successfull disconnected")

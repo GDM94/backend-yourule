@@ -51,10 +51,7 @@ class RabbitMQ(object):
             body=msg.encode(),
             properties=self.properties)
 
-    def data_device_ingestion(self, topic, message):
-        keys = topic.split("/")
-        device_id = keys[-1]
-        message_info = message.split("/")
-        output = {"id": device_id, "measure": message_info[-1], "expiration": message_info[0]}
+    def data_device_ingestion(self, device_id, measure, expiration):
+        output = {"id": device_id, "measure": measure, "expiration": expiration}
         payload = json.dumps(output)
         self.publish(payload)
