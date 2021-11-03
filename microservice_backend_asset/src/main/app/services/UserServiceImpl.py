@@ -12,9 +12,8 @@ class UserService(object):
         self.r = redis
         self.api_key = config.get("OPEN_WEATHER", "api_key")
         self.api_location_url = config.get("OPEN_WEATHER", "api_location_url")
-        password_key = config.get("OAUTH", "password_key")
         token_key = config.get("OAUTH", "token_key")
-        self.profile_functions = ProfileFunction(redis, password_key, token_key)
+        self.profile_functions = ProfileFunction(redis, token_key)
         self.timer_functions = TimerFunction(redis)
         self.alert_functions = AlertFunction(redis)
 

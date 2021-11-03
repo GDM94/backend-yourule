@@ -1,11 +1,9 @@
 import jwt
-from cryptography.fernet import Fernet
 
 
 class ProfileFunction(object):
-    def __init__(self, redis, password_key, token_key):
+    def __init__(self, redis, token_key):
         self.r = redis
-        self.fernet = Fernet(password_key)
         self.token_key = token_key
 
     def register(self, dto):
@@ -44,9 +42,3 @@ class ProfileFunction(object):
     def create_token(self, dto):
         payload = dto.__dict__
         return jwt.encode(payload, self.token_key, algorithm="HS256")
-
-    def encrypt_password(self, password):
-        return self.fernet.encrypt(password)
-
-    def decrypt_password(self, password):
-        return self.fernet.decrypt(password)
