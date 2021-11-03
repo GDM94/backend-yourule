@@ -119,5 +119,5 @@ class ButtonFunction(object):
             output.device_id = device_id
             output.type = "antecedent"
             if self.r.exists(key_pattern + ":rules"):
-                output.rules = list(self.r.smembers(key_pattern + ":rules"))
+                output.rules = self.r.lrange(key_pattern + ":rules")
         return output

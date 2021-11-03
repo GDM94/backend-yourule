@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name="ruleapp",
-    version="0.5.9",
+    version="0.6.1",
     author="Giovanni Di Martino",
     author_email="giovanni.dimartino1994@gmail.com",
     description="ruleapp dto library",

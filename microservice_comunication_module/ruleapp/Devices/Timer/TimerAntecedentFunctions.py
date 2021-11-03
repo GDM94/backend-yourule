@@ -11,7 +11,7 @@ class TimerAntecedentFunction(object):
             antecedent = TimerAntecedent()
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
             antecedent.device_id = device_id
-            antecedent.device_name = self.r.get("device:"+device_id + ":name")
+            antecedent.device_name = self.r.get("device:" + device_id + ":name")
             antecedent.day_start_value = self.r.lrange(key_pattern + ":day_start_value")
             antecedent.time_start_value = self.r.get(key_pattern + ":time_start_value")
             antecedent.time_stop_value = self.r.get(key_pattern + ":time_stop_value")
@@ -30,7 +30,7 @@ class TimerAntecedentFunction(object):
             antecedent = TimerAntecedent()
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
             antecedent.device_id = device_id
-            antecedent.device_name = self.r.get("device:"+device_id + ":name")
+            antecedent.device_name = self.r.get("device:" + device_id + ":name")
             antecedent.evaluation = self.r.get(key_pattern + ":evaluation")
             return antecedent
         except Exception as error:
@@ -124,12 +124,12 @@ class TimerAntecedentFunction(object):
         try:
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
             check_time = self.r.get(key_pattern + ":check_time")
+            time_start_value_str = self.r.get(key_pattern + ":time_start_value")
+            time_stop_value_str = self.r.get(key_pattern + ":time_stop_value")
             evaluation = "true"
-            if check_time == "true":
+            if check_time == "true" and time_start_value_str != "" and time_stop_value_str != "":
                 current_time_str = datetime.now().strftime("%H:%M")
                 current_time = datetime.strptime(current_time_str, '%H:%M').time()
-                time_start_value_str = self.r.get(key_pattern + ":time_start_value")
-                time_stop_value_str = self.r.get(key_pattern + ":time_stop_value")
                 time_start_value = datetime.strptime(time_start_value_str, '%H:%M').time()
                 time_stop_value = datetime.strptime(time_stop_value_str, '%H:%M').time()
                 evaluation = "false"
@@ -144,10 +144,11 @@ class TimerAntecedentFunction(object):
         try:
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
             check_date = self.r.get(key_pattern + ":check_date")
+            day_start_value = self.r.lrange(key_pattern + ":day_start_value")
             evaluation = "true"
-            if check_date == "true":
+            if check_date == "true" and self.r.exists(key_pattern + ":day_start_value") == 1 and len(
+                    day_start_value) > 0:
                 current_day = str(datetime.today().weekday())
-                day_start_value = self.r.lrange(key_pattern + ":day_start_value")
                 evaluation = "false"
                 if current_day in day_start_value:
                     evaluation = "true"

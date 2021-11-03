@@ -27,7 +27,7 @@ function Go () {
         Push-Location $folder
 
         # Perform the command within the folder
-        & docker buildx build --platform linux/arm/v7 -t dimax94/$folder --push .
+        & docker buildx build --platform linux/amd64,linux/arm/v7 -t dimax94/$folder --push .
 
 	# Go back to the original folder
         Pop-Location
