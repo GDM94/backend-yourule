@@ -98,9 +98,7 @@ class SwitchAntecedentFunction(object):
 
     def antecedent_evaluation(self, user_id, device_id, rule_id):
         try:
-            evaluation = "false"
-            if self.r.exists("device:" + device_id + ":measure") == 1:
-                evaluation = self.last_time_evaluation(user_id, device_id, rule_id)
+            evaluation = self.last_time_evaluation(user_id, device_id, rule_id)
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
             old_evaluation = self.r.get(key_pattern + ":evaluation")
             trigger = "false"
@@ -119,12 +117,15 @@ class SwitchAntecedentFunction(object):
         if self.r.exists(device_key_pattern + ":measure") == 1:
             measure = self.r.get(device_key_pattern + ":measure")
             last_time_on_str = self.r.get(device_key_pattern + ":last_time_on")
-            last_time_on = datetime.strptime(last_time_on_str, '%H:%M')
             last_time_off_str = self.r.get(device_key_pattern + ":last_time_off")
+            time_stop_value_str = self.r.get(key_pattern + ":time_stop_value")
+            time_start_value_str = self.r.get(key_pattern + ":time_start_value")
+            if last_time_on_str == "" or last_time_off_str == "" or time_stop_value_str == "-" or time_start_value_str == "-":
+                return "true"
+            last_time_on = datetime.strptime(last_time_on_str, '%H:%M')
             last_time_off = datetime.strptime(last_time_off_str, '%H:%M')
             if measure == "on":
                 delta_last_off = (last_time_on - last_time_off).total_seconds()
-                time_stop_value_str = self.r.get(key_pattern + ":time_stop_value")
                 time_stop_value = datetime.strptime(time_stop_value_str, '%H:%M').time()
                 date_stop_value = int(self.r.get(key_pattern + ":date_stop_value")) * 24 * 60
                 stop_interval = (time_stop_value.hour * 60) + time_stop_value.minute + date_stop_value
@@ -133,7 +134,6 @@ class SwitchAntecedentFunction(object):
                     evaluation = "false"
             elif measure == "off":
                 delta_last_on = (last_time_off - last_time_on).total_seconds()
-                time_start_value_str = self.r.get(key_pattern + ":time_start_value")
                 time_start_value = datetime.strptime(time_start_value_str, '%H:%M').time()
                 date_start_value = int(self.r.get(key_pattern + ":date_start_value")) * 24 * 60
                 start_inteval = (time_start_value.hour * 60) + time_start_value.minute + date_start_value
