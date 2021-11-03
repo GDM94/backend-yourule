@@ -96,7 +96,7 @@ class SwitchAntecedentFunction(object):
             print(repr(error))
             return "error"
 
-    def antecedent_evaluation(self, user_id, rule_id, device_id):
+    def antecedent_evaluation(self, user_id, device_id, rule_id):
         try:
             evaluation = "false"
             if self.r.exists("device:" + device_id + ":measure") == 1:

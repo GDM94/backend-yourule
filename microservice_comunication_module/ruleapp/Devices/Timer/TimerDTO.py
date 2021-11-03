@@ -7,7 +7,7 @@ class Timer(object):
         self.rules = []
         self.status = "connected"
         self.color = "green"
-        self.expire_time = "10"
+        self.expiration = "no"
 
     def device_mapping(self, device):
         self.id = device["id"]

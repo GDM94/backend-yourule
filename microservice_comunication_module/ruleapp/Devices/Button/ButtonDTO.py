@@ -17,3 +17,4 @@ class Button(object):
         self.id = device["id"]
         self.name = device["name"]
         self.rules = device["rules"]
+        self.expiration = device["expiration"]

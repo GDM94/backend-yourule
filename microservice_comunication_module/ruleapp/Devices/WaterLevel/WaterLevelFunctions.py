@@ -83,6 +83,7 @@ class WaterLevelFunction(object):
             self.r.set(key_pattern + ":setting:max", dto.setting_max)
             self.r.set(key_pattern + ":setting:error", dto.setting_error)
             self.r.set(key_pattern + ":measure", dto.measure)
+            self.r.set(key_pattern + ":expiration", dto.expiration)
             return dto
         except Exception as error:
             print(repr(error))

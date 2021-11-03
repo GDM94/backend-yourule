@@ -21,3 +21,4 @@ class Switch(object):
         self.rules = device["rules"]
         self.automatic = device["automatic"]
         self.manual_measure = device["manual_measure"]
+        self.expiration = device["expiration"]

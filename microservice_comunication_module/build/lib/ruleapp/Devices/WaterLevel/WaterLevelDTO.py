@@ -26,3 +26,4 @@ class WaterLevel(object):
         self.setting_max = device["setting_max"]
         self.setting_unit_measure = device["setting_unit_measure"]
         self.rules = device["rules"]
+        self.expiration = device["expiration"]

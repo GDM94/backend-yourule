@@ -2,7 +2,8 @@ import paho.mqtt.client as mqtt
 
 
 class Subscriber(object):
-    def __init__(self, config, client_id, service):
+    def __init__(self, config, client_id, service, redis):
+        self.r = redis
         self.client = mqtt.Client(client_id, True)
         self.BROKER = config.get("MQTT", "broker")
         self.PORT = int(config.get("MQTT", "port"))
@@ -46,7 +47,8 @@ class Subscriber(object):
         message_info = message_payload.split("/")
         measure = message_info[-1]
         expiration = message_info[0]
-        self.service.data_device_ingestion(device_id, measure, expiration)
+        if self.r.exists("device:" + device_id + ":name") == 1:
+            self.service.data_device_ingestion(device_id, measure, expiration)
 
     def callback_on_disconnect(self, paho_mqtt, userdata, rc):
         print("MQTT Subscriber successfull disconnected")

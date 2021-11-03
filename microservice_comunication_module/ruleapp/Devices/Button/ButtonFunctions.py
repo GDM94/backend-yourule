@@ -70,6 +70,7 @@ class ButtonFunction(object):
             dto.device_mapping(new_device)
             key_pattern = "device:" + dto.id
             self.r.set(key_pattern + ":name", dto.name)
+            self.r.set(key_pattern + ":expiration", dto.expiration)
             return dto
         except Exception as error:
             print(repr(error))

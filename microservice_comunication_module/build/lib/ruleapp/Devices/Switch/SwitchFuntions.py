@@ -78,6 +78,7 @@ class SwitchFunction(object):
             self.r.set(key_pattern + ":name", dto.name)
             self.r.set(key_pattern + ":automatic", dto.automatic)
             self.r.set(key_pattern + ":manual_measure", dto.manual_measure)
+            self.r.set(key_pattern + ":expiration", dto.expiration)
             return dto
         except Exception as error:
             print(repr(error))
