@@ -1,4 +1,3 @@
-from datetime import datetime
 from ruleapp.Rule.RuleFunctions import RuleFunction
 
 

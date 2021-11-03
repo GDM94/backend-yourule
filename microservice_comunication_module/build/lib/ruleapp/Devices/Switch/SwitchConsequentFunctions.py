@@ -1,9 +1,11 @@
 from .SwitchConsequentDTO import SwitchConsequent
+from .SwitchAntecedentFunctions import SwitchAntecedentFunction
 
 
 class SwitchConsequentFunction(object):
     def __init__(self, redis):
         self.r = redis
+        self.switch_antecedent_functions = SwitchAntecedentFunction(redis)
 
     def get_consequent(self, user_id, rule_id, device_id):
         try:
@@ -34,6 +36,9 @@ class SwitchConsequentFunction(object):
 
     def delete_consequent(self, user_id, rule_id, device_id):
         try:
+            device_antecedents = self.r.lrange("user:" + user_id + ":rule:" + rule_id + ":device_antecedents")
+            if device_id in device_antecedents:
+                self.switch_antecedent_functions.delete_antecedent(user_id, rule_id, device_id)
             self.r.lrem("device:" + device_id + ":rules", rule_id)
             self.r.lrem("user:" + user_id + ":rule:" + rule_id + ":device_consequents", device_id)
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_consequents:" + device_id
@@ -81,17 +86,16 @@ class SwitchConsequentFunction(object):
     def switch_evaluation(self, user_id, device_id):
         key_pattern = "device:" + device_id
         automatic = self.r.get(key_pattern + ":automatic")
-        output = {"measure": "false"}
-        if automatic == "true":
+        output = "false"
+        if automatic == "true" and self.r.exists(key_pattern + ":measure") == 1:
             rules = list(self.r.smembers(key_pattern + ":rules"))
             new_status = "off"
+            current_status = self.r.get("device:" + device_id + ":measure")
             for rule in rules:
                 rule_evaluation = self.r.get("user:" + user_id + ":rule:" + rule + ":evaluation")
                 if rule_evaluation == "true":
                     new_status = "on"
                     break
-            if self.r.exists(key_pattern + ":measure") == 1:
-                current_status = self.r.get("device:" + device_id + ":measure")
-                if current_status != new_status:
-                    output["measure"] = new_status
+            if current_status != new_status:
+                output = new_status
         return output

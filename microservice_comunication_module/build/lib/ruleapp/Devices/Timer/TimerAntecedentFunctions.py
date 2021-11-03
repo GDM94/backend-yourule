@@ -102,11 +102,10 @@ class TimerAntecedentFunction(object):
             print(repr(error))
             return "error"
 
-    def antecedent_evaluation(self, user_id, rule_id):
+    def antecedent_evaluation(self, user_id, device_id, rule_id):
         try:
-            device_id = "timer-"+user_id
-            time_evaluation = self.evaluate_time(user_id, rule_id, device_id)
-            date_evaluation = self.evaluate_date(user_id, rule_id, device_id)
+            time_evaluation = self.evaluate_time(user_id, device_id, rule_id)
+            date_evaluation = self.evaluate_date(user_id, device_id, rule_id)
             evaluation = "false"
             if time_evaluation == "true" and date_evaluation == "true":
                 evaluation = "true"
@@ -121,7 +120,7 @@ class TimerAntecedentFunction(object):
             print(repr(error))
             return "error"
 
-    def evaluate_time(self, user_id, rule_id, device_id):
+    def evaluate_time(self, user_id, device_id, rule_id):
         try:
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
             check_time = self.r.get(key_pattern + ":check_time")
@@ -141,7 +140,7 @@ class TimerAntecedentFunction(object):
             print(repr(error))
             return "error"
 
-    def evaluate_date(self, user_id, rule_id, device_id):
+    def evaluate_date(self, user_id, device_id, rule_id):
         try:
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
             check_date = self.r.get(key_pattern + ":check_date")

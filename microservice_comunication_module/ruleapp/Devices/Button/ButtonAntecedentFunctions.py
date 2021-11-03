@@ -1,6 +1,4 @@
 from .ButtonAntecedentDTO import ButtonAntecedent
-from datetime import datetime
-
 
 class ButtonAntecedentFunction(object):
     def __init__(self, redis):

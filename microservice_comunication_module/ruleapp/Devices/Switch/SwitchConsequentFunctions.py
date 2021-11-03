@@ -1,9 +1,11 @@
 from .SwitchConsequentDTO import SwitchConsequent
+from .SwitchAntecedentFunctions import SwitchAntecedentFunction
 
 
 class SwitchConsequentFunction(object):
     def __init__(self, redis):
         self.r = redis
+        self.switch_antecedent_functions = SwitchAntecedentFunction(redis)
 
     def get_consequent(self, user_id, rule_id, device_id):
         try:
@@ -34,6 +36,9 @@ class SwitchConsequentFunction(object):
 
     def delete_consequent(self, user_id, rule_id, device_id):
         try:
+            device_antecedents = self.r.lrange("user:" + user_id + ":rule:" + rule_id + ":device_antecedents")
+            if device_id in device_antecedents:
+                self.switch_antecedent_functions.delete_antecedent(user_id, rule_id, device_id)
             self.r.lrem("device:" + device_id + ":rules", rule_id)
             self.r.lrem("user:" + user_id + ":rule:" + rule_id + ":device_consequents", device_id)
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_consequents:" + device_id

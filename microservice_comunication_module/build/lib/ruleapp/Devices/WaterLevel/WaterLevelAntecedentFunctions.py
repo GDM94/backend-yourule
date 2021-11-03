@@ -97,10 +97,9 @@ class WaterLevelAntecedentFunction(object):
 
     def antecedent_evaluation(self, user_id, rule_id, device_id, measure):
         try:
-            measure_evaluation = self.measure_evaluation(user_id, rule_id, device_id, measure)
             evaluation = "false"
-            if measure_evaluation == "true":
-                evaluation = "true"
+            if self.r.exists("device:" + device_id + ":measure") == 1:
+                evaluation = self.measure_evaluation(user_id, rule_id, device_id, measure)
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
             old_evaluation = self.r.get(key_pattern + ":evaluation")
             trigger = "false"
@@ -113,29 +112,25 @@ class WaterLevelAntecedentFunction(object):
             return "error"
 
     def measure_evaluation(self, user_id, rule_id, device_id, measure):
-        try:
-            key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
-            evaluation = "false"
-            old_evaluation = self.r.get(key_pattern + ":evaluation")
-            condition = self.r.get(key_pattern + ":condition_measure")
-            start_value = self.r.get(key_pattern + ":start_value")
-            if condition == "between":
-                stop_value = self.r.get(key_pattern + ":stop_value")
-                if int(start_value) <= int(measure) < int(stop_value):
-                    evaluation = "true"
-            elif condition == ">":
-                if int(measure) > int(start_value):
-                    evaluation = "true"
-            elif condition == "<":
-                if int(measure) < int(start_value):
-                    evaluation = "true"
-            elif condition == "isteresi":
-                stop_value = self.r.get(key_pattern + ":stop_value")
-                if int(measure) <= int(start_value):
-                    evaluation = "true"
-                if old_evaluation == "true" and int(measure) <= int(stop_value):
-                    evaluation = "true"
-            return evaluation
-        except Exception as error:
-            print(repr(error))
-            return "error"
+        key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
+        evaluation = "false"
+        old_evaluation = self.r.get(key_pattern + ":evaluation")
+        condition = self.r.get(key_pattern + ":condition_measure")
+        start_value = self.r.get(key_pattern + ":start_value")
+        if condition == "between":
+            stop_value = self.r.get(key_pattern + ":stop_value")
+            if int(start_value) <= int(measure) < int(stop_value):
+                evaluation = "true"
+        elif condition == ">":
+            if int(measure) > int(start_value):
+                evaluation = "true"
+        elif condition == "<":
+            if int(measure) < int(start_value):
+                evaluation = "true"
+        elif condition == "isteresi":
+            stop_value = self.r.get(key_pattern + ":stop_value")
+            if int(measure) <= int(start_value):
+                evaluation = "true"
+            if old_evaluation == "true" and int(measure) <= int(stop_value):
+                evaluation = "true"
+        return evaluation

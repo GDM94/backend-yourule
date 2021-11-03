@@ -19,6 +19,8 @@ ruleapp/Devices/Button/ButtonAntecedentFunctions.py
 ruleapp/Devices/Button/ButtonDTO.py
 ruleapp/Devices/Button/ButtonFunctions.py
 ruleapp/Devices/Button/__init__.py
+ruleapp/Devices/Switch/SwitchAntecedentDTO.py
+ruleapp/Devices/Switch/SwitchAntecedentFunctions.py
 ruleapp/Devices/Switch/SwitchConsequentDTO.py
 ruleapp/Devices/Switch/SwitchConsequentFunctions.py
 ruleapp/Devices/Switch/SwitchDTO.py

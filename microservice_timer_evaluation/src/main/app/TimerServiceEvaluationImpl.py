@@ -1,5 +1,4 @@
 import json
-from datetime import datetime
 from ruleapp.Devices.Timer.TimerAntecedentFunctions import TimerAntecedentFunction
 
 

@@ -6,7 +6,7 @@ import string
 from configuration.config import read_config
 from ruleapp.DBconnection.RedisConnectionImpl import RedisConnection
 
-client_id = random_client_id = 'timer_trigger'.join(random.choices(string.ascii_letters + string.digits, k=8))
+client_id = 'timer_trigger'.join(random.choices(string.ascii_letters + string.digits, k=8))
 
 config = read_config()
 redis = RedisConnection(config)

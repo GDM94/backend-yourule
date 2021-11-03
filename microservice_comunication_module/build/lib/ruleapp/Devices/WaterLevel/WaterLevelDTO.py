@@ -17,6 +17,7 @@ class WaterLevel(object):
         self.min_measure = "-"
         self.min_measure_time = "-"
         self.min_measure_date = "-"
+        self.expiration = "10"
 
     def device_mapping(self, device):
         self.id = device["id"]

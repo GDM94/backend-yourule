@@ -1,6 +1,7 @@
 from .SwitchDTO import Switch
 from .SwitchConsequentFunctions import SwitchConsequentFunction
 from ..DeviceEvaluationDTO import DeviceEvaluation
+from datetime import datetime
 
 
 class SwitchFunction(object):
@@ -18,15 +19,18 @@ class SwitchFunction(object):
                 device = Switch()
                 device.id = device_id
                 device.name = "SWITCH " + str(len(device_id_keys))
+                current_time_str = datetime.now().strftime("%H:%M")
+                current_day = str(datetime.today().weekday())
                 self.r.set(key_pattern + ":name", device.name)
                 self.r.set(key_pattern + ":user_id", user_id)
                 self.r.set(key_pattern + ":measure", device.measure)
-                self.r.set(key_pattern + ":last_date_on", device.last_date_on)
-                self.r.set(key_pattern + ":last_date_off", device.last_date_off)
-                self.r.set(key_pattern + ":last_time_on", device.last_time_on)
-                self.r.set(key_pattern + ":last_time_off", device.last_time_off)
+                self.r.set(key_pattern + ":last_date_on", current_day)
+                self.r.set(key_pattern + ":last_date_off", current_day)
+                self.r.set(key_pattern + ":last_time_on", current_time_str)
+                self.r.set(key_pattern + ":last_time_off", current_time_str)
                 self.r.set(key_pattern + ":automatic", device.automatic)
                 self.r.set(key_pattern + ":manual_measure", device.manual_measure)
+                self.r.set(key_pattern + ":expiration", device.expiration)
                 result = device
             return result
         except Exception as error:
@@ -45,6 +49,7 @@ class SwitchFunction(object):
             dto.last_date_off = self.r.get(key_pattern + ":last_date_off")
             dto.last_time_on = self.r.get(key_pattern + ":last_time_on")
             dto.last_time_off = self.r.get(key_pattern + ":last_time_off")
+            dto.expiration = self.r.get(key_pattern + "expiration")
             if self.r.exists(key_pattern + ":rules") == 1:
                 rules_id = self.r.lrange(key_pattern + ":rules")
                 for rule_id in rules_id:
@@ -100,15 +105,20 @@ class SwitchFunction(object):
             print(repr(error))
             return "error"
 
-    def device_evaluation(self, device_id):
+    def device_evaluation(self, device_id, measure):
         output = DeviceEvaluation()
         key_pattern = "device:" + device_id
         if self.r.exists(key_pattern + ":user_id") == 1:
-            user_id = self.r.get("device:" + device_id + ":user_id")
-            output.user_id = user_id
-            output.device_id = device_id
-            output.type = "consequent"
-            output.measure = self.measure_evaluation(user_id, device_id)
+            expiration = int(self.r.get(key_pattern + ":expiration")) + 2
+            self.r.setex(key_pattern + ":measure", expiration, measure)
+            self.last_time_status_update(device_id, measure)
+            user_id = self.r.get(key_pattern + ":user_id")
+            evaluated_measure = self.measure_evaluation(user_id, device_id)
+            if evaluated_measure != measure:
+                output.user_id = user_id
+                output.device_id = device_id
+                output.type = "switch"
+                output.measure = evaluated_measure
         return output
 
     def measure_evaluation(self, user_id, device_id):
@@ -116,13 +126,22 @@ class SwitchFunction(object):
         automatic = self.r.get(key_pattern + ":automatic")
         if automatic == "true":
             rules = list(self.r.smembers(key_pattern + ":rules"))
-            status = "off"
+            measure = "off"
             for rule in rules:
                 if self.r.get("user:" + user_id + ":rule:" + rule + ":evaluation") == "true":
-                    status = "on"
+                    measure = "on"
                     break
         else:
-            status = self.r.get(key_pattern+":manual_measure")
-        return status
+            measure = self.r.get(key_pattern + ":manual_measure")
+        return measure
 
-
+    def last_time_status_update(self, device_id, measure):
+        time_str = datetime.now().strftime("%H:%M:%S")
+        date_str = datetime.now().strftime("%d/%m/%Y")
+        key_pattern = "device:" + device_id
+        if measure == "on":
+            self.r.set(key_pattern + ":last_time_on", time_str)
+            self.r.set(key_pattern + ":last_date_on", date_str)
+        else:
+            self.r.set(key_pattern + ":last_time_off", time_str)
+            self.r.set(key_pattern + ":last_date_off", date_str)
