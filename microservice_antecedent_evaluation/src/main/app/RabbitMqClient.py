@@ -63,9 +63,9 @@ class RabbitMQ(object):
         message = body.decode()
         payload = json.loads(message)
         # print("[x] received message " + str(payload))
-        user_id = payload["user_id"]
-        device_id = payload["device_id"]
-        measure = payload["measure"]
+        user_id = str(payload["user_id"])
+        device_id = str(payload["device_id"])
+        measure = str(payload["measure"])
         rules = payload["rules"]
         output_rules = self.service.antecedent_evaluation(user_id, device_id, measure, rules)
         if len(output_rules) > 0:

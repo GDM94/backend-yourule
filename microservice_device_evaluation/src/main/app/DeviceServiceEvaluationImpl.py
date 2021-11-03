@@ -20,14 +20,6 @@ class DeviceServiceEvaluation(object):
                 output = self.waterlevel_functions.device_evaluation(device_id, measure)
             elif "BUTTON" in device_id:
                 output = self.button_functions.device_evaluation(device_id, measure)
-            elif "PHOTOCELL" in device_id or "SOILMOISTURE" in device_id:
-                output = {}
-                max_measure = 1024
-                # measure = str(round((int(absolute_measure) / max_measure) * 100.0))
-            elif "AMMETER" in device_id:
-                output = {}
-                max_measure = int(self.r.get("device:" + device_id + ":setting:max"))
-                # measure = str(round((int(absolute_measure) / max_measure) * 100.0))
             return output
         except Exception as error:
             print(repr(error))

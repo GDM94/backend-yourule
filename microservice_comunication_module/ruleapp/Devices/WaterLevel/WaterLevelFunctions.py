@@ -175,5 +175,5 @@ class WaterLevelFunction(object):
             output.type = "antecedent"
             key_pattern = "device:" + device_id
             if self.r.exists(key_pattern + ":rules"):
-                output.rules = list(self.r.smembers(key_pattern + ":rules"))
+                output.rules = self.r.lrange(key_pattern + ":rules")
         return output

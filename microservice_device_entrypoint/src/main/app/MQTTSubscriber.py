@@ -41,12 +41,13 @@ class Subscriber(object):
 
     def callback_on_message_received(self, paho_mqtt, userdata, msg):
         message_payload = msg.payload.decode("utf-8")
-        print("[x] received topic: {}; payload: {}".format(msg.topic, message_payload))
         keys = msg.topic.split("/")
         device_id = keys[-1]
         message_info = message_payload.split("/")
         measure = message_info[-1]
         expiration = message_info[0]
+        print("[x] received message for device: {}; with measure: {} and expiration: {}".format(device_id, measure,
+                                                                                                expiration))
         if self.r.exists("device:" + device_id + ":name") == 1:
             self.service.data_device_ingestion(device_id, measure, expiration)
 

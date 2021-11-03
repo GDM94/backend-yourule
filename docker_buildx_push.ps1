@@ -15,7 +15,6 @@ function Go () {
     'microservice_rule_evaluation',
     'microservice_consequent_evaluation',
     'microservice_laston_evaluation',
-    'microservice_switch_sync',
     'redis',
     'rabbitmq',
     'reverse_proxy')

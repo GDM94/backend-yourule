@@ -65,7 +65,7 @@ class RabbitMQ(object):
         trigger = json.loads(message)
         # print("[x] received message " + str(trigger))
         rules = trigger["rules"]
-        user_id = trigger["user_id"]
+        user_id = str(trigger["user_id"])
         for rule_id in rules:
             output = self.service.rule_evaluation(user_id, rule_id)
             if output["rule_id"] != "":

@@ -126,7 +126,7 @@ class SwitchFunction(object):
         key_pattern = "device:" + device_id
         automatic = self.r.get(key_pattern + ":automatic")
         if automatic == "true":
-            rules = list(self.r.smembers(key_pattern + ":rules"))
+            rules = self.r.lrange(key_pattern + ":rules")
             measure = "off"
             for rule in rules:
                 if self.r.get("user:" + user_id + ":rule:" + rule + ":evaluation") == "true":

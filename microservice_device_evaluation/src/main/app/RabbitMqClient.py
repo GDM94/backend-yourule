@@ -65,10 +65,10 @@ class RabbitMQ(object):
     def on_message_callback(self, ch, method, properties, body):
         message = body.decode()
         payload = json.loads(message)
-        # print("[x] received message " + str(payload))
-        device_id = payload["id"]
-        measure = payload["measure"]
-        expiration = payload["expiration"]
+        print("[x] received message " + str(payload))
+        device_id = str(payload["id"])
+        measure = str(payload["measure"])
+        expiration = str(payload["expiration"])
         expiration_sync = self.service.expiration_evaluation(device_id, expiration)
         if expiration_sync != "false":
             topic = self.mqtt_topic_expiration + device_id
