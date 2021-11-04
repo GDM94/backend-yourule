@@ -88,7 +88,7 @@ class SwitchConsequentFunction(object):
         automatic = self.r.get(key_pattern + ":automatic")
         output = "false"
         if automatic == "true" and self.r.exists(key_pattern + ":measure") == 1:
-            rules = list(self.r.smembers(key_pattern + ":rules"))
+            rules = self.r.lrange(key_pattern + ":rules")
             new_status = "off"
             current_status = self.r.get("device:" + device_id + ":measure")
             for rule in rules:

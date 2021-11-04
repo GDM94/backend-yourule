@@ -61,8 +61,8 @@ class RabbitMQ(object):
 
     def on_message_callback(self, ch, method, properties, body):
         message = body.decode()
+        print("[x] received message " + message)
         payload = json.loads(message)
-        # print("[x] received message " + str(payload))
         user_id = str(payload["user_id"])
         device_id = str(payload["device_id"])
         measure = str(payload["measure"])

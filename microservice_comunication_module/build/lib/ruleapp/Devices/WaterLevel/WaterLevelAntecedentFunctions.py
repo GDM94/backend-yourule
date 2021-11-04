@@ -85,7 +85,6 @@ class WaterLevelAntecedentFunction(object):
             result = "false"
             if antecedent.device_id in device_antecedents:
                 key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + antecedent.device_id
-                self.r.set(key_pattern + ":evaluation", antecedent.evaluation)
                 self.r.set(key_pattern + ":condition_measure", antecedent.condition_measure)
                 self.r.set(key_pattern + ":start_value", antecedent.start_value)
                 self.r.set(key_pattern + ":stop_value", antecedent.stop_value)

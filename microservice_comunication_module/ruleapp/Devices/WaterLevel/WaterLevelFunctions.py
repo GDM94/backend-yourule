@@ -127,7 +127,7 @@ class WaterLevelFunction(object):
 
     def device_max_measure_range(self, device_id, measure):
         key_pattern = "device:" + device_id
-        time_str = datetime.now().strftime("%H:%M:%S")
+        time_str = datetime.now().strftime("%H:%M")
         date_str = datetime.now().strftime("%d/%m/%Y")
         if self.r.exists(key_pattern + ":max_measure"):
             max_measure = self.r.get(key_pattern + ":max_measure")
@@ -147,7 +147,7 @@ class WaterLevelFunction(object):
 
     def device_min_measure_range(self, device_id, measure):
         key_pattern = "device:" + device_id
-        time_str = datetime.now().strftime("%H:%M:%S")
+        time_str = datetime.now().strftime("%H:%M")
         date_str = datetime.now().strftime("%d/%m/%Y")
         if self.r.exists(key_pattern + ":min_measure"):
             min_measure = self.r.get(key_pattern + ":min_measure")

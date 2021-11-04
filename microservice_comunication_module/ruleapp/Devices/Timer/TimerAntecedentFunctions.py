@@ -91,7 +91,6 @@ class TimerAntecedentFunction(object):
                 if len(antecedent.day_start_value) > 0:
                     for day in antecedent.day_start_value:
                         self.r.rpush(key_pattern + ":day_start_value", day)
-                self.r.set(key_pattern + ":evaluation", antecedent.evaluation)
                 self.r.set(key_pattern + ":time_start_value", antecedent.time_start_value)
                 self.r.set(key_pattern + ":time_stop_value", antecedent.time_stop_value)
                 self.r.set(key_pattern + ":check_time", antecedent.check_time)

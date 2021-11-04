@@ -62,8 +62,8 @@ class RabbitMQ(object):
 
     def on_message_callback(self, ch, method, properties, body):
         message = body.decode()
+        print("[x] received message " + message)
         trigger = json.loads(message)
-        # print("[x] received message " + str(trigger))
         rules = trigger["rules"]
         user_id = str(trigger["user_id"])
         for rule_id in rules:
