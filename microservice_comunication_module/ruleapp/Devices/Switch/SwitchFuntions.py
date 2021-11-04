@@ -49,7 +49,7 @@ class SwitchFunction(object):
             dto.last_date_off = self.r.get(key_pattern + ":last_date_off")
             dto.last_time_on = self.r.get(key_pattern + ":last_time_on")
             dto.last_time_off = self.r.get(key_pattern + ":last_time_off")
-            dto.expiration = self.r.get(key_pattern + "expiration")
+            dto.expiration = self.r.get(key_pattern + ":expiration")
             if self.r.exists(key_pattern + ":rules") == 1:
                 rules_id = self.r.lrange(key_pattern + ":rules")
                 for rule_id in rules_id:
@@ -137,7 +137,7 @@ class SwitchFunction(object):
         return measure
 
     def last_time_status_update(self, device_id, measure):
-        time_str = datetime.now().strftime("%H:%M:%S")
+        time_str = datetime.now().strftime("%H:%M")
         date_str = datetime.now().strftime("%d/%m/%Y")
         key_pattern = "device:" + device_id
         if measure == "on":

@@ -44,7 +44,7 @@ class RuleFunction(object):
         return consequents_status
 
     def update_evaluation_timestamp(self, pattern_key, evaluation):
-        time_str = datetime.now().strftime("%%H:%M:%S")
+        time_str = datetime.now().strftime("%H:%M")
         date_str = datetime.now().strftime("%d/%m/%Y")
         if evaluation == "true":
             self.r.set(pattern_key + ":last_time_on", time_str)
