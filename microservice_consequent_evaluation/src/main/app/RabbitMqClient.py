@@ -64,9 +64,9 @@ class RabbitMQ(object):
     def on_message_callback(self, ch, method, properties, body):
         message = body.decode()
         print("[x] received message " + message)
-        trigger = json.loads(message)
-        user_id = str(trigger["user_id"])
-        rule_id = str(trigger["rule_id"])
+        message_dict = json.loads(message)
+        user_id = str(message_dict["user_id"])
+        rule_id = str(message_dict["rule_id"])
         output = self.service.consequent_evaluation(user_id, rule_id)
         for trigger in output:
             topic = self.mqtt_publish_topic + trigger["device_id"]
