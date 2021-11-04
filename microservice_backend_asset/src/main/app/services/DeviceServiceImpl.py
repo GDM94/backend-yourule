@@ -14,6 +14,7 @@ class DeviceService(object):
         self.mqtt_client = mqtt_client
         self.rabbitmq = rabbitmq
         self.EXPIRATION = config.get("REDIS", "expiration")
+        self.publish_topic_mqtt_switch = config.get("MQTT", "publish_setting")
         self.switch_functions = SwitchFunction(redis)
         self.waterlevel_functions = WaterLevelFunction(redis)
         self.timer_functions = TimerFunction(redis)
@@ -138,7 +139,9 @@ class DeviceService(object):
         try:
             self.r.set("device:" + device_id + ":manual_measure", manual_measure)
             # trigger setting device
-            self.mqtt_client.publish(device_id, manual_measure + "/0")
+            message = manual_measure + "/0"
+            topic = self.publish_topic_mqtt_switch + device_id
+            self.mqtt_client.publish(topic, message)
             return self.switch_functions.get_device(user_id, device_id)
         except Exception as error:
             print(repr(error))

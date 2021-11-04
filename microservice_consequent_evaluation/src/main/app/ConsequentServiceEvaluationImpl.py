@@ -19,7 +19,6 @@ class ConsequentServiceEvaluation(object):
             for device_id in device_consequents:
                 delay = delay + int(self.r.get(pattern_key + ":rule_consequents:" + device_id + ":delay"))
                 if "alert" not in device_id:
-                    print(device_id)
                     measure = self.switch_consequent_functions.switch_evaluation(user_id, device_id)
                     if measure != "false":
                         trigger = {"device_id": device_id, "measure": measure, "delay": str(delay)}
