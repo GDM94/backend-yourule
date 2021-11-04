@@ -117,8 +117,10 @@ class WaterLevelAntecedentFunction(object):
         old_evaluation = self.r.get(key_pattern + ":evaluation")
         condition = self.r.get(key_pattern + ":condition_measure")
         start_value = self.r.get(key_pattern + ":start_value")
+        stop_value = self.r.get(key_pattern + ":stop_value")
+        if start_value == "//" or stop_value == "//":
+            return "true"
         if condition == "between":
-            stop_value = self.r.get(key_pattern + ":stop_value")
             if int(start_value) <= int(measure) < int(stop_value):
                 evaluation = "true"
         elif condition == ">":
@@ -128,7 +130,6 @@ class WaterLevelAntecedentFunction(object):
             if int(measure) < int(start_value):
                 evaluation = "true"
         elif condition == "isteresi":
-            stop_value = self.r.get(key_pattern + ":stop_value")
             if int(measure) <= int(start_value):
                 evaluation = "true"
             if old_evaluation == "true" and int(measure) <= int(stop_value):

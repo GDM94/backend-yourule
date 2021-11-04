@@ -1,5 +1,6 @@
 from .ButtonAntecedentDTO import ButtonAntecedent
 
+
 class ButtonAntecedentFunction(object):
     def __init__(self, redis):
         self.r = redis
