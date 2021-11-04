@@ -17,6 +17,8 @@ class SwitchAntecedentFunction(object):
             antecedent.last_date_on = self.r.get(device_key_pattern + ":last_date_on")
             antecedent.last_time_off = self.r.get(device_key_pattern + ":last_time_off")
             antecedent.last_date_off = self.r.get(device_key_pattern + ":last_date_off")
+            if self.r.exists(device_key_pattern + ":measure"):
+                antecedent.measure = self.r.get(device_key_pattern + ":measure")
             antecedent.evaluation = self.r.get(rule_key_pattern + ":evaluation")
             antecedent.time_start_value = self.r.get(rule_key_pattern + ":time_start_value")
             antecedent.time_stop_value = self.r.get(rule_key_pattern + ":time_stop_value")

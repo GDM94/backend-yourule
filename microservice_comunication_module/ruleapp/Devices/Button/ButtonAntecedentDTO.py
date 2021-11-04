@@ -3,7 +3,7 @@ class ButtonAntecedent(object):
     def __init__(self):
         self.device_id = ""
         self.device_name = ""
-        self.measure = ""
+        self.measure = "-"
         self.condition_measure = "="
         self.start_value = "on"
         self.stop_value = "off"

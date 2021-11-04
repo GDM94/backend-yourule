@@ -2,8 +2,7 @@ class WaterLevelAntecedent(object):
     def __init__(self):
         self.device_id = ""
         self.device_name = ""
-        self.measure = ""
-        self.absolute_measure = ""
+        self.measure = "-"
         self.condition_measure = "between"
         self.start_value = "//"
         self.stop_value = "//"

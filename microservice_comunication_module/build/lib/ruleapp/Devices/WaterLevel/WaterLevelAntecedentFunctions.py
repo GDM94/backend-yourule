@@ -10,10 +10,11 @@ class WaterLevelAntecedentFunction(object):
         try:
             antecedent = WaterLevelAntecedent()
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
+            device_key_pattern = "device:" + device_id
             antecedent.device_id = device_id
-            antecedent.device_name = self.r.get("device:" + device_id + ":name")
-            antecedent.measure = self.r.get(key_pattern + ":measure")
-            antecedent.absolute_measure = self.r.get(key_pattern + ":absolute_measure")
+            antecedent.device_name = self.r.get(device_key_pattern + ":name")
+            if self.r.exists(device_key_pattern + ":measure"):
+                antecedent.measure = self.r.get(device_key_pattern + ":measure")
             antecedent.condition_measure = self.r.get(key_pattern + ":condition_measure")
             antecedent.start_value = self.r.get(key_pattern + ":start_value")
             antecedent.stop_value = self.r.get(key_pattern + ":stop_value")

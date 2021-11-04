@@ -2,6 +2,7 @@ class SwitchAntecedent(object):
     def __init__(self):
         self.device_id = ""
         self.device_name = ""
+        self.measure = "-"
         self.condition = "between"
         self.last_time_on = ""
         self.last_date_on = ""

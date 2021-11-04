@@ -9,9 +9,11 @@ class ButtonAntecedentFunction(object):
         try:
             antecedent = ButtonAntecedent()
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
+            device_key_pattern = "device:" + device_id
             antecedent.device_id = device_id
-            antecedent.device_name = self.r.get("device:" + device_id + ":name")
-            antecedent.measure = self.r.get(key_pattern + ":measure")
+            antecedent.device_name = self.r.get(device_key_pattern + ":name")
+            if self.r.exists(device_key_pattern + ":measure"):
+                antecedent.measure = self.r.get(device_key_pattern + ":measure")
             antecedent.evaluation = self.r.get(key_pattern + ":evaluation")
             antecedent.last_time_on = self.r.get(key_pattern + ":last_time_on")
             antecedent.last_time_off = self.r.get(key_pattern + ":last_time_off")
