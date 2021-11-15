@@ -48,8 +48,10 @@ class WaterLevelFunction(object):
             dto.setting_error = self.r.get(key_pattern + ":setting:error")
             dto.max_measure = self.r.get(key_pattern + ":max_measure")
             dto.max_measure_time = self.r.get(key_pattern + ":max_measure_time")
+            dto.max_measure_date = self.r.get(key_pattern + ":max_measure_date")
             dto.min_measure = self.r.get(key_pattern + ":min_measure")
             dto.min_measure_time = self.r.get(key_pattern + ":min_measure_time")
+            dto.min_measure_date = self.r.get(key_pattern + ":min_measure_date")
             dto.expiration = self.r.get(key_pattern + ":expiration")
             if self.r.exists(key_pattern + ":rules") == 1:
                 rules_id = self.r.lrange(key_pattern + ":rules")
@@ -121,22 +123,17 @@ class WaterLevelFunction(object):
         expiration = int(self.r.get(key_pattern + ":expiration")) + 2
         self.r.setex(key_pattern + ":measure", expiration, relative_measure)
         self.r.setex(key_pattern + ":absolute_measure", expiration, absolute_measure)
-        self.device_max_measure_range(device_id, absolute_measure)
-        self.device_min_measure_range(device_id, absolute_measure)
+        self.device_max_measure_range(device_id, relative_measure)
+        self.device_min_measure_range(device_id, relative_measure)
         return relative_measure
 
     def device_max_measure_range(self, device_id, measure):
         key_pattern = "device:" + device_id
         time_str = datetime.now().strftime("%H:%M")
         date_str = datetime.now().strftime("%d/%m/%Y")
-        if self.r.exists(key_pattern + ":max_measure"):
-            max_measure = self.r.get(key_pattern + ":max_measure")
-            if max_measure != "-":
-                if float(measure) > float(max_measure):
-                    self.r.set(key_pattern + ":max_measure", measure)
-                    self.r.set(key_pattern + ":max_measure_time", time_str)
-                    self.r.set(key_pattern + ":max_measure_date", date_str)
-            else:
+        max_measure = self.r.get(key_pattern + ":max_measure")
+        if max_measure != "-":
+            if float(measure) > float(max_measure):
                 self.r.set(key_pattern + ":max_measure", measure)
                 self.r.set(key_pattern + ":max_measure_time", time_str)
                 self.r.set(key_pattern + ":max_measure_date", date_str)
@@ -149,14 +146,9 @@ class WaterLevelFunction(object):
         key_pattern = "device:" + device_id
         time_str = datetime.now().strftime("%H:%M")
         date_str = datetime.now().strftime("%d/%m/%Y")
-        if self.r.exists(key_pattern + ":min_measure"):
-            min_measure = self.r.get(key_pattern + ":min_measure")
-            if min_measure != "-":
-                if float(measure) < float(min_measure):
-                    self.r.set(key_pattern + ":min_measure", measure)
-                    self.r.set(key_pattern + ":min_measure_time", time_str)
-                    self.r.set(key_pattern + ":min_measure_date", date_str)
-            else:
+        min_measure = self.r.get(key_pattern + ":min_measure")
+        if min_measure != "-":
+            if float(measure) < float(min_measure):
                 self.r.set(key_pattern + ":min_measure", measure)
                 self.r.set(key_pattern + ":min_measure_time", time_str)
                 self.r.set(key_pattern + ":min_measure_date", date_str)

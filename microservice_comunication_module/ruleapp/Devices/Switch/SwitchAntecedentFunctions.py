@@ -43,7 +43,6 @@ class SwitchAntecedentFunction(object):
 
     def delete_antecedent(self, user_id, rule_id, device_id):
         try:
-            self.r.lrem("device:" + device_id + ":rules", rule_id)
             self.r.lrem("user:" + user_id + ":rule:" + rule_id + ":device_antecedents", device_id)
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
             self.r.delete(key_pattern + ":evaluation")

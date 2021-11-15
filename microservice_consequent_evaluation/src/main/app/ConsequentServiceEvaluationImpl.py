@@ -10,7 +10,7 @@ class ConsequentServiceEvaluation(object):
         self.alert_consequent_functions = AlertConsequentFunction(redis)
         self.switch_consequent_functions = SwitchConsequentFunction(redis)
 
-    def consequent_evaluation(self, user_id, rule_id):
+    def switch_evaluation(self, user_id, rule_id):
         output = []
         try:
             pattern_key = "user:" + user_id + ":rule:" + rule_id
@@ -23,9 +23,18 @@ class ConsequentServiceEvaluation(object):
                     if measure != "false":
                         trigger = {"device_id": device_id, "measure": measure, "delay": str(delay)}
                         output.append(trigger)
-                else:
-                    self.alert_consequent_functions.alert_evaluation(user_id, rule_id)
             return output
         except Exception as error:
             print(repr(error))
             return output
+
+    def alert_evaluation(self, user_id, rule_id):
+        try:
+            pattern_key = "user:" + user_id + ":rule:" + rule_id
+            device_consequents = self.r.lrange(pattern_key + ":device_consequents")
+            for device_id in device_consequents:
+                if "alert" in device_id:
+                    self.alert_consequent_functions.alert_evaluation(user_id, rule_id)
+                    break
+        except Exception as error:
+            print(repr(error))

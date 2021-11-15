@@ -104,3 +104,4 @@ def search_new_location(name):
     else:
         return json.dumps(output)
 
+

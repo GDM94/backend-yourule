@@ -132,6 +132,7 @@ class SwitchFunction(object):
                 if self.r.get("user:" + user_id + ":rule:" + rule + ":evaluation") == "true":
                     measure = "on"
                     break
+            self.r.set(key_pattern + ":manual_measure", measure)
         else:
             measure = self.r.get(key_pattern + ":manual_measure")
         return measure

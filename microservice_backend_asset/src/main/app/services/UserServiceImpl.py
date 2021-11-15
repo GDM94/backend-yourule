@@ -12,6 +12,7 @@ class UserService(object):
         self.r = redis
         self.api_key = config.get("OPEN_WEATHER", "api_key")
         self.api_location_url = config.get("OPEN_WEATHER", "api_location_url")
+        self.api_weather_url = config.get("OPEN_WEATHER", "api_weather_url")
         token_key = config.get("OAUTH", "token_key")
         self.profile_functions = ProfileFunction(redis, token_key)
         self.timer_functions = TimerFunction(redis)
@@ -35,7 +36,6 @@ class UserService(object):
             print(output)
             if output != "false" and output != "error":
                 self.timer_functions.register(profile.user_id)
-                # self.weather_registration(profile.user_id)
                 self.alert_functions.register(profile.user_id, profile.email)
                 self.set_user_location(profile.user_id, "Torino", "IT", "45.1333", "7.3667")
             return output
@@ -52,12 +52,6 @@ class UserService(object):
         else:
             return output
 
-    def weather_registration(self, user_id):
-        weather_id = "weather" + user_id
-        self.r.rpush("user:" + user_id + ":antecedents", weather_id)
-        self.r.set("device:" + weather_id + ":userid", user_id)
-        self.r.set("device:" + weather_id + ":name", "weather")
-
     def set_user_location(self, user_id, name, country, lat, lon):
         key_pattern = "user:" + user_id + ":location:"
         try:
@@ -65,11 +59,10 @@ class UserService(object):
             self.r.set(key_pattern + "country", country)
             self.r.set(key_pattern + "lat", lat)
             self.r.set(key_pattern + "lon", lon)
+            return "true"
         except Exception as error:
             print(repr(error))
             return "error"
-        else:
-            return ""
 
     def get_user_location(self, user_id):
         key_pattern = "user:" + user_id + ":location:"
@@ -79,18 +72,16 @@ class UserService(object):
             lat = self.r.get(key_pattern + "lat")
             lon = self.r.get(key_pattern + "lon")
             output = Location(name, country, lat, lon)
+            return output
         except Exception as error:
             print(repr(error))
             return "error"
-        else:
-            return output
 
     def search_new_location(self, name):
         try:
             r = requests.get(self.api_location_url, params={'q': name, 'limit': 5, 'appid': self.api_key})
             data = r.json()
+            return data
         except Exception as error:
             print(repr(error))
             return "error"
-        else:
-            return data

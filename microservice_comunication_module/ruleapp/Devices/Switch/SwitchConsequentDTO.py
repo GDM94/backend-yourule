@@ -9,6 +9,7 @@ class SwitchConsequent(object):
         self.delay_unit_measure = "seconds"
         self.order = ""
         self.automatic = "true"
+        self.measure = "off"
 
     def consequent_mapping(self, consequent):
         self.device_id = consequent["device_id"]

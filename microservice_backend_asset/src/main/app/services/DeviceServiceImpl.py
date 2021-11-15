@@ -1,9 +1,9 @@
-import json
 from ruleapp.Devices.WaterLevel.WaterLevelFunctions import WaterLevelFunction
 from ruleapp.Devices.Timer.TimerFunctions import TimerFunction
 from ruleapp.Devices.Switch.SwitchFuntions import SwitchFunction
 from ruleapp.Devices.Alert.AlertFunctions import AlertFunction
 from ruleapp.Devices.Button.ButtonFunctions import ButtonFunction
+import json
 
 
 class DeviceService(object):
@@ -15,6 +15,9 @@ class DeviceService(object):
         self.rabbitmq = rabbitmq
         self.EXPIRATION = config.get("REDIS", "expiration")
         self.publish_topic_mqtt_switch = config.get("MQTT", "publish_setting")
+        self.api_key = config.get("OPEN_WEATHER", "api_key")
+        self.api_location_url = config.get("OPEN_WEATHER", "api_location_url")
+        self.api_weather_url = config.get("OPEN_WEATHER", "api_weather_url")
         self.switch_functions = SwitchFunction(redis)
         self.waterlevel_functions = WaterLevelFunction(redis)
         self.timer_functions = TimerFunction(redis)
@@ -124,9 +127,10 @@ class DeviceService(object):
             self.r.set("device:" + device_id + ":automatic", automatic)
             if automatic == "true":
                 # trigger consequent evaluation
-                rules = list(self.r.smembers("device:" + device_id + ":rules"))
+                rules = self.r.lrange("device:" + device_id + ":rules")
                 trigger = {"user_id": user_id, "rule_id": ""}
                 for rule in rules:
+                    print(rule)
                     trigger["rule_id"] = rule
                     payload = json.dumps(trigger)
                     self.rabbitmq.publish(self.publish_consequent, payload)

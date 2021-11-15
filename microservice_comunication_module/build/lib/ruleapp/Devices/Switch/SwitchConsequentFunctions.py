@@ -16,6 +16,10 @@ class SwitchConsequentFunction(object):
             dto.delay = self.r.get(key_pattern + ":delay")
             dto.order = self.r.get(key_pattern + ":order")
             dto.automatic = self.r.get("device:" + device_id + ":automatic")
+            if dto.automatic == "true":
+                dto.measure = self.r.get("device:" + device_id + ":measure")
+            else:
+                dto.measure = "manual"
             return dto
         except Exception as error:
             print(repr(error))

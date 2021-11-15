@@ -67,9 +67,10 @@ class RabbitMQ(object):
         message_dict = json.loads(message)
         user_id = str(message_dict["user_id"])
         rule_id = str(message_dict["rule_id"])
-        output = self.service.consequent_evaluation(user_id, rule_id)
+        output = self.service.switch_evaluation(user_id, rule_id)
         for trigger in output:
             topic = self.mqtt_publish_topic + trigger["device_id"]
             payload = trigger["measure"]+"/"+trigger["delay"]
             self.mqtt.publish(topic, payload)
+        self.service.alert_evaluation(user_id, rule_id)
         ch.basic_ack(delivery_tag=method.delivery_tag)

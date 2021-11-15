@@ -95,15 +95,16 @@ class AlertConsequentFunction(object):
 
     def alert_evaluation(self, user_id, rule_id):
         if self.r.get("user:" + user_id + ":rule:" + rule_id + ":evaluation") == "true":
-            alert_id = "alert" + user_id
+            alert_id = "alert-" + user_id
             sendto = self.r.lrange("device:" + alert_id + ":email_list")
             if len(sendto) > 0:
                 alert = email_connection(self.email_user, self.email_password)
                 rule_name = self.r.get("user:" + user_id + ":rule:" + rule_id + ":name")
                 sender = "raspberrypi.sugherotorto@gmail.com"
-                content = """Alert for rule name {}""".format(rule_name)
+                content = self.r.get(
+                    "user:" + user_id + ":rule:" + rule_id + ":rule_consequents:" + alert_id + ":message")
                 msg = MIMEText(content, 'plain')
-                msg['Subject'] = "ALERT YOURULE"
+                msg['Subject'] = "ALERT RULEAPP: " + rule_name
                 msg['From'] = sender
                 alert.sendmail(sender, sendto, msg.as_string())
                 alert.quit()

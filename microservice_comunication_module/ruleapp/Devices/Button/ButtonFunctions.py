@@ -55,10 +55,10 @@ class ButtonFunction(object):
                     dto.measure = measure
                     dto.color = "green"
                     dto.status = "connected"
-            dto.max_measure = self.r.get(key_pattern + ":max_measure")
-            dto.max_measure_time = self.r.get(key_pattern + ":max_measure_time")
-            dto.min_measure = self.r.get(key_pattern + ":min_measure")
-            dto.min_measure_time = self.r.get(key_pattern + ":min_measure_time")
+            dto.last_time_on = self.r.get(key_pattern + ":last_time_on")
+            dto.last_time_off = self.r.get(key_pattern + ":last_time_off")
+            dto.last_date_on = self.r.get(key_pattern + ":last_date_on")
+            dto.last_date_off = self.r.get(key_pattern + ":last_date_off")
             return dto
         except Exception as error:
             print(repr(error))
@@ -87,6 +87,7 @@ class ButtonFunction(object):
             self.r.delete(key_pattern + ":last_time_off")
             self.r.delete(key_pattern + ":last_date_on")
             self.r.delete(key_pattern + ":last_date_off")
+            self.r.delete(key_pattern + ":expiration")
             if self.r.exists(key_pattern + ":rules") == 1:
                 rules = self.r.lrange(key_pattern + ":rules")
                 for rule_id in rules:

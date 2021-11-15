@@ -8,7 +8,7 @@ RUN pip install paho-mqtt;
 RUN pip install pika;
 RUN pip install gunicorn;
 RUN pip install requests;
-RUN pip install ruleapp==0.6.8;
+RUN pip install ruleapp==0.7.6;
 
 
 ADD ./src /backend/microservice_backend_asset/src/
