@@ -20,13 +20,17 @@ class TimerFunction(object):
             print(repr(error))
             return "error"
 
-    def get_device(self, device_id):
+    def get_device(self, user_id, device_id):
         try:
+            key_pattern = "device:" + device_id
             dto = Timer()
-            dto.device_id = device_id
-            dto.name = self.r.get("device:" + device_id + ":name")
-            if self.r.exists("device:" + device_id + ":rules") == 1:
-                dto.rules = self.r.lrange("device:" + device_id + ":rules")
+            dto.id = device_id
+            dto.name = self.r.get(key_pattern + ":name")
+            if self.r.exists(key_pattern + ":rules") == 1:
+                rules_id = self.r.lrange(key_pattern + ":rules")
+                for rule_id in rules_id:
+                    rule_name = self.r.get("user:" + user_id + ":rule:" + rule_id + ":name")
+                    dto.rules.append({"id": rule_id, "name": rule_name})
             dto.measure_time = datetime.now().strftime("%H:%M")
             dto.measure_day = str(datetime.today().weekday())
             return dto
@@ -38,7 +42,7 @@ class TimerFunction(object):
         try:
             dto = Timer()
             dto.device_mapping(new_device)
-            key_pattern = "device:" + dto.device_id
+            key_pattern = "device:" + dto.id
             self.r.set(key_pattern + ":name", dto.name)
             return dto
         except Exception as error:

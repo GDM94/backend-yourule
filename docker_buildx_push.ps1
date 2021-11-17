@@ -12,6 +12,7 @@ function Go () {
     'microservice_antecedent_evaluation',
     'microservice_device_evaluation',
     'microservice_timer_evaluation' ,
+    'microservice_weather_evaluation' ,
     'microservice_rule_evaluation',
     'microservice_consequent_evaluation',
     'microservice_laston_evaluation',

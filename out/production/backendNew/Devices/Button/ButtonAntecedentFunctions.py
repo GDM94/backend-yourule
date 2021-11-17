@@ -1,5 +1,4 @@
 from .ButtonAntecedentDTO import ButtonAntecedent
-from datetime import datetime
 
 
 class ButtonAntecedentFunction(object):
@@ -10,15 +9,16 @@ class ButtonAntecedentFunction(object):
         try:
             antecedent = ButtonAntecedent()
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
+            device_key_pattern = "device:" + device_id
             antecedent.device_id = device_id
-            antecedent.device_name = self.r.get(key_pattern + ":device_name")
-            antecedent.measure = self.r.get(key_pattern + ":measure")
+            antecedent.device_name = self.r.get(device_key_pattern + ":name")
+            if self.r.exists(device_key_pattern + ":measure"):
+                antecedent.measure = self.r.get(device_key_pattern + ":measure")
             antecedent.evaluation = self.r.get(key_pattern + ":evaluation")
             antecedent.last_time_on = self.r.get(key_pattern + ":last_time_on")
             antecedent.last_time_off = self.r.get(key_pattern + ":last_time_off")
             antecedent.last_date_on = self.r.get(key_pattern + ":last_date_on")
             antecedent.last_date_off = self.r.get(key_pattern + ":last_date_off")
-            antecedent.order = self.r.get(key_pattern + ":order")
             return antecedent
         except Exception as error:
             print(repr(error))
@@ -29,9 +29,8 @@ class ButtonAntecedentFunction(object):
             antecedent = ButtonAntecedent()
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
             antecedent.device_id = device_id
-            antecedent.device_name = self.r.get(key_pattern + ":device_name")
+            antecedent.device_name = self.r.get("device:" + device_id + ":name")
             antecedent.evaluation = self.r.get(key_pattern + ":evaluation")
-            antecedent.order = self.r.get(key_pattern + ":order")
             return antecedent
         except Exception as error:
             print(repr(error))
@@ -42,39 +41,48 @@ class ButtonAntecedentFunction(object):
             self.r.lrem("device:" + device_id + ":rules", rule_id)
             self.r.lrem("user:" + user_id + ":rule:" + rule_id + ":device_antecedents", device_id)
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
-            self.r.delete(key_pattern + ":device_name")
             self.r.delete(key_pattern + ":measure")
             self.r.delete(key_pattern + ":evaluation")
             self.r.delete(key_pattern + ":last_time_on")
             self.r.delete(key_pattern + ":last_time_off")
             self.r.delete(key_pattern + ":last_date_on")
             self.r.delete(key_pattern + ":last_date_off")
-            self.r.delete(key_pattern + ":order")
             return "true"
         except Exception as error:
             print(repr(error))
             return "error"
 
-    def set_antecedent(self, user_id, rule_id, new_antecedent):
+    def add_antecedent(self, user_id, rule_id, device_id):
+        try:
+            device_antecedents = self.r.lrange("user:" + user_id + ":rule:" + rule_id + ":device_antecedents")
+            result = "false"
+            if device_id not in device_antecedents:
+                self.r.rpush("device:" + device_id + ":rules", rule_id)
+                self.r.rpush("user:" + user_id + ":rule:" + rule_id + ":device_antecedents", device_id)
+                result = "true"
+            return result
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
+    def update_antecedent(self, user_id, rule_id, new_antecedent):
         try:
             antecedent = ButtonAntecedent()
             antecedent.antecedent_mapping(new_antecedent)
-            self.r.rpush("device:" + antecedent.device_id + ":rules", rule_id)
-            self.r.rpush("user:" + user_id + ":rule:" + rule_id + ":device_antecedents", antecedent.device_id)
-            key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + antecedent.device_id
-            self.r.set(key_pattern + ":device_name", antecedent.device_name)
-            self.r.set(key_pattern + ":order", antecedent.order)
-            return "true"
+            device_antecedents = self.r.lrange("user:" + user_id + ":rule:" + rule_id + ":device_antecedents")
+            result = "false"
+            if antecedent.device_id in device_antecedents:
+                result = "true"
+            return result
         except Exception as error:
             print(repr(error))
             return "error"
 
     def antecedent_evaluation(self, user_id, rule_id, device_id, measure):
         try:
-            measure_evaluation = self.evaluate_measure(measure)
             evaluation = "false"
-            if measure_evaluation == "true":
-                evaluation = "true"
+            if self.r.exists("device:" + device_id + ":measure") == 1:
+                evaluation = self.evaluate_measure(measure)
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
             old_evaluation = self.r.get(key_pattern + ":evaluation")
             trigger = "false"
@@ -95,4 +103,3 @@ class ButtonAntecedentFunction(object):
         except Exception as error:
             print(repr(error))
             return "error"
-

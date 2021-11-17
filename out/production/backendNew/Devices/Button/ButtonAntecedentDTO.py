@@ -3,7 +3,7 @@ class ButtonAntecedent(object):
     def __init__(self):
         self.device_id = ""
         self.device_name = ""
-        self.measure = ""
+        self.measure = "-"
         self.condition_measure = "="
         self.start_value = "on"
         self.stop_value = "off"
@@ -12,7 +12,6 @@ class ButtonAntecedent(object):
         self.last_date_on = "-"
         self.last_date_off = "-"
         self.evaluation = "false"
-        self.order = ""
 
     def antecedent_mapping(self, antecedent):
         self.device_id = antecedent["device_id"]
@@ -20,4 +19,3 @@ class ButtonAntecedent(object):
         self.condition_measure = antecedent["condition_measure"]
         self.start_value = antecedent["start_value"]
         self.stop_value = antecedent["stop_value"]
-        self.order = antecedent["order"]

@@ -51,6 +51,17 @@ services:
       - rule_evaluation
       - rabbitmq
 
+  weather_evaluation:
+    container_name: weather_evaluation
+    image: dimax94/microservice_weather_evaluation
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - redis
+      - rule_evaluation
+      - rabbitmq
+
   laston_evaluation:
     container_name: laston_evaluation
     image: dimax94/microservice_laston_evaluation

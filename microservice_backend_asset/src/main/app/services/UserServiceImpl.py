@@ -1,9 +1,8 @@
-from ruleapp.LocationDTO import Location
-import requests
 from ruleapp.Profile.ProfileDTO import ProfileDto
 from ruleapp.Profile.ProfileFunctions import ProfileFunction
 from ruleapp.Devices.Alert.AlertFunctions import AlertFunction
 from ruleapp.Devices.Timer.TimerFunctions import TimerFunction
+from ruleapp.Devices.Weather.WeatherFunctions import WeatherFunction
 
 
 class UserService(object):
@@ -17,6 +16,7 @@ class UserService(object):
         self.profile_functions = ProfileFunction(redis, token_key)
         self.timer_functions = TimerFunction(redis)
         self.alert_functions = AlertFunction(redis)
+        self.weather_functions = WeatherFunction(redis, self.api_key, self.api_location_url, self.api_weather_url)
 
     def user_login(self, profile_map):
         try:
@@ -33,11 +33,10 @@ class UserService(object):
             profile = ProfileDto()
             profile.constructor_map(profile_map)
             output = self.profile_functions.register(profile)
-            print(output)
             if output != "false" and output != "error":
                 self.timer_functions.register(profile.user_id)
                 self.alert_functions.register(profile.user_id, profile.email)
-                self.set_user_location(profile.user_id, "Torino", "IT", "45.1333", "7.3667")
+                self.weather_functions.register(profile.user_id)
             return output
         except Exception as error:
             print(repr(error))
@@ -53,35 +52,10 @@ class UserService(object):
             return output
 
     def set_user_location(self, user_id, name, country, lat, lon):
-        key_pattern = "user:" + user_id + ":location:"
-        try:
-            self.r.set(key_pattern + "name", name)
-            self.r.set(key_pattern + "country", country)
-            self.r.set(key_pattern + "lat", lat)
-            self.r.set(key_pattern + "lon", lon)
-            return "true"
-        except Exception as error:
-            print(repr(error))
-            return "error"
+        return self.weather_functions.set_location(user_id, name, country, lat, lon)
 
     def get_user_location(self, user_id):
-        key_pattern = "user:" + user_id + ":location:"
-        try:
-            name = self.r.get(key_pattern + "name")
-            country = self.r.get(key_pattern + "country")
-            lat = self.r.get(key_pattern + "lat")
-            lon = self.r.get(key_pattern + "lon")
-            output = Location(name, country, lat, lon)
-            return output
-        except Exception as error:
-            print(repr(error))
-            return "error"
+        return self.weather_functions.get_location(user_id)
 
     def search_new_location(self, name):
-        try:
-            r = requests.get(self.api_location_url, params={'q': name, 'limit': 5, 'appid': self.api_key})
-            data = r.json()
-            return data
-        except Exception as error:
-            print(repr(error))
-            return "error"
+        return self.weather_functions.search_new_location(name)

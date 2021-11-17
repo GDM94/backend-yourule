@@ -1,6 +1,6 @@
 class WaterLevel(object):
     def __init__(self):
-        self.device_id = ""
+        self.id = ""
         self.name = "WATERLEVEL"
         self.measure = "-"
         self.absolute_measure = "-"
@@ -17,11 +17,13 @@ class WaterLevel(object):
         self.min_measure = "-"
         self.min_measure_time = "-"
         self.min_measure_date = "-"
+        self.expiration = "10"
 
     def device_mapping(self, device):
-        self.device_id = device["device_id"]
+        self.id = device["id"]
         self.name = device["name"]
         self.setting_error = device["setting_error"]
         self.setting_max = device["setting_max"]
         self.setting_unit_measure = device["setting_unit_measure"]
         self.rules = device["rules"]
+        self.expiration = device["expiration"]
