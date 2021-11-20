@@ -7,6 +7,7 @@ from ruleapp.Devices.WaterLevel.WaterLevelAntecedentFunctions import WaterLevelA
 from ruleapp.Devices.Switch.SwitchConsequentFunctions import SwitchConsequentFunction
 from ruleapp.Devices.Button.ButtonAntecedentFunctions import ButtonAntecedentFunction
 from ruleapp.Devices.Switch.SwitchAntecedentFunctions import SwitchAntecedentFunction
+from ruleapp.Devices.Weather.WeatherAntecedentFunctions import WeatherAntecedentFunction
 
 
 class RuleService(object):
@@ -22,6 +23,7 @@ class RuleService(object):
         self.switch_consequent_functions = SwitchConsequentFunction(redis)
         self.button_antecedent_functions = ButtonAntecedentFunction(redis)
         self.switch_antecedent_functions = SwitchAntecedentFunction(redis)
+        self.weather_antecedent_functions = WeatherAntecedentFunction(redis)
 
     def create_rule(self, user_id, rule_name):
         try:
@@ -78,6 +80,8 @@ class RuleService(object):
             result = self.button_antecedent_functions.add_antecedent(user_id, rule_id, device_id)
         elif "SWITCH" in device_id:
             result = self.switch_antecedent_functions.add_antecedent(user_id, rule_id, device_id)
+        elif "WEATHER" in device_id:
+            result = self.weather_antecedent_functions.add_antecedent(user_id, rule_id, device_id)
         if result != "error":
             result = self.get_rule_by_id(user_id, rule_id)
         return result
@@ -102,6 +106,8 @@ class RuleService(object):
             output = self.button_antecedent_functions.update_antecedent(user_id, rule_id, antecedent_json)
         elif "SWITCH" in device_id:
             output = self.switch_antecedent_functions.update_antecedent(user_id, rule_id, antecedent_json)
+        elif "WEATHER" in device_id:
+            output = self.weather_antecedent_functions.update_antecedent(user_id, rule_id, antecedent_json)
         if output != "error":
             output = self.get_rule_by_id(user_id, rule_id)
         return output
@@ -162,6 +168,8 @@ class RuleService(object):
                 output = self.button_antecedent_functions.delete_antecedent(user_id, rule_id, device_id)
             elif "SWITCH" in device_id:
                 output = self.switch_antecedent_functions.delete_antecedent(user_id, rule_id, device_id)
+            elif "WEATHER" in device_id:
+                output = self.weather_antecedent_functions.delete_antecedent(user_id, rule_id, device_id)
             if output != "error":
                 # trigger rule evaluation
                 trigger_message = {"user_id": user_id, "rules": [rule_id]}
@@ -238,6 +246,8 @@ class RuleService(object):
                 antecedent = self.button_antecedent_functions.get_antecedent(user_id, rule_id, device_id)
             elif "SWITCH" in device_id:
                 antecedent = self.switch_antecedent_functions.get_antecedent(user_id, rule_id, device_id)
+            elif "WEATHER" in device_id:
+                antecedent = self.weather_antecedent_functions.get_antecedent(user_id, rule_id, device_id)
             return antecedent
         except Exception as error:
             print(repr(error))
@@ -254,6 +264,8 @@ class RuleService(object):
                 antecedent = self.button_antecedent_functions.get_antecedent_slim(user_id, rule_id, device_id)
             elif "SWITCH" in device_id:
                 antecedent = self.switch_antecedent_functions.get_antecedent_slim(user_id, rule_id, device_id)
+            elif "WEATHER" in device_id:
+                antecedent = self.weather_antecedent_functions.get_antecedent_slim(user_id, rule_id, device_id)
             return antecedent
         except Exception as error:
             print(repr(error))

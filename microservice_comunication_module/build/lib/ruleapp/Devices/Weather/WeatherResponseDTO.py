@@ -89,18 +89,17 @@ class WeatherResponse:
     name: str
     cod: int
 
-    def __init__(self, coord: Coord, weather: List[Weather], base: str, main: Main, visibility: int, wind: Wind,
-                 clouds: Clouds, dt: int, sys: Sys, timezone: int, id_obj: int, name: str, cod: int) -> None:
-        self.coord = coord
-        self.weather = weather
-        self.base = base
-        self.main = main
-        self.visibility = visibility
-        self.wind = wind
-        self.clouds = clouds
-        self.dt = dt
-        self.sys = sys
-        self.timezone = timezone
-        self.id = id_obj
-        self.name = name
-        self.cod = cod
+    def __init__(self, x) -> None:
+        self.coord = x.coord
+        self.weather = x.weather
+        self.base = x.base
+        self.main = x.main
+        self.visibility = x.visibility
+        self.wind = x.wind
+        self.clouds = x.clouds
+        self.dt = x.dt
+        self.sys = x.sys
+        self.timezone = x.timezone
+        self.id = x.id_obj
+        self.name = x.name
+        self.cod = x.cod

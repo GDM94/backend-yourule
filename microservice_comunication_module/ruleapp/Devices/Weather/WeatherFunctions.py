@@ -2,7 +2,7 @@ import requests
 from .WeatherResponseDTO import WeatherResponse
 from .LocationDTO import Location
 from munch import DefaultMunch
-from WeatherDTO import Weather
+from .WeatherDTO import Weather
 from datetime import datetime
 
 
@@ -29,11 +29,11 @@ class WeatherFunction(object):
             print(repr(error))
             return "error"
 
-    def get_device(self, user_id):
+    def get_device(self, user_id, device_id):
         try:
             weather = Weather()
-            weather.device_id = "WEATHER-" + user_id
-            weather.device_name = self.r.get("device:" + weather.device_id + ":name")
+            weather.id = device_id
+            weather.name = self.r.get("device:" + device_id + ":name")
             # location
             weather.location_name = self.r.get("user:" + user_id + ":location:name")
             location_key_pattern = "weather:location:" + weather.location_name
@@ -42,7 +42,7 @@ class WeatherFunction(object):
             weather.lon = self.r.get(location_key_pattern + ":lon")
             # weather
             key_pattern = "weather:" + weather.location_name
-            weather.icon = self.r.get(key_pattern + ":icon")
+            weather.icon = list(self.r.smembers(key_pattern + ":icon"))
             weather.temp = self.r.get(key_pattern + ":temp")
             weather.temp_max = self.r.get(key_pattern + ":temp_max")
             weather.temp_min = self.r.get(key_pattern + ":temp_min")
@@ -54,7 +54,22 @@ class WeatherFunction(object):
             weather.wind_speed = self.r.get(key_pattern + ":wind_speed")
             weather.last_time_update = self.r.get(key_pattern + ":last_time_update")
             weather.last_date_update = self.r.get(key_pattern + ":last_date_update")
+            if self.r.exists("device:" + device_id + ":rules") == 1:
+                rules_id = self.r.lrange("device:" + device_id + ":rules")
+                for rule_id in rules_id:
+                    rule_name = self.r.get("user:" + user_id + ":rule:" + rule_id + ":name")
+                    weather.rules.append({"id": rule_id, "name": rule_name})
             return weather
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
+    def update_device(self, new_device):
+        try:
+            dto = Weather()
+            dto.device_mapping(new_device)
+            key_pattern = "device:" + dto.id
+            self.r.set(key_pattern + ":name", dto.name)
         except Exception as error:
             print(repr(error))
             return "error"
@@ -113,7 +128,8 @@ class WeatherFunction(object):
             if self.r.exists(key_pattern + ":name") == 1:
                 last_time_update_str = self.r.get(key_pattern + ":last_time_update")
                 last_date_update_str = self.r.get(key_pattern + ":last_date_update")
-                date_time_obj = datetime.strptime(last_date_update_str + " " + last_time_update_str, '%d/%m/%y %H:%M')
+                datetime_str = last_date_update_str + " " + last_time_update_str
+                date_time_obj = datetime.strptime(datetime_str, '%d/%m/%Y %H:%M')
                 delta_time = datetime.now() - date_time_obj
                 if delta_time.total_seconds() > self.weather_refresh_cycle:
                     self.adapter_api_weather(location_name)
@@ -125,12 +141,15 @@ class WeatherFunction(object):
 
     def adapter_api_weather(self, location_name):
         try:
+            print("WEATHER API GET")
             location_key_pattern = "weather:location:" + location_name
             lat = self.r.get(location_key_pattern + ":lat")
             lon = self.r.get(location_key_pattern + ":lon")
-            r = requests.get(self.api_weather_url, params={'lat': lat, 'lon': lon, 'appid': self.api_key})
+            r = requests.get(self.api_weather_url,
+                             params={'units': 'metric', 'lat': lat, 'lon': lon, 'appid': self.api_key})
             data = r.json()
             dto = WeatherResponse(DefaultMunch.fromDict(data))
+            dto.name = location_name
             self.save_weather(dto)
         except Exception as error:
             print(repr(error))
@@ -140,7 +159,7 @@ class WeatherFunction(object):
         key_pattern = "weather:" + dto.name
         self.r.set(key_pattern + ":name", dto.name)
         self.r.delete(key_pattern + ":icon")
-        for i in range(0, len(dto.weather) - 1):
+        for i in range(0, len(dto.weather)):
             icon = list(dto.weather[i].icon)
             icon[-1] = "d"
             icon_d = "".join(icon)

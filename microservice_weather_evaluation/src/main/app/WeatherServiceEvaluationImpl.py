@@ -1,13 +1,13 @@
 import json
-from ruleapp.Devices.Timer.TimerAntecedentFunctions import TimerAntecedentFunction
 from ruleapp.Devices.Weather.WeatherFunctions import WeatherFunction
+from ruleapp.Devices.Weather.WeatherAntecedentFunctions import WeatherAntecedentFunction
 
 
 class WeatherServiceEvaluation(object):
     def __init__(self, rabbitmq, redis, config):
         self.r = redis
         self.rabbitmq = rabbitmq
-        self.timer_antecedent_functions = TimerAntecedentFunction(redis)
+        self.weather_antecedent_function = WeatherAntecedentFunction(redis)
         self.api_key = config.get("OPEN_WEATHER", "api_key")
         self.api_location_url = config.get("OPEN_WEATHER", "api_location_url")
         self.api_weather_url = config.get("OPEN_WEATHER", "api_weather_url")
@@ -39,8 +39,7 @@ class WeatherServiceEvaluation(object):
             output = {"user_id": user_id, "rules": []}
             rule_id_list = self.get_rules_with_weather(user_id, device_id)
             for rule_id in rule_id_list:
-                # trigger = self.timer_antecedent_functions.antecedent_evaluation(user_id, device_id, rule_id)
-                trigger = "false"
+                trigger = self.weather_antecedent_function.evalutate_antecedent(user_id, rule_id, device_id)
                 if trigger == "true":
                     output["rules"].append(rule_id)
             if len(output["rules"]) > 0:

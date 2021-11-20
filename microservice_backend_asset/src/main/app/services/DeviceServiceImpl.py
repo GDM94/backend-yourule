@@ -3,6 +3,7 @@ from ruleapp.Devices.Timer.TimerFunctions import TimerFunction
 from ruleapp.Devices.Switch.SwitchFuntions import SwitchFunction
 from ruleapp.Devices.Alert.AlertFunctions import AlertFunction
 from ruleapp.Devices.Button.ButtonFunctions import ButtonFunction
+from ruleapp.Devices.Weather.WeatherFunctions import WeatherFunction
 import json
 
 
@@ -23,6 +24,7 @@ class DeviceService(object):
         self.timer_functions = TimerFunction(redis)
         self.alert_functions = AlertFunction(redis)
         self.button_functions = ButtonFunction(redis)
+        self.weather_functions = WeatherFunction(redis, self.api_key, self.api_location_url, self.api_weather_url)
 
     def get_device(self, user_id, device_id):
         try:
@@ -37,6 +39,8 @@ class DeviceService(object):
                 device = self.alert_functions.get_device(user_id, device_id)
             elif "BUTTON" in device_id:
                 device = self.button_functions.get_device(user_id, device_id)
+            elif "WEATHER" in device_id:
+                device = self.weather_functions.get_device(user_id, device_id)
             return device
         except Exception as error:
             print(repr(error))
@@ -66,6 +70,8 @@ class DeviceService(object):
                 self.alert_functions.update_device(new_device)
             elif "BUTTON" in device_id:
                 self.button_functions.update_device(new_device)
+            elif "WEATHER" in device_id:
+                self.weather_functions.update_device(new_device)
             return "true"
         except Exception as error:
             print(repr(error))
@@ -97,6 +103,7 @@ class DeviceService(object):
             output = []
             device_id_keys = self.r.lrange("user:" + user_id + ":sensors")
             device_id_keys.insert(0, "timer-" + user_id)
+            device_id_keys.insert(1, "WEATHER-" + user_id)
             for device_id in device_id_keys:
                 key_pattern = "device:" + device_id
                 device_name = self.r.get(key_pattern + ":name")
