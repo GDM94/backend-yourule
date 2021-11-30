@@ -147,3 +147,12 @@ def delete_alert_email(idx):
         raise Exception()
     else:
         return output
+
+
+@device.route('/broker/address', methods=['GET'])
+def get_broker_address():
+    output = device_service.get_broker_address()
+    if output == "error":
+        raise Exception()
+    else:
+        return output

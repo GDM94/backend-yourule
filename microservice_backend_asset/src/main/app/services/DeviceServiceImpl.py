@@ -5,6 +5,7 @@ from ruleapp.Devices.Alert.AlertFunctions import AlertFunction
 from ruleapp.Devices.Button.ButtonFunctions import ButtonFunction
 from ruleapp.Devices.Weather.WeatherFunctions import WeatherFunction
 import json
+from requests import get
 
 
 class DeviceService(object):
@@ -170,6 +171,14 @@ class DeviceService(object):
     def get_device_rules(self, user_id, device_id):
         try:
             output = list(self.r.smembers("device:" + device_id + ":rules"))
+            return output
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
+    def get_broker_address(self):
+        try:
+            output = get('https://api.ipify.org').text
             return output
         except Exception as error:
             print(repr(error))

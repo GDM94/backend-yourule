@@ -12,6 +12,8 @@ services:
     depends_on:
       - redis
       - rabbitmq
+    networks:
+      - backend
 
   device_entrypoint:
     container_name: device_entrypoint
@@ -20,6 +22,8 @@ services:
       - redis
       - device_evaluation
       - rabbitmq
+    networks:
+      - backend
 
   device_evaluation:
     container_name: device_evaluation
@@ -31,6 +35,8 @@ services:
       - redis
       - antecedent_evaluation
       - rabbitmq
+    networks:
+      - backend
 
   antecedent_evaluation:
     container_name: antecedent_evaluation
@@ -39,6 +45,8 @@ services:
       - redis
       - rule_evaluation
       - rabbitmq
+    networks:
+      - backend
 
   timer_evaluation:
     container_name: timer_evaluation
@@ -50,6 +58,8 @@ services:
       - redis
       - rule_evaluation
       - rabbitmq
+    networks:
+      - backend
 
   weather_evaluation:
     container_name: weather_evaluation
@@ -61,6 +71,8 @@ services:
       - redis
       - rule_evaluation
       - rabbitmq
+    networks:
+      - backend
 
   laston_evaluation:
     container_name: laston_evaluation
@@ -72,6 +84,8 @@ services:
       - redis
       - rule_evaluation
       - rabbitmq
+    networks:
+      - backend
 
   rule_evaluation:
     container_name: rule_evaluation
@@ -83,6 +97,8 @@ services:
       - redis
       - consequent_evaluation
       - rabbitmq
+    networks:
+      - backend
 
   consequent_evaluation:
     container_name: consequent_evaluation
@@ -90,6 +106,8 @@ services:
     depends_on:
       - redis
       - rabbitmq
+    networks:
+      - backend
 
   rabbitmq:
     container_name: rabbitmq
@@ -100,21 +118,27 @@ services:
     ports:
       - "15672:15672"
       - "5672:5672"
+    networks:
+      - backend
 
   redis:
     container_name: redis
     image: dimax94/redis
     ports:
       - "6379:6379"
+    networks:
+      - backend
 
   frontend:
     container_name: frontend
     image: dimax94/frontend
     volumes:
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
+      - "./certs:/etc/nginx/certs"
     ports:
-      - "8084:8084"
+      - "80:80"
+      - "443:443"
+    networks:
+      - frontend
 
   reverse_proxy:
     container_name: reverse_proxy
@@ -123,10 +147,16 @@ services:
       - backend_asset
     ports:
       - "8081:8081"
+    networks:
+      - backend
 
 
 
-
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
 
 
 
