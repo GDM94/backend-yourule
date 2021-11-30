@@ -53,3 +53,6 @@ class Subscriber(object):
 
     def callback_on_disconnect(self, paho_mqtt, userdata, rc):
         print("MQTT Subscriber successfull disconnected")
+        self.stop_connection()
+        self.start_connection()
+        self.subscribe()

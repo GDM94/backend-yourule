@@ -13,7 +13,6 @@ class Subscriber(object):
         self.client.on_connect = self.callback_on_connect
         self.client.on_disconnect = self.callback_on_disconnect
 
-
     def start_connection(self):
         # manage connection to broker
         self.client.connect(self.BROKER, self.PORT)
@@ -39,3 +38,6 @@ class Subscriber(object):
 
     def callback_on_disconnect(self, paho_mqtt, userdata, rc):
         print("MQTT Subscriber successfull disconnected")
+        self.stop_connection()
+        self.start_connection()
+        self.subscribe()
