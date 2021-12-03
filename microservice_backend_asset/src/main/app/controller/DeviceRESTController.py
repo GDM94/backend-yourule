@@ -39,10 +39,8 @@ def device_registration(device_id):
     output = device_service.device_registration(user_id, device_id)
     if output == "error":
         raise Exception()
-    elif output == "false":
-        return output
     else:
-        return json.dumps(output, default=lambda o: o.__dict__, indent=4)
+        return output
 
 
 @device.route('/get/antecedents', methods=['GET'])

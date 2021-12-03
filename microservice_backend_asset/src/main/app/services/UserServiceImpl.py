@@ -42,6 +42,9 @@ class UserService(object):
             print(repr(error))
             return "error"
 
+    def user_logout(self, user_id):
+        return self.profile_functions.logout(user_id)
+
     def get_user_id(self, user_name):
         try:
             output = self.r.get("user:name:" + user_name + ":id")

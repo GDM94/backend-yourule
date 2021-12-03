@@ -69,6 +69,7 @@ class RabbitMQ(object):
         device_id = str(payload["id"])
         measure = str(payload["measure"])
         expiration = str(payload["expiration"])
+        self.service.check_device_registration(device_id)
         expiration_sync = self.service.expiration_evaluation(device_id, expiration)
         if expiration_sync != "false":
             topic = self.mqtt_topic_expiration + device_id

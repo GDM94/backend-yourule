@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from app.RabbitMqClient import RabbitMQ
 from app.MQTTSubscriber import Subscriber
 import time
@@ -16,10 +18,11 @@ rabbitmq.start_connection()
 
 mqtt = Subscriber(config, client_id, rabbitmq, redis)
 mqtt.start_connection()
-mqtt.subscribe()
 
 if __name__ == '__main__':
     while True:
         time.sleep(1)
+
+
 
 

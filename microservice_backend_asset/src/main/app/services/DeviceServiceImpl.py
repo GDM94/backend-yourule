@@ -1,8 +1,8 @@
 from ruleapp.Devices.WaterLevel.WaterLevelFunctions import WaterLevelFunction
-from ruleapp.Devices.Timer.TimerFunctions import TimerFunction
 from ruleapp.Devices.Switch.SwitchFuntions import SwitchFunction
-from ruleapp.Devices.Alert.AlertFunctions import AlertFunction
 from ruleapp.Devices.Button.ButtonFunctions import ButtonFunction
+from ruleapp.Devices.Timer.TimerFunctions import TimerFunction
+from ruleapp.Devices.Alert.AlertFunctions import AlertFunction
 from ruleapp.Devices.Weather.WeatherFunctions import WeatherFunction
 import json
 from requests import get
@@ -22,9 +22,9 @@ class DeviceService(object):
         self.api_weather_url = config.get("OPEN_WEATHER", "api_weather_url")
         self.switch_functions = SwitchFunction(redis)
         self.waterlevel_functions = WaterLevelFunction(redis)
+        self.button_functions = ButtonFunction(redis)
         self.timer_functions = TimerFunction(redis)
         self.alert_functions = AlertFunction(redis)
-        self.button_functions = ButtonFunction(redis)
         self.weather_functions = WeatherFunction(redis, self.api_key, self.api_location_url, self.api_weather_url)
 
     def get_device(self, user_id, device_id):
@@ -47,14 +47,13 @@ class DeviceService(object):
             print(repr(error))
             return "error"
 
-    def device_registration(self, user_id, device_id):
+    def device_registration(self, user_id, hardware_id):
         try:
-            if "SWITCH" in device_id:
-                return self.switch_functions.register(user_id, device_id)
-            elif "WATERLEVEL" in device_id:
-                return self.waterlevel_functions.register(user_id, device_id)
-            elif "BUTTON" in device_id:
-                return self.button_functions.register(user_id, device_id)
+            output = "false"
+            if self.r.exists("device:" + hardware_id + ":user") == 0:
+                self.r.set("device:" + hardware_id + ":user", user_id)
+                output = "true"
+            return output
         except Exception as error:
             print(repr(error))
             return "error"
@@ -154,7 +153,10 @@ class DeviceService(object):
             message = manual_measure + "/0"
             topic = self.publish_topic_mqtt_switch + device_id
             self.mqtt_client.publish(topic, message)
-            return self.switch_functions.get_device(user_id, device_id)
+            dto = self.switch_functions.get_device(user_id, device_id)
+            if dto.measure != "-":
+                dto.measure = manual_measure
+            return dto
         except Exception as error:
             print(repr(error))
             return "error"

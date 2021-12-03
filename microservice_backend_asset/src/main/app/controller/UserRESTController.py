@@ -105,12 +105,12 @@ def search_new_location(name):
         return json.dumps(output)
 
 
-@user.route('/get/weather', methods=["GET"])
-def get_weather():
-    # user_id = request.args.get("user_id")
-    output = user_service.get_weather("1")
+@user.route('/logout', methods=["POST"])
+@check_token
+def user_logout():
+    user_id = request.args.get("user_id")
+    output = user_service.user_logout(user_id)
     if output == "error":
         raise Exception()
     else:
-        return json.dumps(output)
-
+        return output

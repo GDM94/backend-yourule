@@ -14,12 +14,13 @@ class DeviceServiceEvaluation(object):
     def measure_evaluation(self, device_id, measure):
         output = DeviceEvaluation()
         try:
-            if "SWITCH" in device_id:
-                output = self.switch_functions.device_evaluation(device_id, measure)
-            elif "WATERLEVEL" in device_id:
-                output = self.waterlevel_functions.device_evaluation(device_id, measure)
-            elif "BUTTON" in device_id:
-                output = self.button_functions.device_evaluation(device_id, measure)
+            if self.r.exists("device:" + device_id + ":user_id") == 1:
+                if "SWITCH" in device_id:
+                    output = self.switch_functions.device_evaluation(device_id, measure)
+                elif "WATERLEVEL" in device_id:
+                    output = self.waterlevel_functions.device_evaluation(device_id, measure)
+                elif "BUTTON" in device_id:
+                    output = self.button_functions.device_evaluation(device_id, measure)
             return output
         except Exception as error:
             print(repr(error))
@@ -27,11 +28,34 @@ class DeviceServiceEvaluation(object):
 
     def expiration_evaluation(self, device_id, expiration):
         try:
-            device_expiration = self.r.get("device:" + device_id + ":expiration")
-            if device_expiration != expiration:
-                return device_expiration
+            if self.r.exists("device:" + device_id + ":expiration") == 1:
+                device_expiration = self.r.get("device:" + device_id + ":expiration")
+                if device_expiration != expiration:
+                    return device_expiration
+                else:
+                    return "false"
             else:
                 return "false"
         except Exception as error:
             print(repr(error))
             return "false"
+
+    def check_device_registration(self, device_id):
+        if self.r.exists("device:" + device_id + ":name") == 0:
+            keys_id = device_id.split("-")
+            hardware_id = keys_id[-1]
+            if self.r.exists("device:" + hardware_id + ":user") == 1:
+                user_id = self.r.get("device:" + hardware_id + ":user")
+                self.device_registration(user_id, device_id)
+
+    def device_registration(self, user_id, device_id):
+        try:
+            if "SWITCH" in device_id:
+                self.switch_functions.register(user_id, device_id)
+            elif "WATERLEVEL" in device_id:
+                self.waterlevel_functions.register(user_id, device_id)
+            elif "BUTTON" in device_id:
+                self.button_functions.register(user_id, device_id)
+            print(device_id + " registered!")
+        except Exception as error:
+            print(repr(error))

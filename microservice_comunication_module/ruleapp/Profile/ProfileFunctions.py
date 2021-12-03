@@ -16,6 +16,8 @@ class ProfileFunction(object):
                 self.r.set(key_pattern + ":password", dto.password)
                 self.r.set(key_pattern + ":surname", dto.surname)
                 self.r.set(key_pattern + ":user_id", user_id)
+                self.r.set("user:" + user_id + ":email", dto.email)
+                self.r.set("user:" + user_id + ":logged", "true")
                 dto.user_id = user_id
                 output = self.create_token(dto)
             return output
@@ -28,13 +30,22 @@ class ProfileFunction(object):
             key_pattern = "profile:" + dto.email
             output = "false"
             if self.r.exists(key_pattern + ":name") == 1:
-                password = self.r.get(key_pattern+":password")
+                password = self.r.get(key_pattern + ":password")
                 if password == dto.password:
                     dto.name = self.r.get(key_pattern + ":name")
                     dto.surname = self.r.get(key_pattern + ":surname")
                     dto.user_id = self.r.get(key_pattern + ":user_id")
+                    self.r.set("user:" + dto.user_id + ":logged", "true")
                     output = self.create_token(dto)
             return output
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
+    def logout(self, user_id):
+        try:
+            self.r.set("user:" + user_id + ":logged", "false")
+            return "logout"
         except Exception as error:
             print(repr(error))
             return "error"

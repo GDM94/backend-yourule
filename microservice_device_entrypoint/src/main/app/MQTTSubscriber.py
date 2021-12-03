@@ -1,4 +1,6 @@
 import paho.mqtt.client as mqtt
+import os
+import sys
 
 
 class Subscriber(object):
@@ -21,15 +23,8 @@ class Subscriber(object):
         self.client.connect(self.BROKER, self.PORT)
         self.client.loop_start()
 
-    def stop_connection(self):
-        print("MQTT shutdown")
-        if self.IS_SUBSCRIBER:
-            # remember to unsuscribe if it is working also as subscriber
-            self.client.unsubscribe(self.SUBSCRIBE_TOPIC)
-        self.client.loop_stop()
-        self.client.disconnect()
-
     def subscribe(self):
+        print("subscribing to topic: " + self.SUBSCRIBE_TOPIC)
         self.client.subscribe(self.SUBSCRIBE_TOPIC, 2)
 
     def publish(self, topic, payload):
@@ -38,6 +33,7 @@ class Subscriber(object):
 
     def callback_on_connect(self, paho_mqtt, userdata, flags, rc):
         print("Connected to %s with result code: %d" % (self.BROKER, rc))
+        self.subscribe()
 
     def callback_on_message_received(self, paho_mqtt, userdata, msg):
         message_payload = msg.payload.decode("utf-8")
@@ -46,13 +42,20 @@ class Subscriber(object):
         message_info = message_payload.split("/")
         measure = message_info[-1]
         expiration = message_info[0]
-        print("[x] received message for device: {}; with measure: {} and expiration: {}".format(device_id, measure,
-                                                                                                expiration))
-        if self.r.exists("device:" + device_id + ":name") == 1:
-            self.service.data_device_ingestion(device_id, measure, expiration)
+        # print("[x] received message for device: {}; with measure: {} and expiration: {}".format(device_id, measure,
+        # expiration))
+        self.service.data_device_ingestion(device_id, measure, expiration)
 
     def callback_on_disconnect(self, paho_mqtt, userdata, rc):
         print("MQTT Subscriber successfull disconnected")
         self.stop_connection()
-        self.start_connection()
-        self.subscribe()
+
+    def stop_connection(self):
+        print("MQTT shutdown")
+        if self.IS_SUBSCRIBER:
+            # remember to unsuscribe if it is working also as subscriber
+            self.client.unsubscribe(self.SUBSCRIBE_TOPIC)
+        self.client.loop_stop()
+        self.client.disconnect()
+        print("restart")
+        os.execv(sys.executable, ['python -u'] + sys.argv)
