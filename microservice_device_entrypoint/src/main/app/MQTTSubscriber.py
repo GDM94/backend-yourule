@@ -15,13 +15,15 @@ class Subscriber(object):
         # register the callback
         self.client.on_connect = self.callback_on_connect
         self.client.on_message = self.callback_on_message_received
-        self.client.on_disconnect = self.callback_on_disconnect
 
     def start_connection(self):
-        # manage connection to broker
-        self.client.username_pw_set("subscriber", "mqtt")
-        self.client.connect(self.BROKER, self.PORT)
-        self.client.loop_start()
+        try:
+            self.client.username_pw_set("subscriber", "mqtt")
+            self.client.connect(self.BROKER, self.PORT)
+            self.client.loop_forever()
+        except Exception as error:
+            print(repr(error))
+            self.restart()
 
     def subscribe(self):
         print("subscribing to topic: " + self.SUBSCRIBE_TOPIC)
@@ -46,16 +48,6 @@ class Subscriber(object):
         # expiration))
         self.service.data_device_ingestion(device_id, measure, expiration)
 
-    def callback_on_disconnect(self, paho_mqtt, userdata, rc):
-        print("MQTT Subscriber successfull disconnected")
-        self.stop_connection()
-
-    def stop_connection(self):
-        print("MQTT shutdown")
-        if self.IS_SUBSCRIBER:
-            # remember to unsuscribe if it is working also as subscriber
-            self.client.unsubscribe(self.SUBSCRIBE_TOPIC)
-        self.client.loop_stop()
-        self.client.disconnect()
+    def restart(self):
         print("restart")
         os.execv(sys.executable, ['python -u'] + sys.argv)

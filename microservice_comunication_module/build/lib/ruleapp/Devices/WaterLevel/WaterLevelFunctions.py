@@ -103,8 +103,10 @@ class WaterLevelFunction(object):
             self.r.delete(key_pattern + ":setting:error")
             self.r.delete(key_pattern + ":max_measure")
             self.r.delete(key_pattern + ":max_measure_time")
+            self.r.delete(key_pattern + ":max_measure_date")
             self.r.delete(key_pattern + ":min_measure")
             self.r.delete(key_pattern + ":min_measure_time")
+            self.r.delete(key_pattern + ":min_measure_date")
             if self.r.exists(key_pattern + ":rules") == 1:
                 rules = self.r.lrange(key_pattern + ":rules")
                 for rule_id in rules:

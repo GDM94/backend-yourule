@@ -4,6 +4,7 @@ from .LocationDTO import Location
 from munch import DefaultMunch
 from .WeatherDTO import Weather
 from datetime import datetime
+from ..DeviceId import WEATHER
 
 
 class WeatherFunction(object):
@@ -16,7 +17,7 @@ class WeatherFunction(object):
 
     def register(self, user_id):
         try:
-            device_id = "WEATHER-" + user_id
+            device_id = WEATHER + "-" + user_id
             key_pattern = "device:" + device_id
             if self.r.exists(key_pattern + ":name") == 0:
                 self.r.set(key_pattern + ":name", "WEATHER")

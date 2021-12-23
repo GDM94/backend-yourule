@@ -2,7 +2,7 @@ FROM python:3.9.2
 
 RUN pip install redis;
 RUN pip install pika;
-RUN pip install ruleapp==0.10.1;
+RUN pip install ruleapp==0.10.8;
 
 ADD ./src /backend/microservice_laston_evaluation/
 

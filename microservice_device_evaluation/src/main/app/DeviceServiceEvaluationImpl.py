@@ -2,6 +2,8 @@ from ruleapp.Devices.DeviceEvaluationDTO import DeviceEvaluation
 from ruleapp.Devices.WaterLevel.WaterLevelFunctions import WaterLevelFunction
 from ruleapp.Devices.Button.ButtonFunctions import ButtonFunction
 from ruleapp.Devices.Switch.SwitchFuntions import SwitchFunction
+from ruleapp.Devices.Photocell.PhotocellFunctions import PhotocellFunction
+from ruleapp.Devices.DeviceId import SWITCH, WATER_LEVEL, BUTTON, PHOTOCELL
 
 
 class DeviceServiceEvaluation(object):
@@ -10,17 +12,20 @@ class DeviceServiceEvaluation(object):
         self.waterlevel_functions = WaterLevelFunction(redis)
         self.switch_functions = SwitchFunction(redis)
         self.button_functions = ButtonFunction(redis)
+        self.photocell_functions = PhotocellFunction(redis)
 
     def measure_evaluation(self, device_id, measure):
         output = DeviceEvaluation()
         try:
             if self.r.exists("device:" + device_id + ":user_id") == 1:
-                if "SWITCH" in device_id:
+                if SWITCH in device_id:
                     output = self.switch_functions.device_evaluation(device_id, measure)
-                elif "WATERLEVEL" in device_id:
+                elif WATER_LEVEL in device_id:
                     output = self.waterlevel_functions.device_evaluation(device_id, measure)
-                elif "BUTTON" in device_id:
+                elif BUTTON in device_id:
                     output = self.button_functions.device_evaluation(device_id, measure)
+                elif PHOTOCELL in device_id:
+                    output = self.photocell_functions.device_evaluation(device_id, measure)
             return output
         except Exception as error:
             print(repr(error))
@@ -50,12 +55,14 @@ class DeviceServiceEvaluation(object):
 
     def device_registration(self, user_id, device_id):
         try:
-            if "SWITCH" in device_id:
+            if SWITCH in device_id:
                 self.switch_functions.register(user_id, device_id)
-            elif "WATERLEVEL" in device_id:
+            elif WATER_LEVEL in device_id:
                 self.waterlevel_functions.register(user_id, device_id)
-            elif "BUTTON" in device_id:
+            elif BUTTON in device_id:
                 self.button_functions.register(user_id, device_id)
+            elif PHOTOCELL in device_id:
+                self.photocell_functions.register(user_id, device_id)
             print(device_id + " registered!")
         except Exception as error:
             print(repr(error))

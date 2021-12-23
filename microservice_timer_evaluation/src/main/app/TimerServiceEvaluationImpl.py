@@ -1,5 +1,6 @@
 import json
 from ruleapp.Devices.Timer.TimerAntecedentFunctions import TimerAntecedentFunction
+from ruleapp.Devices.DeviceId import TIMER
 
 
 class TimerServiceEvaluation(object):
@@ -29,7 +30,7 @@ class TimerServiceEvaluation(object):
     def timer_trigger(self):
         user_id_list = self.get_all_users()
         for user_id in user_id_list:
-            device_id = "timer-"+user_id
+            device_id = TIMER + "-" + user_id
             output = {"user_id": user_id, "rules": []}
             rule_id_list = self.get_rules_with_timer(user_id, device_id)
             for rule_id in rule_id_list:

@@ -1,5 +1,4 @@
 from .WaterLevelAntecedentDTO import WaterLevelAntecedent
-from datetime import datetime
 
 
 class WaterLevelAntecedentFunction(object):

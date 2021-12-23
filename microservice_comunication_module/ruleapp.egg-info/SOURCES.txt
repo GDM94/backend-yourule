@@ -8,6 +8,7 @@ ruleapp.egg-info/top_level.txt
 ruleapp/DBconnection/RedisConnectionImpl.py
 ruleapp/DBconnection/__init__.py
 ruleapp/Devices/DeviceEvaluationDTO.py
+ruleapp/Devices/DeviceId.py
 ruleapp/Devices/__init__.py
 ruleapp/Devices/Alert/AlertConsequentDTO.py
 ruleapp/Devices/Alert/AlertConsequentFunctions.py
@@ -19,6 +20,11 @@ ruleapp/Devices/Button/ButtonAntecedentFunctions.py
 ruleapp/Devices/Button/ButtonDTO.py
 ruleapp/Devices/Button/ButtonFunctions.py
 ruleapp/Devices/Button/__init__.py
+ruleapp/Devices/Photocell/PhotocellAntecedentDTO.py
+ruleapp/Devices/Photocell/PhotocellAntecedentFunctions.py
+ruleapp/Devices/Photocell/PhotocellDTO.py
+ruleapp/Devices/Photocell/PhotocellFunctions.py
+ruleapp/Devices/Photocell/__init__.py
 ruleapp/Devices/Switch/SwitchAntecedentDTO.py
 ruleapp/Devices/Switch/SwitchAntecedentFunctions.py
 ruleapp/Devices/Switch/SwitchConsequentDTO.py

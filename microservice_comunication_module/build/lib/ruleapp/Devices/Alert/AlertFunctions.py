@@ -1,4 +1,5 @@
 from .AlertDTO import Alert
+from ..DeviceId import ALERT
 
 
 class AlertFunction(object):
@@ -7,7 +8,7 @@ class AlertFunction(object):
 
     def register(self, user_id, email):
         try:
-            device_id = "alert-" + user_id
+            device_id = ALERT + "-" + user_id
             key_pattern = "device:" + device_id
             if self.r.exists(key_pattern + ":name") == 0:
                 self.r.set(key_pattern + ":name", "alert")

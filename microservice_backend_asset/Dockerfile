@@ -8,7 +8,7 @@ RUN pip install paho-mqtt;
 RUN pip install pika;
 RUN pip install gunicorn;
 RUN pip install requests;
-RUN pip install ruleapp==0.10.2;
+RUN pip install ruleapp==0.10.8;
 RUN pip install munch;
 
 

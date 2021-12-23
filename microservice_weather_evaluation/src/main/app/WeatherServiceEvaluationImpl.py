@@ -1,6 +1,7 @@
 import json
 from ruleapp.Devices.Weather.WeatherFunctions import WeatherFunction
 from ruleapp.Devices.Weather.WeatherAntecedentFunctions import WeatherAntecedentFunction
+from ruleapp.Devices.DeviceId import WEATHER
 
 
 class WeatherServiceEvaluation(object):
@@ -35,7 +36,7 @@ class WeatherServiceEvaluation(object):
         self.update_weather()
         user_id_list = self.get_all_users()
         for user_id in user_id_list:
-            device_id = "WEATHER-"+user_id
+            device_id = WEATHER + "-" + user_id
             output = {"user_id": user_id, "rules": []}
             rule_id_list = self.get_rules_with_weather(user_id, device_id)
             for rule_id in rule_id_list:
@@ -50,4 +51,3 @@ class WeatherServiceEvaluation(object):
         all_locations = list(self.r.smembers("weather:location:names"))
         for location_name in all_locations:
             self.weather_functions.update_weather(location_name)
-

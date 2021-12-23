@@ -1,5 +1,6 @@
 import json
 from ruleapp.Devices.Switch.SwitchAntecedentFunctions import SwitchAntecedentFunction
+from ruleapp.Devices.DeviceId import SWITCH
 
 
 class LastTimeOnEvaluation(object):
@@ -23,7 +24,7 @@ class LastTimeOnEvaluation(object):
             key_pattern = "user:" + user_id + ":rule:" + rule_id
             device_antecedents = self.r.lrange(key_pattern + ":device_antecedents")
             for device_id in device_antecedents:
-                if "SWITCH" in device_id:
+                if SWITCH in device_id:
                     trigger = self.switch_antecedent_function.antecedent_evaluation(user_id, device_id, rule_id)
                     if trigger == "true":
                         output.add(rule_id)

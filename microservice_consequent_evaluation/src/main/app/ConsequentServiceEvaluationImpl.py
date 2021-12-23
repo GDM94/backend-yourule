@@ -1,5 +1,6 @@
 from ruleapp.Devices.Alert.AlertConsequentFunctions import AlertConsequentFunction
 from ruleapp.Devices.Switch.SwitchConsequentFunctions import SwitchConsequentFunction
+from ruleapp.Devices.DeviceId import SWITCH, ALERT
 
 
 class ConsequentServiceEvaluation(object):
@@ -18,11 +19,12 @@ class ConsequentServiceEvaluation(object):
             delay = 0
             for device_id in device_consequents:
                 delay = delay + int(self.r.get(pattern_key + ":rule_consequents:" + device_id + ":delay"))
-                if "alert" not in device_id:
+                measure = "false"
+                if SWITCH in device_id:
                     measure = self.switch_consequent_functions.switch_evaluation(user_id, device_id)
-                    if measure != "false":
-                        trigger = {"device_id": device_id, "measure": measure, "delay": str(delay)}
-                        output.append(trigger)
+                if measure != "false":
+                    trigger = {"device_id": device_id, "measure": measure, "delay": str(delay)}
+                    output.append(trigger)
             return output
         except Exception as error:
             print(repr(error))
@@ -33,7 +35,7 @@ class ConsequentServiceEvaluation(object):
             pattern_key = "user:" + user_id + ":rule:" + rule_id
             device_consequents = self.r.lrange(pattern_key + ":device_consequents")
             for device_id in device_consequents:
-                if "alert" in device_id:
+                if ALERT in device_id:
                     self.alert_consequent_functions.alert_evaluation(user_id, rule_id)
                     break
         except Exception as error:

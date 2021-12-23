@@ -15,10 +15,11 @@ function Go () {
     'microservice_weather_evaluation' ,
     'microservice_rule_evaluation',
     'microservice_consequent_evaluation',
-    'microservice_laston_evaluation',
-    'redis',
-    'rabbitmq',
-    'reverse_proxy')
+    'microservice_laston_evaluation'
+    #'redis',
+    #'rabbitmq',
+    #'reverse_proxy'
+    )
 
     ForEach ($folder in $folders) {
 

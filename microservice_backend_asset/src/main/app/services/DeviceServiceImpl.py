@@ -4,8 +4,10 @@ from ruleapp.Devices.Button.ButtonFunctions import ButtonFunction
 from ruleapp.Devices.Timer.TimerFunctions import TimerFunction
 from ruleapp.Devices.Alert.AlertFunctions import AlertFunction
 from ruleapp.Devices.Weather.WeatherFunctions import WeatherFunction
+from ruleapp.Devices.Photocell.PhotocellFunctions import PhotocellFunction
 import json
 from requests import get
+from ruleapp.Devices.DeviceId import TIMER, ALERT, WEATHER, WATER_LEVEL, SWITCH, PHOTOCELL, BUTTON
 
 
 class DeviceService(object):
@@ -26,22 +28,25 @@ class DeviceService(object):
         self.timer_functions = TimerFunction(redis)
         self.alert_functions = AlertFunction(redis)
         self.weather_functions = WeatherFunction(redis, self.api_key, self.api_location_url, self.api_weather_url)
+        self.photocell_functions = PhotocellFunction(redis)
 
     def get_device(self, user_id, device_id):
         try:
             device = {}
-            if "SWITCH" in device_id:
+            if SWITCH in device_id:
                 device = self.switch_functions.get_device(user_id, device_id)
-            elif "WATERLEVEL" in device_id:
+            elif WATER_LEVEL in device_id:
                 device = self.waterlevel_functions.get_device(user_id, device_id)
-            elif "timer" in device_id:
+            elif TIMER in device_id:
                 device = self.timer_functions.get_device(user_id, device_id)
-            elif "alert" in device_id:
+            elif ALERT in device_id:
                 device = self.alert_functions.get_device(user_id, device_id)
-            elif "BUTTON" in device_id:
+            elif BUTTON in device_id:
                 device = self.button_functions.get_device(user_id, device_id)
-            elif "WEATHER" in device_id:
+            elif WEATHER in device_id:
                 device = self.weather_functions.get_device(user_id, device_id)
+            elif PHOTOCELL in device_id:
+                device = self.photocell_functions.get_device(user_id, device_id)
             return device
         except Exception as error:
             print(repr(error))
@@ -60,18 +65,20 @@ class DeviceService(object):
 
     def device_update(self, device_id, new_device):
         try:
-            if "SWITCH" in device_id:
+            if SWITCH in device_id:
                 self.switch_functions.update_device(new_device)
-            elif "WATERLEVEL" in device_id:
+            elif WATER_LEVEL in device_id:
                 self.waterlevel_functions.update_device(new_device)
-            elif "timer" in device_id:
+            elif TIMER in device_id:
                 self.timer_functions.update_device(new_device)
-            elif "alert" in device_id:
+            elif ALERT in device_id:
                 self.alert_functions.update_device(new_device)
-            elif "BUTTON" in device_id:
+            elif BUTTON in device_id:
                 self.button_functions.update_device(new_device)
-            elif "WEATHER" in device_id:
+            elif WEATHER in device_id:
                 self.weather_functions.update_device(new_device)
+            elif PHOTOCELL in device_id:
+                self.photocell_functions.update_device(new_device)
             return "true"
         except Exception as error:
             print(repr(error))
@@ -79,16 +86,18 @@ class DeviceService(object):
 
     def delete_device(self, user_id, device_id):
         try:
-            if "SWITCH" in device_id:
+            if SWITCH in device_id:
                 self.switch_functions.delete_device(user_id, device_id)
                 # trigger setting device
                 self.mqtt_client.publish(device_id, "off/0")
             else:
                 rules = self.r.lrange("device:" + device_id + ":rules")
-                if "WATERLEVEL" in device_id:
+                if WATER_LEVEL in device_id:
                     self.waterlevel_functions.delete_device(user_id, device_id)
-                if "BUTTON" in device_id:
+                elif BUTTON in device_id:
                     self.button_functions.delete_device(user_id, device_id)
+                elif PHOTOCELL in device_id:
+                    self.photocell_functions.delete_device(user_id, device_id)
                 # trigger rule evaluation
                 trigger_message = {"user_id": user_id, "rules": rules}
                 payload = json.dumps(trigger_message)

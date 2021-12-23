@@ -1,13 +1,13 @@
-from .WaterLevelAntecedentDTO import WaterLevelAntecedent
+from .PhotocellAntecedentDTO import PhotocellAntecedent
 
 
-class WaterLevelAntecedentFunction(object):
+class PhotocellAntecedentFunction(object):
     def __init__(self, redis):
         self.r = redis
 
     def get_antecedent(self, user_id, rule_id, device_id):
         try:
-            antecedent = WaterLevelAntecedent()
+            antecedent = PhotocellAntecedent()
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
             device_key_pattern = "device:" + device_id
             antecedent.device_id = device_id
@@ -29,7 +29,7 @@ class WaterLevelAntecedentFunction(object):
 
     def get_antecedent_slim(self, user_id, rule_id, device_id):
         try:
-            antecedent = WaterLevelAntecedent()
+            antecedent = PhotocellAntecedent()
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
             antecedent.device_id = device_id
             antecedent.device_name = self.r.get("device:" + device_id + ":name")
@@ -63,7 +63,7 @@ class WaterLevelAntecedentFunction(object):
             device_antecedents = self.r.lrange("user:" + user_id + ":rule:" + rule_id + ":device_antecedents")
             result = "false"
             if device_id not in device_antecedents:
-                antecedent = WaterLevelAntecedent()
+                antecedent = PhotocellAntecedent()
                 self.r.rpush("device:" + device_id + ":rules", rule_id)
                 self.r.rpush("user:" + user_id + ":rule:" + rule_id + ":device_antecedents", device_id)
                 key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
@@ -79,7 +79,7 @@ class WaterLevelAntecedentFunction(object):
 
     def update_antecedent(self, user_id, rule_id, new_antecedent):
         try:
-            antecedent = WaterLevelAntecedent()
+            antecedent = PhotocellAntecedent()
             antecedent.antecedent_mapping(new_antecedent)
             device_antecedents = self.r.lrange("user:" + user_id + ":rule:" + rule_id + ":device_antecedents")
             result = "false"
@@ -113,7 +113,6 @@ class WaterLevelAntecedentFunction(object):
     def measure_evaluation(self, user_id, rule_id, device_id, measure):
         key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
         evaluation = "false"
-        old_evaluation = self.r.get(key_pattern + ":evaluation")
         condition = self.r.get(key_pattern + ":condition_measure")
         start_value = self.r.get(key_pattern + ":start_value")
         stop_value = self.r.get(key_pattern + ":stop_value")
@@ -127,10 +126,5 @@ class WaterLevelAntecedentFunction(object):
                 evaluation = "true"
         elif condition == "<":
             if int(measure) < int(start_value):
-                evaluation = "true"
-        elif condition == "isteresi":
-            if int(measure) <= int(start_value):
-                evaluation = "true"
-            if old_evaluation == "true" and int(measure) <= int(stop_value):
                 evaluation = "true"
         return evaluation

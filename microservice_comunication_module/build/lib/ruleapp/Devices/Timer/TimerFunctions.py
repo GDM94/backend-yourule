@@ -1,5 +1,6 @@
 from .TimerDTO import Timer
 from datetime import datetime
+from ..DeviceId import TIMER
 
 
 class TimerFunction(object):
@@ -8,7 +9,7 @@ class TimerFunction(object):
 
     def register(self, user_id):
         try:
-            device_id = "timer-" + user_id
+            device_id = TIMER + "-" + user_id
             if self.r.exists("device:" + device_id + ":name") == 0:
                 key_pattern = "device:" + device_id
                 self.r.set(key_pattern + ":name", "timer")
