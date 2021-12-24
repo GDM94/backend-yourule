@@ -106,6 +106,11 @@ class SwitchFunction(object):
             print(repr(error))
             return "error"
 
+    def set_manual_measure(self, user_id, device_id, manual_measure):
+        self.r.set("device:" + device_id + ":manual_measure", manual_measure)
+        message = manual_measure + "/0"
+        return message
+
     def device_evaluation(self, device_id, measure):
         output = DeviceEvaluation()
         key_pattern = "device:" + device_id

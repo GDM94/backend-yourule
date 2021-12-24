@@ -1,6 +1,7 @@
 import pika
 import time
 import json
+from ruleapp.Devices.DeviceId import SWITCH, SERVO
 
 
 class RabbitMQ(object):
@@ -18,7 +19,8 @@ class RabbitMQ(object):
                                                            heartbeat=0)
         self.subscribe_queue = config.get("RABBITMQ", "subscribe_queue")
         self.publish_queue = config.get("RABBITMQ", "publish_queue")
-        self.mqtt_publish_topic = config.get("MQTT", "publish_topic")
+        self.mqtt_topic_switch = config.get("MQTT", "switch_publish_topic")
+        self.mqtt_topic_servo = config.get("MQTT", "servo_publish_topic")
         self.channel = None
         self.connection = None
         self.service = service
@@ -69,7 +71,11 @@ class RabbitMQ(object):
         rule_id = str(message_dict["rule_id"])
         output = self.service.switch_evaluation(user_id, rule_id)
         for trigger in output:
-            topic = self.mqtt_publish_topic + trigger["device_id"]
+            topic = ""
+            if SWITCH in trigger["device_id"]:
+                topic = self.mqtt_topic_switch + trigger["device_id"]
+            elif SERVO in trigger["device_id"]:
+                topic = self.mqtt_topic_servo + trigger["device_id"]
             payload = trigger["measure"]+"/"+trigger["delay"]
             self.mqtt.publish(topic, payload)
         self.service.alert_evaluation(user_id, rule_id)

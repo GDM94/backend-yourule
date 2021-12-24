@@ -25,6 +25,11 @@ ruleapp/Devices/Photocell/PhotocellAntecedentFunctions.py
 ruleapp/Devices/Photocell/PhotocellDTO.py
 ruleapp/Devices/Photocell/PhotocellFunctions.py
 ruleapp/Devices/Photocell/__init__.py
+ruleapp/Devices/Servo/ServoConsequentDTO.py
+ruleapp/Devices/Servo/ServoConsequentFunctions.py
+ruleapp/Devices/Servo/ServoDTO.py
+ruleapp/Devices/Servo/ServoFunctions.py
+ruleapp/Devices/Servo/__init__.py
 ruleapp/Devices/Switch/SwitchAntecedentDTO.py
 ruleapp/Devices/Switch/SwitchAntecedentFunctions.py
 ruleapp/Devices/Switch/SwitchConsequentDTO.py

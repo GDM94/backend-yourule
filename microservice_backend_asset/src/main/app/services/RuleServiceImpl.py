@@ -9,12 +9,15 @@ from ruleapp.Devices.Button.ButtonAntecedentFunctions import ButtonAntecedentFun
 from ruleapp.Devices.Switch.SwitchAntecedentFunctions import SwitchAntecedentFunction
 from ruleapp.Devices.Weather.WeatherAntecedentFunctions import WeatherAntecedentFunction
 from ruleapp.Devices.Photocell.PhotocellAntecedentFunctions import PhotocellAntecedentFunction
-from ruleapp.Devices.DeviceId import TIMER, ALERT, WEATHER, WATER_LEVEL, SWITCH, PHOTOCELL, BUTTON
+from ruleapp.Devices.Servo.ServoConsequentFunctions import ServoConsequentFunction
+from ruleapp.Devices.DeviceId import TIMER, ALERT, WEATHER, WATER_LEVEL, SWITCH, PHOTOCELL, BUTTON, SERVO
 
 
 class RuleService(object):
     def __init__(self, mqtt_client, rabbitmq, config, redis):
         self.publish_rule = config.get("RABBITMQ", "publish_rule")
+        self.mqtt_topic_switch = config.get("MQTT", "mqtt_topic_switch")
+        self.mqtt_topic_servo = config.get("MQTT", "mqtt_topic_servo")
         self.r = redis
         self.mqtt_client = mqtt_client
         self.rabbitmq = rabbitmq
@@ -27,6 +30,7 @@ class RuleService(object):
         self.switch_antecedent_functions = SwitchAntecedentFunction(redis)
         self.weather_antecedent_functions = WeatherAntecedentFunction(redis)
         self.photocell_antecedent_functions = PhotocellAntecedentFunction(redis)
+        self.servo_consequent_functions = ServoConsequentFunction(redis)
 
     def create_rule(self, user_id, rule_name):
         try:
@@ -97,6 +101,8 @@ class RuleService(object):
             result = self.alert_consequent_functions.add_consequent(user_id, rule_id, device_id)
         elif SWITCH in device_id:
             result = self.switch_consequent_functions.add_consequent(user_id, rule_id, device_id)
+        elif SERVO in device_id:
+            result = self.servo_consequent_functions.add_consequent(user_id, rule_id, device_id)
         if result != "error":
             result = self.get_rule_by_id(user_id, rule_id)
         return result
@@ -125,6 +131,8 @@ class RuleService(object):
             output = self.alert_consequent_functions.update_consequent(user_id, rule_id, consequent_json)
         elif SWITCH in device_id:
             output = self.switch_consequent_functions.update_consequent(user_id, rule_id, consequent_json)
+        elif SERVO in device_id:
+            output = self.servo_consequent_functions.update_consequent(user_id, rule_id, consequent_json)
         if output != "error":
             output = self.get_rule_by_id(user_id, rule_id)
         return output
@@ -194,14 +202,23 @@ class RuleService(object):
     def delete_consequent(self, user_id, rule_id, device_id):
         try:
             output = "error"
+            topic = ""
+            payload = ""
             if ALERT in device_id:
                 output = self.alert_consequent_functions.delete_consequent(user_id, rule_id, device_id)
             elif SWITCH in device_id:
                 output = self.switch_consequent_functions.delete_consequent(user_id, rule_id, device_id)
+                topic = self.mqtt_topic_switch + device_id
+                new_status = self.switch_consequent_functions.switch_evaluation(user_id, device_id)
+                payload = new_status + "/0"
+            elif SERVO in device_id:
+                output = self.servo_consequent_functions.delete_consequent(user_id, rule_id, device_id)
+                topic = self.mqtt_topic_servo + device_id
+                degree = self.servo_consequent_functions.servo_evaluation(user_id, device_id)
+                payload = degree + "/0"
             if output != "error":
-                # trigger device off
-                self.mqtt_client.publish(device_id, "off/0")
-                # get rule by id
+                if topic != "" and payload != "":
+                    self.mqtt_client.publish(topic, payload)
                 output = self.get_rule_by_id(user_id, rule_id)
             return output
         except Exception as error:
@@ -298,20 +315,24 @@ class RuleService(object):
 
     def get_rule_consequent(self, user_id, rule_id, device_id):
         try:
-            if "alert" in device_id:
+            if ALERT in device_id:
                 return self.alert_consequent_functions.get_consequent(user_id, rule_id, device_id)
-            elif "SWITCH" in device_id:
+            elif SWITCH in device_id:
                 return self.switch_consequent_functions.get_consequent(user_id, rule_id, device_id)
+            elif SERVO in device_id:
+                return self.servo_consequent_functions.get_consequent(user_id, rule_id, device_id)
         except Exception as error:
             print(repr(error))
             return "error"
 
     def get_rule_consequent_slim(self, user_id, rule_id, device_id):
         try:
-            if "alert" in device_id:
+            if ALERT in device_id:
                 return self.alert_consequent_functions.get_consequent_slim(user_id, rule_id, device_id)
-            elif "SWITCH" in device_id:
+            elif SWITCH in device_id:
                 return self.switch_consequent_functions.get_consequent_slim(user_id, rule_id, device_id)
+            elif SERVO in device_id:
+                return self.servo_consequent_functions.get_consequent_slim(user_id, rule_id, device_id)
         except Exception as error:
             print(repr(error))
             return "error"
@@ -324,4 +345,3 @@ class RuleService(object):
             return "error"
         else:
             return output
-

@@ -7,7 +7,6 @@ class Subscriber(object):
         self.BROKER = config.get("MQTT", "broker")
         self.PORT = int(config.get("MQTT", "port"))
         self.SUBSCRIBE_TOPIC = config.get("MQTT", "subscribe_topic")
-        self.PUBLISH_TOPIC = config.get("MQTT", "publish_topic")
         self.IS_SUBSCRIBER = True
         # register the callback
         self.client.on_connect = self.callback_on_connect

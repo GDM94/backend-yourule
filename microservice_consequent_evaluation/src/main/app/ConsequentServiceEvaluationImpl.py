@@ -1,6 +1,7 @@
 from ruleapp.Devices.Alert.AlertConsequentFunctions import AlertConsequentFunction
 from ruleapp.Devices.Switch.SwitchConsequentFunctions import SwitchConsequentFunction
-from ruleapp.Devices.DeviceId import SWITCH, ALERT
+from ruleapp.Devices.Servo.ServoConsequentFunctions import ServoConsequentFunction
+from ruleapp.Devices.DeviceId import SWITCH, ALERT, SERVO
 
 
 class ConsequentServiceEvaluation(object):
@@ -10,6 +11,7 @@ class ConsequentServiceEvaluation(object):
         self.email_password = config.get("ALERT", "email_password")
         self.alert_consequent_functions = AlertConsequentFunction(redis)
         self.switch_consequent_functions = SwitchConsequentFunction(redis)
+        self.servo_consequent_functions = ServoConsequentFunction(redis)
 
     def switch_evaluation(self, user_id, rule_id):
         output = []
@@ -22,6 +24,8 @@ class ConsequentServiceEvaluation(object):
                 measure = "false"
                 if SWITCH in device_id:
                     measure = self.switch_consequent_functions.switch_evaluation(user_id, device_id)
+                elif SERVO in device_id:
+                    measure = self.servo_consequent_functions.servo_evaluation(user_id, device_id)
                 if measure != "false":
                     trigger = {"device_id": device_id, "measure": measure, "delay": str(delay)}
                     output.append(trigger)

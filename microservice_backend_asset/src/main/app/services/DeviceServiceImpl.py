@@ -5,9 +5,10 @@ from ruleapp.Devices.Timer.TimerFunctions import TimerFunction
 from ruleapp.Devices.Alert.AlertFunctions import AlertFunction
 from ruleapp.Devices.Weather.WeatherFunctions import WeatherFunction
 from ruleapp.Devices.Photocell.PhotocellFunctions import PhotocellFunction
+from ruleapp.Devices.Servo.ServoFunctions import ServoFunction
 import json
 from requests import get
-from ruleapp.Devices.DeviceId import TIMER, ALERT, WEATHER, WATER_LEVEL, SWITCH, PHOTOCELL, BUTTON
+from ruleapp.Devices.DeviceId import TIMER, ALERT, WEATHER, WATER_LEVEL, SWITCH, PHOTOCELL, BUTTON, SERVO
 
 
 class DeviceService(object):
@@ -18,7 +19,8 @@ class DeviceService(object):
         self.mqtt_client = mqtt_client
         self.rabbitmq = rabbitmq
         self.EXPIRATION = config.get("REDIS", "expiration")
-        self.publish_topic_mqtt_switch = config.get("MQTT", "publish_setting")
+        self.mqtt_topic_switch = config.get("MQTT", "mqtt_topic_switch")
+        self.mqtt_topic_servo = config.get("MQTT", "mqtt_topic_servo")
         self.api_key = config.get("OPEN_WEATHER", "api_key")
         self.api_location_url = config.get("OPEN_WEATHER", "api_location_url")
         self.api_weather_url = config.get("OPEN_WEATHER", "api_weather_url")
@@ -29,6 +31,7 @@ class DeviceService(object):
         self.alert_functions = AlertFunction(redis)
         self.weather_functions = WeatherFunction(redis, self.api_key, self.api_location_url, self.api_weather_url)
         self.photocell_functions = PhotocellFunction(redis)
+        self.servo_functions = ServoFunction(redis)
 
     def get_device(self, user_id, device_id):
         try:
@@ -47,6 +50,8 @@ class DeviceService(object):
                 device = self.weather_functions.get_device(user_id, device_id)
             elif PHOTOCELL in device_id:
                 device = self.photocell_functions.get_device(user_id, device_id)
+            elif SERVO in device_id:
+                device = self.servo_functions.get_device(user_id, device_id)
             return device
         except Exception as error:
             print(repr(error))
@@ -79,6 +84,8 @@ class DeviceService(object):
                 self.weather_functions.update_device(new_device)
             elif PHOTOCELL in device_id:
                 self.photocell_functions.update_device(new_device)
+            elif SERVO in device_id:
+                self.servo_functions.update_device(new_device)
             return "true"
         except Exception as error:
             print(repr(error))
@@ -89,7 +96,15 @@ class DeviceService(object):
             if SWITCH in device_id:
                 self.switch_functions.delete_device(user_id, device_id)
                 # trigger setting device
-                self.mqtt_client.publish(device_id, "off/0")
+                topic = self.mqtt_topic_switch + device_id
+                payload = "off/0"
+                self.mqtt_client.publish(topic, payload)
+            elif SERVO in device_id:
+                self.servo_functions.delete_device(user_id, device_id)
+                off_status = self.r.get("device:" + device_id + ":setting_off")
+                topic = self.mqtt_topic_servo + device_id
+                payload = off_status + "/0"
+                self.mqtt_client.publish(topic, payload)
             else:
                 rules = self.r.lrange("device:" + device_id + ":rules")
                 if WATER_LEVEL in device_id:
@@ -142,27 +157,35 @@ class DeviceService(object):
         try:
             self.r.set("device:" + device_id + ":automatic", automatic)
             if automatic == "true":
-                # trigger consequent evaluation
                 rules = self.r.lrange("device:" + device_id + ":rules")
                 trigger = {"user_id": user_id, "rule_id": ""}
                 for rule in rules:
-                    print(rule)
                     trigger["rule_id"] = rule
                     payload = json.dumps(trigger)
                     self.rabbitmq.publish(self.publish_consequent, payload)
-            return self.switch_functions.get_device(user_id, device_id)
+            dto = {}
+            if SWITCH in device_id:
+                dto = self.switch_functions.get_device(user_id, device_id)
+            elif SERVO in device_id:
+                dto = self.servo_functions.get_device(user_id, device_id)
+            return dto
         except Exception as error:
             print(repr(error))
             return "error"
 
     def set_consequent_manual_measure(self, user_id, device_id, manual_measure):
         try:
-            self.r.set("device:" + device_id + ":manual_measure", manual_measure)
-            # trigger setting device
-            message = manual_measure + "/0"
-            topic = self.publish_topic_mqtt_switch + device_id
-            self.mqtt_client.publish(topic, message)
-            dto = self.switch_functions.get_device(user_id, device_id)
+            dto = {}
+            if SWITCH in device_id:
+                message = self.switch_functions.set_manual_measure(user_id, device_id, manual_measure)
+                topic = self.mqtt_topic_switch + device_id
+                self.mqtt_client.publish(topic, message)
+                dto = self.switch_functions.get_device(user_id, device_id)
+            elif SERVO in device_id:
+                message = self.servo_functions.set_manual_measure(user_id, device_id, manual_measure)
+                topic = self.mqtt_topic_servo + device_id
+                self.mqtt_client.publish(topic, message)
+                dto = self.servo_functions.get_device(user_id, device_id)
             if dto.measure != "-":
                 dto.measure = manual_measure
             return dto

@@ -12,6 +12,7 @@ class RabbitMQ(object):
         password = config.get("RABBITMQ", "password")
         credentials = pika.PlainCredentials(username, password)
         self.mqtt_topic_switch = config.get("MQTT", "publish_topic_switch")
+        self.mqtt_topic_servo = config.get("MQTT", "publish_topic_servo")
         self.mqtt_topic_expiration = config.get("MQTT", "publish_topic_expiration")
         self.params = pika.connection.ConnectionParameters(host=rabbitmq_server,
                                                            port=rabbitmq_port,
@@ -81,5 +82,8 @@ class RabbitMQ(object):
                 self.publish(output, self.publish_queue)
         elif trigger.type == "switch":
             topic = self.mqtt_topic_switch + device_id
+            self.mqtt.publish(topic, trigger.measure)
+        elif trigger.type == "servo":
+            topic = self.mqtt_topic_servo + device_id
             self.mqtt.publish(topic, trigger.measure)
         ch.basic_ack(delivery_tag=method.delivery_tag)

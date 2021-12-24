@@ -3,7 +3,8 @@ from ruleapp.Devices.WaterLevel.WaterLevelFunctions import WaterLevelFunction
 from ruleapp.Devices.Button.ButtonFunctions import ButtonFunction
 from ruleapp.Devices.Switch.SwitchFuntions import SwitchFunction
 from ruleapp.Devices.Photocell.PhotocellFunctions import PhotocellFunction
-from ruleapp.Devices.DeviceId import SWITCH, WATER_LEVEL, BUTTON, PHOTOCELL
+from ruleapp.Devices.Servo.ServoFunctions import ServoFunction
+from ruleapp.Devices.DeviceId import SWITCH, WATER_LEVEL, BUTTON, PHOTOCELL, SERVO
 
 
 class DeviceServiceEvaluation(object):
@@ -13,6 +14,7 @@ class DeviceServiceEvaluation(object):
         self.switch_functions = SwitchFunction(redis)
         self.button_functions = ButtonFunction(redis)
         self.photocell_functions = PhotocellFunction(redis)
+        self.servo_functions = ServoFunction(redis)
 
     def measure_evaluation(self, device_id, measure):
         output = DeviceEvaluation()
@@ -26,6 +28,8 @@ class DeviceServiceEvaluation(object):
                     output = self.button_functions.device_evaluation(device_id, measure)
                 elif PHOTOCELL in device_id:
                     output = self.photocell_functions.device_evaluation(device_id, measure)
+                elif SERVO in device_id:
+                    self.servo_functions.device_evaluation(device_id, measure)
             return output
         except Exception as error:
             print(repr(error))
@@ -63,6 +67,8 @@ class DeviceServiceEvaluation(object):
                 self.button_functions.register(user_id, device_id)
             elif PHOTOCELL in device_id:
                 self.photocell_functions.register(user_id, device_id)
+            elif SERVO in device_id:
+                self.servo_functions.register(user_id, device_id)
             print(device_id + " registered!")
         except Exception as error:
             print(repr(error))
