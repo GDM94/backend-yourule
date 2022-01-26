@@ -100,8 +100,8 @@ class DeviceService(object):
                 payload = "off/0"
                 self.mqtt_client.publish(topic, payload)
             elif SERVO in device_id:
-                self.servo_functions.delete_device(user_id, device_id)
                 off_status = self.r.get("device:" + device_id + ":setting_off")
+                self.servo_functions.delete_device(user_id, device_id)
                 topic = self.mqtt_topic_servo + device_id
                 payload = off_status + "/0"
                 self.mqtt_client.publish(topic, payload)
