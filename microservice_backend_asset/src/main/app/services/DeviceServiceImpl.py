@@ -12,15 +12,15 @@ from ruleapp.Devices.DeviceId import TIMER, ALERT, WEATHER, WATER_LEVEL, SWITCH,
 
 
 class DeviceService(object):
-    def __init__(self, rabbitmq, redis, config):
+    def __init__(self, redis, config):
         self.r = redis
         self.publish_rule = config.get("RABBITMQ", "publish_rule")
         self.publish_consequent = config.get("RABBITMQ", "publish_consequent")
-        self.rabbitmq = rabbitmq
         self.EXPIRATION = config.get("REDIS", "expiration")
         self.mqtt_switch = config.get("MQTT", "mqtt_switch")
         self.mqtt_servo = config.get("MQTT", "mqtt_servo")
-        self.mqtt_publisher_ip = config.get("MQTT", "ip")
+        self.endpoint_mqtt = config.get("MQTT", "endpoint_mqtt")
+        self.endpoint_rabbitmq = config.get("MQTT", "endpoint_rabbitmq")
         self.api_key = config.get("OPEN_WEATHER", "api_key")
         self.api_location_url = config.get("OPEN_WEATHER", "api_location_url")
         self.api_weather_url = config.get("OPEN_WEATHER", "api_weather_url")
@@ -96,13 +96,13 @@ class DeviceService(object):
             if SWITCH in device_id:
                 self.switch_functions.delete_device(user_id, device_id)
                 # trigger setting device
-                url = self.mqtt_publisher_ip + self.mqtt_switch + device_id
+                url = self.endpoint_mqtt + self.mqtt_switch + device_id
                 message = {"message": "off/0"}
                 requests.post(url, json.dumps(message))
             elif SERVO in device_id:
                 off_status = self.r.get("device:" + device_id + ":setting_off")
                 self.servo_functions.delete_device(user_id, device_id)
-                url = self.mqtt_publisher_ip + self.mqtt_servo + device_id
+                url = self.endpoint_mqtt + self.mqtt_servo + device_id
                 message = {"message": off_status + "/0"}
                 requests.post(url, json.dumps(message))
             else:
@@ -114,9 +114,9 @@ class DeviceService(object):
                 elif PHOTOCELL in device_id:
                     self.photocell_functions.delete_device(user_id, device_id)
                 # trigger rule evaluation
+                url = self.endpoint_rabbitmq + self.publish_rule
                 trigger_message = {"user_id": user_id, "rules": rules}
-                payload = json.dumps(trigger_message)
-                self.rabbitmq.publish(self.publish_rule, payload)
+                requests.post(url, json.dumps(trigger_message))
             return "true"
         except Exception as error:
             print(repr(error))
@@ -160,9 +160,9 @@ class DeviceService(object):
                 rules = self.r.lrange("device:" + device_id + ":rules")
                 trigger = {"user_id": user_id, "rule_id": ""}
                 for rule in rules:
+                    url = self.endpoint_rabbitmq + self.publish_consequent
                     trigger["rule_id"] = rule
-                    payload = json.dumps(trigger)
-                    self.rabbitmq.publish(self.publish_consequent, payload)
+                    requests.post(url, json.dumps(trigger))
             dto = {}
             if SWITCH in device_id:
                 dto = self.switch_functions.get_device(user_id, device_id)
@@ -179,13 +179,13 @@ class DeviceService(object):
             dto = {}
             if SWITCH in device_id:
                 message = self.switch_functions.set_manual_measure(user_id, device_id, manual_measure)
-                url = self.mqtt_publisher_ip + self.mqtt_switch + device_id
+                url = self.endpoint_mqtt + self.mqtt_switch + device_id
                 msg = {"message": message}
                 requests.post(url, json.dumps(msg))
                 dto = self.switch_functions.get_device(user_id, device_id)
             elif SERVO in device_id:
                 message = self.servo_functions.set_manual_measure(user_id, device_id, manual_measure)
-                url = self.mqtt_publisher_ip + self.mqtt_servo + device_id
+                url = self.endpoint_mqtt + self.mqtt_servo + device_id
                 print(url)
                 msg = {"message": message}
                 requests.post(url, json.dumps(msg))

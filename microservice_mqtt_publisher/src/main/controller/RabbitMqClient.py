@@ -10,7 +10,6 @@ class RabbitMQ(object):
         username = config.get("RABBITMQ", "username")
         password = config.get("RABBITMQ", "password")
         credentials = pika.PlainCredentials(username, password)
-        print(rabbitmq_server)
         self.params = pika.connection.ConnectionParameters(host=rabbitmq_server,
                                                            port=rabbitmq_port,
                                                            virtual_host=virtual_host,

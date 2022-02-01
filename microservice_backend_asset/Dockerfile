@@ -4,7 +4,6 @@ RUN pip install pyjwt;
 RUN pip install -U flask-cors;
 RUN pip install Flask;
 RUN pip install redis;
-RUN pip install pika;
 RUN pip install gunicorn;
 RUN pip install requests;
 RUN pip install ruleapp==0.11.4;

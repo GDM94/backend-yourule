@@ -15,13 +15,13 @@ import requests
 
 
 class RuleService(object):
-    def __init__(self, rabbitmq, config, redis):
+    def __init__(self, config, redis):
         self.publish_rule = config.get("RABBITMQ", "publish_rule")
         self.mqtt_switch = config.get("MQTT", "mqtt_switch")
         self.mqtt_servo = config.get("MQTT", "mqtt_servo")
-        self.mqtt_publisher_ip = config.get("MQTT", "ip")
+        self.endpoint_mqtt = config.get("MQTT", "endpoint_mqtt")
+        self.endpoint_rabbitmq = config.get("MQTT", "endpoint_rabbitmq")
         self.r = redis
-        self.rabbitmq = rabbitmq
         self.rule_functions = RuleFunction(redis)
         self.timer_antecedent_functions = TimerAntecedentFunction(redis)
         self.alert_consequent_functions = AlertConsequentFunction(redis)
@@ -190,9 +190,9 @@ class RuleService(object):
                 output = self.photocell_antecedent_functions.delete_antecedent(user_id, rule_id, device_id)
             if output != "error":
                 # trigger rule evaluation
+                url = self.endpoint_rabbitmq + self.publish_rule
                 trigger_message = {"user_id": user_id, "rules": [rule_id]}
-                payload = json.dumps(trigger_message)
-                self.rabbitmq.publish(self.publish_rule, payload)
+                requests.post(url, json.dumps(trigger_message))
                 # get rule by id
                 output = self.get_rule_by_id(user_id, rule_id)
             return output
@@ -219,7 +219,7 @@ class RuleService(object):
                 payload = degree + "/0"
             if output != "error":
                 if topic != "" and payload != "":
-                    url = self.mqtt_publisher_ip + topic
+                    url = self.endpoint_mqtt + topic
                     message = {"message": payload}
                     requests.post(url, json.dumps(message))
                 output = self.get_rule_by_id(user_id, rule_id)
