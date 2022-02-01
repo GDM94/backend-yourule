@@ -1,13 +1,12 @@
 import json
 from flask import request
 from flask import Blueprint
-from .MQTTSubscriber import Subscriber
 from ..services.RuleServiceImpl import RuleService
 from .UserRESTController import check_token
 from .RabbitMqClient import RabbitMQ
 import random
 import string
-from .configuration.config import read_config
+from ..configuration.config import read_config
 from ruleapp.DBconnection.RedisConnectionImpl import RedisConnection
 
 
@@ -15,11 +14,9 @@ config = read_config()
 redis = RedisConnection(config)
 rule = Blueprint('rule', __name__)
 random_client_id = 'backend_rule'.join(random.choices(string.ascii_letters + string.digits, k=8))
-mqtt_client = Subscriber(random_client_id)
-mqtt_client.start_connection()
 rabbitmq = RabbitMQ("backend_rule", config)
 rabbitmq.start_connection()
-rule_service = RuleService(mqtt_client, rabbitmq, config, redis)
+rule_service = RuleService(rabbitmq, config, redis)
 
 
 @rule.route('/id/<rule_id>', methods=['GET'])

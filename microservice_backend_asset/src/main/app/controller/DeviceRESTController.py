@@ -2,23 +2,20 @@ from flask import Blueprint
 from flask import request
 from ..services.DeviceServiceImpl import DeviceService
 import json
-from .MQTTSubscriber import Subscriber
 from .UserRESTController import check_token
 from .RabbitMqClient import RabbitMQ
 import random
 import string
-from .configuration.config import read_config
+from ..configuration.config import read_config
 from ruleapp.DBconnection.RedisConnectionImpl import RedisConnection
 
 config = read_config()
 redis = RedisConnection(config)
 device = Blueprint('device', __name__)
 random_client_id = 'backend_device'.join(random.choices(string.ascii_letters + string.digits, k=8))
-mqtt_client = Subscriber(random_client_id)
-mqtt_client.start_connection()
 rabbitmq = RabbitMQ("backend_device", config)
 rabbitmq.start_connection()
-device_service = DeviceService(mqtt_client, rabbitmq, redis, config)
+device_service = DeviceService(rabbitmq, redis, config)
 
 
 @device.route('/get/<device_id>', methods=['GET'])

@@ -11,15 +11,16 @@ from ruleapp.Devices.Weather.WeatherAntecedentFunctions import WeatherAntecedent
 from ruleapp.Devices.Photocell.PhotocellAntecedentFunctions import PhotocellAntecedentFunction
 from ruleapp.Devices.Servo.ServoConsequentFunctions import ServoConsequentFunction
 from ruleapp.Devices.DeviceId import TIMER, ALERT, WEATHER, WATER_LEVEL, SWITCH, PHOTOCELL, BUTTON, SERVO
+import requests
 
 
 class RuleService(object):
-    def __init__(self, mqtt_client, rabbitmq, config, redis):
+    def __init__(self, rabbitmq, config, redis):
         self.publish_rule = config.get("RABBITMQ", "publish_rule")
-        self.mqtt_topic_switch = config.get("MQTT", "mqtt_topic_switch")
-        self.mqtt_topic_servo = config.get("MQTT", "mqtt_topic_servo")
+        self.mqtt_switch = config.get("MQTT", "mqtt_switch")
+        self.mqtt_servo = config.get("MQTT", "mqtt_servo")
+        self.mqtt_publisher_ip = config.get("MQTT", "ip")
         self.r = redis
-        self.mqtt_client = mqtt_client
         self.rabbitmq = rabbitmq
         self.rule_functions = RuleFunction(redis)
         self.timer_antecedent_functions = TimerAntecedentFunction(redis)
@@ -208,17 +209,19 @@ class RuleService(object):
                 output = self.alert_consequent_functions.delete_consequent(user_id, rule_id, device_id)
             elif SWITCH in device_id:
                 output = self.switch_consequent_functions.delete_consequent(user_id, rule_id, device_id)
-                topic = self.mqtt_topic_switch + device_id
+                topic = self.mqtt_switch + device_id
                 new_status = self.switch_consequent_functions.switch_evaluation(user_id, device_id)
                 payload = new_status + "/0"
             elif SERVO in device_id:
                 output = self.servo_consequent_functions.delete_consequent(user_id, rule_id, device_id)
-                topic = self.mqtt_topic_servo + device_id
+                topic = self.mqtt_servo + device_id
                 degree = self.servo_consequent_functions.servo_evaluation(user_id, device_id)
                 payload = degree + "/0"
             if output != "error":
                 if topic != "" and payload != "":
-                    self.mqtt_client.publish(topic, payload)
+                    url = self.mqtt_publisher_ip + topic
+                    message = {"message": payload}
+                    requests.post(url, json.dumps(message))
                 output = self.get_rule_by_id(user_id, rule_id)
             return output
         except Exception as error:

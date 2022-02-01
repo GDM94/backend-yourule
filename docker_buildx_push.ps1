@@ -15,7 +15,8 @@ function Go () {
     'microservice_weather_evaluation' ,
     'microservice_rule_evaluation',
     'microservice_consequent_evaluation',
-    'microservice_laston_evaluation'
+    'microservice_laston_evaluation',
+    'microservice_mqtt_publisher'
     #'redis',
     #'rabbitmq',
     #'reverse_proxy'

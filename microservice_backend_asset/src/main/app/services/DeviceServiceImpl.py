@@ -7,20 +7,20 @@ from ruleapp.Devices.Weather.WeatherFunctions import WeatherFunction
 from ruleapp.Devices.Photocell.PhotocellFunctions import PhotocellFunction
 from ruleapp.Devices.Servo.ServoFunctions import ServoFunction
 import json
-from requests import get
+import requests
 from ruleapp.Devices.DeviceId import TIMER, ALERT, WEATHER, WATER_LEVEL, SWITCH, PHOTOCELL, BUTTON, SERVO
 
 
 class DeviceService(object):
-    def __init__(self, mqtt_client, rabbitmq, redis, config):
+    def __init__(self, rabbitmq, redis, config):
         self.r = redis
         self.publish_rule = config.get("RABBITMQ", "publish_rule")
         self.publish_consequent = config.get("RABBITMQ", "publish_consequent")
-        self.mqtt_client = mqtt_client
         self.rabbitmq = rabbitmq
         self.EXPIRATION = config.get("REDIS", "expiration")
-        self.mqtt_topic_switch = config.get("MQTT", "mqtt_topic_switch")
-        self.mqtt_topic_servo = config.get("MQTT", "mqtt_topic_servo")
+        self.mqtt_switch = config.get("MQTT", "mqtt_switch")
+        self.mqtt_servo = config.get("MQTT", "mqtt_servo")
+        self.mqtt_publisher_ip = config.get("MQTT", "ip")
         self.api_key = config.get("OPEN_WEATHER", "api_key")
         self.api_location_url = config.get("OPEN_WEATHER", "api_location_url")
         self.api_weather_url = config.get("OPEN_WEATHER", "api_weather_url")
@@ -96,15 +96,15 @@ class DeviceService(object):
             if SWITCH in device_id:
                 self.switch_functions.delete_device(user_id, device_id)
                 # trigger setting device
-                topic = self.mqtt_topic_switch + device_id
-                payload = "off/0"
-                self.mqtt_client.publish(topic, payload)
+                url = self.mqtt_publisher_ip + self.mqtt_switch + device_id
+                message = {"message": "off/0"}
+                requests.post(url, json.dumps(message))
             elif SERVO in device_id:
                 off_status = self.r.get("device:" + device_id + ":setting_off")
                 self.servo_functions.delete_device(user_id, device_id)
-                topic = self.mqtt_topic_servo + device_id
-                payload = off_status + "/0"
-                self.mqtt_client.publish(topic, payload)
+                url = self.mqtt_publisher_ip + self.mqtt_servo + device_id
+                message = {"message": off_status + "/0"}
+                requests.post(url, json.dumps(message))
             else:
                 rules = self.r.lrange("device:" + device_id + ":rules")
                 if WATER_LEVEL in device_id:
@@ -175,16 +175,20 @@ class DeviceService(object):
 
     def set_consequent_manual_measure(self, user_id, device_id, manual_measure):
         try:
+            print(device_id)
             dto = {}
             if SWITCH in device_id:
                 message = self.switch_functions.set_manual_measure(user_id, device_id, manual_measure)
-                topic = self.mqtt_topic_switch + device_id
-                self.mqtt_client.publish(topic, message)
+                url = self.mqtt_publisher_ip + self.mqtt_switch + device_id
+                msg = {"message": message}
+                requests.post(url, json.dumps(msg))
                 dto = self.switch_functions.get_device(user_id, device_id)
             elif SERVO in device_id:
                 message = self.servo_functions.set_manual_measure(user_id, device_id, manual_measure)
-                topic = self.mqtt_topic_servo + device_id
-                self.mqtt_client.publish(topic, message)
+                url = self.mqtt_publisher_ip + self.mqtt_servo + device_id
+                print(url)
+                msg = {"message": message}
+                requests.post(url, json.dumps(msg))
                 dto = self.servo_functions.get_device(user_id, device_id)
             if dto.measure != "-":
                 dto.measure = manual_measure
@@ -205,14 +209,6 @@ class DeviceService(object):
     def get_device_rules(self, user_id, device_id):
         try:
             output = list(self.r.smembers("device:" + device_id + ":rules"))
-            return output
-        except Exception as error:
-            print(repr(error))
-            return "error"
-
-    def get_broker_address(self):
-        try:
-            output = get('https://api.ipify.org').text
             return output
         except Exception as error:
             print(repr(error))

@@ -12,6 +12,7 @@ services:
     depends_on:
       - redis
       - rabbitmq
+      - mqtt_publisher
     networks:
       - backend
 
@@ -22,6 +23,14 @@ services:
       - redis
       - device_evaluation
       - rabbitmq
+    networks:
+      - backend
+
+  mqtt_publisher:
+    container_name: mqtt_publisher
+    image: dimax94/microservice_mqtt_publisher
+    ports:
+      - "5100:5100"
     networks:
       - backend
 

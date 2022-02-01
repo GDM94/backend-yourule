@@ -1,11 +1,12 @@
 import pika
 import time
 import json
+import requests
 from ruleapp.Devices.DeviceId import SWITCH, SERVO
 
 
 class RabbitMQ(object):
-    def __init__(self, app_id, service, mqtt, config):
+    def __init__(self, app_id, service, config):
         rabbitmq_server = config.get("RABBITMQ", "server")
         rabbitmq_port = int(config.get("RABBITMQ", "port"))
         virtual_host = config.get("RABBITMQ", "virtual_host")
@@ -19,12 +20,12 @@ class RabbitMQ(object):
                                                            heartbeat=0)
         self.subscribe_queue = config.get("RABBITMQ", "subscribe_queue")
         self.publish_queue = config.get("RABBITMQ", "publish_queue")
-        self.mqtt_topic_switch = config.get("MQTT", "switch_publish_topic")
-        self.mqtt_topic_servo = config.get("MQTT", "servo_publish_topic")
+        self.mqtt_switch = config.get("MQTT", "mqtt_switch")
+        self.mqtt_servo = config.get("MQTT", "mqtt_servo")
+        self.mqtt_publisher_ip = config.get("MQTT", "ip")
         self.channel = None
         self.connection = None
         self.service = service
-        self.mqtt = mqtt
         self.properties = pika.BasicProperties(
             app_id=app_id,
             content_type='application/json',
@@ -73,10 +74,11 @@ class RabbitMQ(object):
         for trigger in output:
             topic = ""
             if SWITCH in trigger["device_id"]:
-                topic = self.mqtt_topic_switch + trigger["device_id"]
+                topic = self.mqtt_switch + trigger["device_id"]
             elif SERVO in trigger["device_id"]:
-                topic = self.mqtt_topic_servo + trigger["device_id"]
-            payload = trigger["measure"]+"/"+trigger["delay"]
-            self.mqtt.publish(topic, payload)
+                topic = self.mqtt_servo + trigger["device_id"]
+            url = self.mqtt_publisher_ip + topic
+            payload = {"message": trigger["measure"] + "/" + trigger["delay"]}
+            requests.post(url, json.dumps(payload))
         self.service.alert_evaluation(user_id, rule_id)
         ch.basic_ack(delivery_tag=method.delivery_tag)

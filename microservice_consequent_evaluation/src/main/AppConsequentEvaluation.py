@@ -1,4 +1,3 @@
-from app.MQTTSubscriber import Subscriber
 from app.ConsequentServiceEvaluationImpl import ConsequentServiceEvaluation
 from app.RabbitMqClient import RabbitMQ
 import time
@@ -12,12 +11,9 @@ client_id = 'consequent'.join(random.choices(string.ascii_letters + string.digit
 config = read_config()
 redis = RedisConnection(config)
 
-mqtt = Subscriber(client_id, config)
-mqtt.start_connection()
-
 consequent = ConsequentServiceEvaluation(config, redis)
 
-rabbitmq = RabbitMQ(client_id, consequent, mqtt, config)
+rabbitmq = RabbitMQ(client_id, consequent, config)
 rabbitmq.start_connection()
 rabbitmq.subscribe()
 
