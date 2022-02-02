@@ -2,7 +2,7 @@ FROM python:3.9.2
 
 RUN pip install -U flask-cors;
 RUN pip install Flask;
-RUN pip install paho-mqtt;
+RUN pip install Flask-MQTT;
 RUN pip install gunicorn;
 RUN pip install pika;
 
