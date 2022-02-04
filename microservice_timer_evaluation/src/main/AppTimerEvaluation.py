@@ -8,4 +8,4 @@ backend_server = config.get("BACKEND", "ip")
 if __name__ == '__main__':
     while True:
         requests.get(backend_server)
-        time.sleep(3)
+        time.sleep(10)

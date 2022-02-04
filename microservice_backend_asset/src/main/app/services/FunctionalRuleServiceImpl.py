@@ -8,6 +8,7 @@ from ruleapp.Devices.Switch.SwitchConsequentFunctions import SwitchConsequentFun
 from ruleapp.Devices.Servo.ServoConsequentFunctions import ServoConsequentFunction
 from ruleapp.Devices.Weather.WeatherFunctions import WeatherFunction
 from ruleapp.Devices.Timer.TimerAntecedentFunctions import TimerAntecedentFunction
+from ruleapp.Devices.Switch.SwitchAntecedentFunctions import SwitchAntecedentFunction
 from ruleapp.Devices.DeviceId import WATER_LEVEL, BUTTON, PHOTOCELL, SWITCH, ALERT, SERVO, WEATHER, TIMER
 import json
 import requests
@@ -21,11 +22,12 @@ class FunctionalRuleService(object):
         self.photocell_antecedent_functions = PhotocellAntecedentFunction(redis)
         self.weather_antecedent_function = WeatherAntecedentFunction(redis)
         self.rule_functions = RuleFunction(redis)
-        self.email_user = config.get("ALERT", "email_user")
-        self.email_password = config.get("ALERT", "email_password")
         self.alert_consequent_functions = AlertConsequentFunction(redis)
         self.switch_consequent_functions = SwitchConsequentFunction(redis)
         self.servo_consequent_functions = ServoConsequentFunction(redis)
+        self.switch_antecedent_function = SwitchAntecedentFunction(redis)
+        self.email_user = config.get("ALERT", "email_user")
+        self.email_password = config.get("ALERT", "email_password")
         self.endpoint_rabbitmq = config.get("MQTT", "endpoint_rabbitmq")
         self.publish_rule = config.get("RABBITMQ", "publish_rule")
         self.api_key = config.get("OPEN_WEATHER", "api_key")
@@ -116,7 +118,8 @@ class FunctionalRuleService(object):
         for rule_id in rules_id_list:
             key_pattern = "user:" + user_id + ":rule:" + rule_id
             device_antecedents = self.r.lrange(key_pattern + ":device_antecedents")
-            if device_id in device_antecedents:
+            check = next((s for s in device_antecedents if device_id in s), "")
+            if check != "":
                 output.append(rule_id)
         return output
 
@@ -131,5 +134,15 @@ class FunctionalRuleService(object):
                 if trigger == "true":
                     output["rules"].append(rule_id)
             if len(output["rules"]) > 0:
+                url = self.endpoint_rabbitmq + self.publish_rule
+                requests.post(url, json.dumps(output))
+
+    def switch_last_on_evaluation(self):
+        user_id_list = self.get_all_users()
+        for user_id in user_id_list:
+            output = {"user_id": user_id, "rules": []}
+            rules_id_list = self.get_rules_with_device_id(user_id, SWITCH)
+            if len(rules_id_list) > 0:
+                output["rules"] = rules_id_list
                 url = self.endpoint_rabbitmq + self.publish_rule
                 requests.post(url, json.dumps(output))

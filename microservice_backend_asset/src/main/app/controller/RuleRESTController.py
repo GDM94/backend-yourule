@@ -237,3 +237,8 @@ def weather_evaluation():
 def timer_evaluation():
     app.functional_rule_service.timer_evaluation()
 
+
+@rule.route('/switch/last_on/evaluation', methods=['GET'])
+def switch_last_on_evaluation():
+    app.functional_rule_service.switch_last_on_evaluation()
+
