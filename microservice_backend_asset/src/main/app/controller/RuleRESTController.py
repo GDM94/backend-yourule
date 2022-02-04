@@ -208,3 +208,13 @@ def antecedent_evaluation():
     rules = payload["rules"]
     output = app.functional_rule_service.antecedent_evaluation(user_id, device_id, measure, rules)
     return Response(json.dumps(output, default=lambda o: o.__dict__), mimetype='application/json')
+
+
+@rule.route('/evaluation', methods=['POST'])
+def rule_evaluation():
+    payload = request.get_json()
+    user_id = str(payload["user_id"])
+    rules = payload["rules"]
+    output = app.functional_rule_service.rule_evaluation(user_id, rules)
+    return Response(json.dumps(output, default=lambda o: o.__dict__), mimetype='application/json')
+

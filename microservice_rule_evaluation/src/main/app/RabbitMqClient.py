@@ -1,10 +1,11 @@
 import pika
 import json
 import time
+import requests
 
 
 class RabbitMQ(object):
-    def __init__(self, app_id, service, config):
+    def __init__(self, app_id, config):
         rabbitmq_server = config.get("RABBITMQ", "server")
         rabbitmq_port = int(config.get("RABBITMQ", "port"))
         virtual_host = config.get("RABBITMQ", "virtual_host")
@@ -12,6 +13,7 @@ class RabbitMQ(object):
         password = config.get("RABBITMQ", "password")
         credentials = pika.PlainCredentials(username, password)
         print(rabbitmq_server)
+        self.backend_server = config.get("BACKEND", "ip")
         self.params = pika.connection.ConnectionParameters(host=rabbitmq_server,
                                                            port=rabbitmq_port,
                                                            virtual_host=virtual_host,
@@ -21,7 +23,6 @@ class RabbitMQ(object):
         self.publish_queue = config.get("RABBITMQ", "publish_queue")
         self.channel = None
         self.connection = None
-        self.service = service
         self.properties = pika.BasicProperties(
             app_id=app_id,
             content_type='application/json',
@@ -63,12 +64,13 @@ class RabbitMQ(object):
     def on_message_callback(self, ch, method, properties, body):
         message = body.decode()
         print("[x] received message " + message)
-        trigger = json.loads(message)
+        payload = json.loads(message)
+        response = requests.post(self.backend_server, json=payload, headers={"Content-Type": "application/json"})
+        trigger = response.json()
         rules = trigger["rules"]
-        user_id = str(trigger["user_id"])
+        user_id = trigger["user_id"]
         for rule_id in rules:
-            output = self.service.rule_evaluation(user_id, rule_id)
-            if output["rule_id"] != "":
-                payload = json.dumps(output)
-                self.publish(payload)
+            output = {"user_id": user_id, "rule_id": rule_id}
+            payload = json.dumps(output)
+            self.publish(payload)
         ch.basic_ack(delivery_tag=method.delivery_tag)
