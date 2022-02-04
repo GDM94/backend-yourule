@@ -232,3 +232,8 @@ def consequent_evaluation():
 def weather_evaluation():
     app.functional_rule_service.weather_evaluation()
 
+
+@rule.route('/timer/evaluation', methods=['GET'])
+def timer_evaluation():
+    app.functional_rule_service.timer_evaluation()
+
