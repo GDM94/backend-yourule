@@ -1,8 +1,8 @@
-from ruleapp.Profile.ProfileDTO import ProfileDto
-from ruleapp.Profile.ProfileFunctions import ProfileFunction
-from ruleapp.Devices.Alert.AlertFunctions import AlertFunction
-from ruleapp.Devices.Timer.TimerFunctions import TimerFunction
-from ruleapp.Devices.Weather.WeatherFunctions import WeatherFunction
+from ..components.Profile.ProfileDTO import ProfileDto
+from ..components.Profile.ProfileFunctions import ProfileFunction
+from ..components.Devices.Alert.AlertFunctions import AlertFunction
+from ..components.Devices.Timer.TimerFunctions import TimerFunction
+from ..components.Devices.Weather.WeatherFunctions import WeatherFunction
 
 
 class UserService(object):

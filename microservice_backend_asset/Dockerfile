@@ -6,7 +6,6 @@ RUN pip install Flask;
 RUN pip install redis;
 RUN pip install gunicorn;
 RUN pip install requests;
-RUN pip install ruleapp==0.11.4;
 RUN pip install munch;
 
 

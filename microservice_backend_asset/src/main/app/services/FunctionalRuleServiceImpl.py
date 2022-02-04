@@ -1,15 +1,15 @@
-from ruleapp.Devices.WaterLevel.WaterLevelAntecedentFunctions import WaterLevelAntecedentFunction
-from ruleapp.Devices.Button.ButtonAntecedentFunctions import ButtonAntecedentFunction
-from ruleapp.Devices.Photocell.PhotocellAntecedentFunctions import PhotocellAntecedentFunction
-from ruleapp.Devices.Weather.WeatherAntecedentFunctions import WeatherAntecedentFunction
-from ruleapp.Rule.RuleFunctions import RuleFunction
-from ruleapp.Devices.Alert.AlertConsequentFunctions import AlertConsequentFunction
-from ruleapp.Devices.Switch.SwitchConsequentFunctions import SwitchConsequentFunction
-from ruleapp.Devices.Servo.ServoConsequentFunctions import ServoConsequentFunction
-from ruleapp.Devices.Weather.WeatherFunctions import WeatherFunction
-from ruleapp.Devices.Timer.TimerAntecedentFunctions import TimerAntecedentFunction
-from ruleapp.Devices.Switch.SwitchAntecedentFunctions import SwitchAntecedentFunction
-from ruleapp.Devices.DeviceId import WATER_LEVEL, BUTTON, PHOTOCELL, SWITCH, ALERT, SERVO, WEATHER, TIMER
+from ..components.Devices.WaterLevel.WaterLevelAntecedentFunctions import WaterLevelAntecedentFunction
+from ..components.Devices.Button.ButtonAntecedentFunctions import ButtonAntecedentFunction
+from ..components.Devices.Photocell.PhotocellAntecedentFunctions import PhotocellAntecedentFunction
+from ..components.Devices.Weather.WeatherAntecedentFunctions import WeatherAntecedentFunction
+from ..components.Rule.RuleFunctions import RuleFunction
+from ..components.Devices.Alert.AlertConsequentFunctions import AlertConsequentFunction
+from ..components.Devices.Switch.SwitchConsequentFunctions import SwitchConsequentFunction
+from ..components.Devices.Servo.ServoConsequentFunctions import ServoConsequentFunction
+from ..components.Devices.Weather.WeatherFunctions import WeatherFunction
+from ..components.Devices.Timer.TimerAntecedentFunctions import TimerAntecedentFunction
+from ..components.Devices.Switch.SwitchAntecedentFunctions import SwitchAntecedentFunction
+from ..components.Devices.DeviceId import WATER_LEVEL, BUTTON, PHOTOCELL, SWITCH, ALERT, SERVO, WEATHER, TIMER
 import json
 import requests
 

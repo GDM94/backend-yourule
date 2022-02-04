@@ -1,17 +1,17 @@
-import json
-from ruleapp.Rule.RuleFunctions import RuleFunction
-from ruleapp.Rule.RuleDTO import Rule
-from ruleapp.Devices.Timer.TimerAntecedentFunctions import TimerAntecedentFunction
-from ruleapp.Devices.Alert.AlertConsequentFunctions import AlertConsequentFunction
-from ruleapp.Devices.WaterLevel.WaterLevelAntecedentFunctions import WaterLevelAntecedentFunction
-from ruleapp.Devices.Switch.SwitchConsequentFunctions import SwitchConsequentFunction
-from ruleapp.Devices.Button.ButtonAntecedentFunctions import ButtonAntecedentFunction
-from ruleapp.Devices.Switch.SwitchAntecedentFunctions import SwitchAntecedentFunction
-from ruleapp.Devices.Weather.WeatherAntecedentFunctions import WeatherAntecedentFunction
-from ruleapp.Devices.Photocell.PhotocellAntecedentFunctions import PhotocellAntecedentFunction
-from ruleapp.Devices.Servo.ServoConsequentFunctions import ServoConsequentFunction
-from ruleapp.Devices.DeviceId import TIMER, ALERT, WEATHER, WATER_LEVEL, SWITCH, PHOTOCELL, BUTTON, SERVO
+from ..components.Rule.RuleFunctions import RuleFunction
+from ..components.Rule.RuleDTO import Rule
+from ..components.Devices.Timer.TimerAntecedentFunctions import TimerAntecedentFunction
+from ..components.Devices.Alert.AlertConsequentFunctions import AlertConsequentFunction
+from ..components.Devices.WaterLevel.WaterLevelAntecedentFunctions import WaterLevelAntecedentFunction
+from ..components.Devices.Switch.SwitchConsequentFunctions import SwitchConsequentFunction
+from ..components.Devices.Button.ButtonAntecedentFunctions import ButtonAntecedentFunction
+from ..components.Devices.Switch.SwitchAntecedentFunctions import SwitchAntecedentFunction
+from ..components.Devices.Weather.WeatherAntecedentFunctions import WeatherAntecedentFunction
+from ..components.Devices.Photocell.PhotocellAntecedentFunctions import PhotocellAntecedentFunction
+from ..components.Devices.Servo.ServoConsequentFunctions import ServoConsequentFunction
+from ..components.Devices.DeviceId import TIMER, ALERT, WEATHER, WATER_LEVEL, SWITCH, PHOTOCELL, BUTTON, SERVO
 import requests
+import json
 
 
 class RuleService(object):

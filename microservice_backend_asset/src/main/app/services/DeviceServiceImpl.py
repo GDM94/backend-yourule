@@ -1,14 +1,14 @@
-from ruleapp.Devices.WaterLevel.WaterLevelFunctions import WaterLevelFunction
-from ruleapp.Devices.Switch.SwitchFuntions import SwitchFunction
-from ruleapp.Devices.Button.ButtonFunctions import ButtonFunction
-from ruleapp.Devices.Timer.TimerFunctions import TimerFunction
-from ruleapp.Devices.Alert.AlertFunctions import AlertFunction
-from ruleapp.Devices.Weather.WeatherFunctions import WeatherFunction
-from ruleapp.Devices.Photocell.PhotocellFunctions import PhotocellFunction
-from ruleapp.Devices.Servo.ServoFunctions import ServoFunction
+from ..components.Devices.WaterLevel.WaterLevelFunctions import WaterLevelFunction
+from ..components.Devices.Switch.SwitchFuntions import SwitchFunction
+from ..components.Devices.Button.ButtonFunctions import ButtonFunction
+from ..components.Devices.Timer.TimerFunctions import TimerFunction
+from ..components.Devices.Alert.AlertFunctions import AlertFunction
+from ..components.Devices.Weather.WeatherFunctions import WeatherFunction
+from ..components.Devices.Photocell.PhotocellFunctions import PhotocellFunction
+from ..components.Devices.Servo.ServoFunctions import ServoFunction
+from ..components.Devices.DeviceId import TIMER, ALERT, WEATHER, WATER_LEVEL, SWITCH, PHOTOCELL, BUTTON, SERVO
 import json
 import requests
-from ruleapp.Devices.DeviceId import TIMER, ALERT, WEATHER, WATER_LEVEL, SWITCH, PHOTOCELL, BUTTON, SERVO
 
 
 class DeviceService(object):
