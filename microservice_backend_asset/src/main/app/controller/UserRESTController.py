@@ -5,14 +5,9 @@ from functools import wraps
 from flask import request
 from werkzeug.datastructures import ImmutableMultiDict
 import jwt
-from ..configuration.config import read_config
-from ruleapp.DBconnection.RedisConnectionImpl import RedisConnection
+from flask import current_app as app
 
-config = read_config()
-redis = RedisConnection(config)
 user = Blueprint('user', __name__)
-secret_key = config.get("OAUTH", "token_key")
-user_service = UserService(secret_key, redis, config)
 
 
 def check_token(f):
@@ -23,7 +18,7 @@ def check_token(f):
         try:
             params = request.args.to_dict()
             token_id = request.headers['token']
-            claims = jwt.decode(token_id, secret_key, algorithms=["HS256"])
+            claims = jwt.decode(token_id, app.user_service.secret_key, algorithms=["HS256"])
             params["user_id"] = claims["user_id"]
             request.args = ImmutableMultiDict(params)
         except Exception as error:
@@ -39,8 +34,8 @@ def check_token(f):
 def user_login():
     try:
         access_token = request.args.get("access_token")
-        profile_map = jwt.decode(access_token, secret_key, algorithms=["HS256"])
-        output = user_service.user_login(profile_map)
+        profile_map = jwt.decode(access_token, app.user_service.secret_key, algorithms=["HS256"])
+        output = app.user_service.user_login(profile_map)
         return output
     except Exception as error:
         print(repr(error))
@@ -51,8 +46,8 @@ def user_login():
 def user_registration():
     try:
         access_token = request.args.get("access_token")
-        profile_map = jwt.decode(access_token, secret_key, algorithms=["HS256"])
-        output = user_service.user_registration(profile_map)
+        profile_map = jwt.decode(access_token, app.user_service.secret_key, algorithms=["HS256"])
+        output = app.user_service.user_registration(profile_map)
         return output
     except Exception as error:
         print(repr(error))
@@ -61,7 +56,7 @@ def user_registration():
 
 @user.route('/get/id/<user_name>', methods=["GET"])
 def get_user_id(user_name):
-    output = user_service.get_user_id(user_name)
+    output = app.user_service.get_user_id(user_name)
     if output == "error":
         raise Exception()
     else:
@@ -77,7 +72,7 @@ def set_user_location():
     country = request.args.get("country")
     lat = request.args.get("lat")
     lon = request.args.get("lon")
-    output = user_service.set_user_location(user_id, name, country, lat, lon)
+    output = app.user_service.set_user_location(user_id, name, country, lat, lon)
     if output == "error":
         raise Exception()
     else:
@@ -88,7 +83,7 @@ def set_user_location():
 @check_token
 def get_user_location():
     user_id = request.args.get("user_id")
-    output = user_service.get_user_location(user_id)
+    output = app.user_service.get_user_location(user_id)
     if output == "error":
         raise Exception()
     else:
@@ -98,7 +93,7 @@ def get_user_location():
 @user.route('/search/location/<name>', methods=["GET"])
 @check_token
 def search_new_location(name):
-    output = user_service.search_new_location(name)
+    output = app.user_service.search_new_location(name)
     if output == "error":
         raise Exception()
     else:
@@ -109,7 +104,7 @@ def search_new_location(name):
 @check_token
 def user_logout():
     user_id = request.args.get("user_id")
-    output = user_service.user_logout(user_id)
+    output = app.user_service.user_logout(user_id)
     if output == "error":
         raise Exception()
     else:

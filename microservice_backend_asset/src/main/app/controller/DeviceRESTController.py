@@ -1,22 +1,17 @@
 from flask import Blueprint
 from flask import request
-from ..services.DeviceServiceImpl import DeviceService
 import json
 from .UserRESTController import check_token
-from ..configuration.config import read_config
-from ruleapp.DBconnection.RedisConnectionImpl import RedisConnection
+from flask import current_app as app
 
-config = read_config()
-redis = RedisConnection(config)
 device = Blueprint('device', __name__)
-device_service = DeviceService(redis, config)
 
 
 @device.route('/get/<device_id>', methods=['GET'])
 @check_token
 def get_device(device_id):
     user_id = request.args.get("user_id")
-    output = device_service.get_device(user_id, device_id)
+    output = app.device_service.get_device(user_id, device_id)
     if output == "error":
         raise Exception()
     else:
@@ -27,7 +22,7 @@ def get_device(device_id):
 @check_token
 def device_registration(device_id):
     user_id = request.args.get("user_id")
-    output = device_service.device_registration(user_id, device_id)
+    output = app.device_service.device_registration(user_id, device_id)
     if output == "error":
         raise Exception()
     else:
@@ -38,7 +33,7 @@ def device_registration(device_id):
 @check_token
 def get_all_antecedents():
     user_id = request.args.get("user_id")
-    output = device_service.get_all_sensors(user_id)
+    output = app.device_service.get_all_sensors(user_id)
     if output == "error":
         raise Exception()
     else:
@@ -49,7 +44,7 @@ def get_all_antecedents():
 @check_token
 def get_all_consequents():
     user_id = request.args.get("user_id")
-    output = device_service.get_all_switches(user_id)
+    output = app.device_service.get_all_switches(user_id)
     if output == "error":
         raise Exception()
     else:
@@ -60,7 +55,7 @@ def get_all_consequents():
 @check_token
 def delete_device(device_id):
     user_id = request.args.get("user_id")
-    output = device_service.delete_device(user_id, device_id)
+    output = app.device_service.delete_device(user_id, device_id)
     if output == "error":
         raise Exception()
     else:
@@ -72,7 +67,7 @@ def delete_device(device_id):
 def device_update(device_id):
     payload = request.get_json()
     new_device = json.loads(payload["data"])
-    output = device_service.device_update(device_id, new_device)
+    output = app.device_service.device_update(device_id, new_device)
     if output == "error":
         raise Exception()
     else:
@@ -85,7 +80,7 @@ def set_consequent_automatic():
     device_id = request.args.get("device_id")
     automatic = request.args.get("automatic")
     user_id = request.args.get("user_id")
-    output = device_service.set_consequent_automatic(user_id, device_id, automatic)
+    output = app.device_service.set_consequent_automatic(user_id, device_id, automatic)
     if output == "error":
         raise Exception()
     else:
@@ -98,7 +93,7 @@ def set_consequent_manual_measure():
     user_id = request.args.get("user_id")
     device_id = request.args.get("device_id")
     manual_measure = request.args.get("manual_measure")
-    output = device_service.set_consequent_manual_measure(user_id, device_id, manual_measure)
+    output = app.device_service.set_consequent_manual_measure(user_id, device_id, manual_measure)
     if output == "error":
         raise Exception()
     else:
@@ -109,7 +104,7 @@ def set_consequent_manual_measure():
 @check_token
 def add_alert_email():
     user_id = request.args.get("user_id")
-    output = device_service.add_alert_email(user_id)
+    output = app.device_service.add_alert_email(user_id)
     if output == "error":
         raise Exception()
     else:
@@ -120,7 +115,7 @@ def add_alert_email():
 @check_token
 def modify_alert_email(email, idx):
     user_id = request.args.get("user_id")
-    output = device_service.modify_alert_email(user_id, email, idx)
+    output = app.device_service.modify_alert_email(user_id, email, idx)
     if output == "error":
         raise Exception()
     else:
@@ -131,7 +126,7 @@ def modify_alert_email(email, idx):
 @check_token
 def delete_alert_email(idx):
     user_id = request.args.get("user_id")
-    output = device_service.delete_alert_email(user_id, int(idx))
+    output = app.device_service.delete_alert_email(user_id, int(idx))
     if output == "error":
         raise Exception()
     else:
@@ -140,7 +135,7 @@ def delete_alert_email(idx):
 
 @device.route('/broker/address', methods=['GET'])
 def get_broker_address():
-    output = device_service.get_broker_address()
+    output = app.device_service.get_broker_address()
     if output == "error":
         raise Exception()
     else:

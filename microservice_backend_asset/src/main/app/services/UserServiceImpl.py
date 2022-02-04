@@ -6,8 +6,8 @@ from ruleapp.Devices.Weather.WeatherFunctions import WeatherFunction
 
 
 class UserService(object):
-    def __init__(self, secret_key, redis, config):
-        self.secret_key = secret_key
+    def __init__(self, redis, config):
+        self.secret_key = config.get("OAUTH", "token_key")
         self.r = redis
         self.api_key = config.get("OPEN_WEATHER", "api_key")
         self.api_location_url = config.get("OPEN_WEATHER", "api_location_url")

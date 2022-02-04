@@ -15,7 +15,7 @@ import requests
 
 
 class RuleService(object):
-    def __init__(self, config, redis):
+    def __init__(self, redis, config):
         self.publish_rule = config.get("RABBITMQ", "publish_rule")
         self.mqtt_switch = config.get("MQTT", "mqtt_switch")
         self.mqtt_servo = config.get("MQTT", "mqtt_servo")
