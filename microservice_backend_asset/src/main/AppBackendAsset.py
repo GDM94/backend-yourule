@@ -4,7 +4,7 @@ from app.controller.UserRESTController import user
 from app.controller.DeviceRESTController import device
 from app.controller.RuleRESTController import rule
 from app.configuration.config import read_config
-from ruleapp.DBconnection.RedisConnectionImpl import RedisConnection
+from app.DBconnection.RedisConnectionImpl import RedisConnection
 from app.services.DeviceServiceImpl import DeviceService
 from app.services.RuleServiceImpl import RuleService
 from app.services.UserServiceImpl import UserService

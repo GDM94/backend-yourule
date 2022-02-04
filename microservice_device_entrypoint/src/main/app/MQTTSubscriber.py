@@ -4,8 +4,7 @@ import sys
 
 
 class Subscriber(object):
-    def __init__(self, config, client_id, service, redis):
-        self.r = redis
+    def __init__(self, config, client_id, service):
         self.client = mqtt.Client(client_id, True)
         self.BROKER = config.get("MQTT", "broker")
         self.PORT = int(config.get("MQTT", "port"))

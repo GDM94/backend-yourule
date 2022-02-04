@@ -73,9 +73,9 @@ class RabbitMQ(object):
         trigger_list = output["output"]
         for trigger in trigger_list:
             topic = ""
-            if SWITCH in trigger["device_id"]:
+            if "SWITCH" in trigger["device_id"]:
                 topic = self.mqtt_switch + trigger["device_id"]
-            elif SERVO in trigger["device_id"]:
+            elif "SERVO" in trigger["device_id"]:
                 topic = self.mqtt_servo + trigger["device_id"]
             url = self.mqtt_publisher_ip + topic
             payload = {"message": trigger["measure"] + "/" + trigger["delay"]}
