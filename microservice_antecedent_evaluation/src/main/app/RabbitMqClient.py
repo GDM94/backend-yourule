@@ -1,10 +1,12 @@
 import pika
 import json
 import time
+import requests
 
 
 class RabbitMQ(object):
-    def __init__(self, app_id, service, config):
+    def __init__(self, app_id, config):
+        self.backend_server = config.get("BACKEND", "ip")
         rabbitmq_server = config.get("RABBITMQ", "server")
         rabbitmq_port = int(config.get("RABBITMQ", "port"))
         virtual_host = config.get("RABBITMQ", "virtual_host")
@@ -20,7 +22,6 @@ class RabbitMQ(object):
         self.publish_queue = config.get("RABBITMQ", "publish_queue")
         self.channel = None
         self.connection = None
-        self.service = service
         self.properties = pika.BasicProperties(
             app_id=app_id,
             content_type='application/json',
@@ -63,11 +64,10 @@ class RabbitMQ(object):
         message = body.decode()
         print("[x] received message " + message)
         payload = json.loads(message)
-        user_id = str(payload["user_id"])
-        device_id = str(payload["device_id"])
-        measure = str(payload["measure"])
-        rules = payload["rules"]
-        output_rules = self.service.antecedent_evaluation(user_id, device_id, measure, rules)
+        response = requests.post(self.backend_server, json=payload, headers={"Content-Type": "application/json"})
+        trigger = response.json()
+        output_rules = trigger["rules"]
+        user_id = str(trigger["user_id"])
         if len(output_rules) > 0:
             output = {"user_id": user_id, "rules": output_rules}
             self.publish(json.dumps(output))

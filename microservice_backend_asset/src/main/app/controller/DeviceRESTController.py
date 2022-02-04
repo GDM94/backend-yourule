@@ -143,7 +143,11 @@ def get_broker_address():
         return output
 
 
-@device.route('/evaluation/<device_id>/<measure>/<expiration>', methods=['GET'])
-def device_evaluation(device_id, measure, expiration):
+@device.route('/evaluation', methods=['POST'])
+def device_evaluation():
+    payload = request.get_json()
+    device_id = str(payload["id"])
+    measure = str(payload["measure"])
+    expiration = str(payload["expiration"])
     output = app.device_functional_service.device_evaluation(device_id, measure, expiration)
     return Response(json.dumps(output, default=lambda o: o.__dict__), mimetype='application/json')

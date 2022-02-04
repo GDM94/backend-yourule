@@ -3,6 +3,7 @@ from flask import request
 from flask import Blueprint
 from .UserRESTController import check_token
 from flask import current_app as app
+from flask import Response
 
 rule = Blueprint('rule', __name__)
 
@@ -196,3 +197,14 @@ def delete_rule_consequent(rule_id, device_id):
         raise Exception()
     else:
         return json.dumps(output, default=lambda o: o.__dict__, indent=4)
+
+
+@rule.route('/antecedent/evaluation', methods=['POST'])
+def antecedent_evaluation():
+    payload = request.get_json()
+    user_id = str(payload["user_id"])
+    device_id = str(payload["device_id"])
+    measure = str(payload["measure"])
+    rules = payload["rules"]
+    output = app.functional_rule_service.antecedent_evaluation(user_id, device_id, measure, rules)
+    return Response(json.dumps(output, default=lambda o: o.__dict__), mimetype='application/json')

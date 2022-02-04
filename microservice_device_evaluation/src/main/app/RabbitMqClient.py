@@ -68,11 +68,9 @@ class RabbitMQ(object):
         payload = json.loads(message)
         print("[x] received message " + str(payload))
         device_id = str(payload["id"])
-        measure = str(payload["measure"])
-        expiration = str(payload["expiration"])
-        evaluation_url = self.backend_server + device_id + "/" + measure + "/" + expiration
-        response = requests.get(evaluation_url)
-        trigger = json.loads(response.text)
+        evaluation_url = self.backend_server
+        response = requests.post(evaluation_url, json=payload, headers={"Content-Type": "application/json"})
+        trigger = response.json()
         if trigger["type"] == "antecedent":
             if len(trigger["rules"]) > 0:
                 self.publish(response.text, self.publish_queue)
