@@ -1,20 +1,40 @@
-from ruleapp.Devices.DeviceEvaluationDTO import DeviceEvaluation
 from ruleapp.Devices.WaterLevel.WaterLevelFunctions import WaterLevelFunction
-from ruleapp.Devices.Button.ButtonFunctions import ButtonFunction
 from ruleapp.Devices.Switch.SwitchFuntions import SwitchFunction
+from ruleapp.Devices.Button.ButtonFunctions import ButtonFunction
 from ruleapp.Devices.Photocell.PhotocellFunctions import PhotocellFunction
 from ruleapp.Devices.Servo.ServoFunctions import ServoFunction
-from ruleapp.Devices.DeviceId import SWITCH, WATER_LEVEL, BUTTON, PHOTOCELL, SERVO
+from ruleapp.Devices.Weather.WeatherFunctions import WeatherFunction
+import json
+import requests
+from ruleapp.Devices.DeviceId import WATER_LEVEL, SWITCH, PHOTOCELL, BUTTON, SERVO
+from ruleapp.Devices.DeviceEvaluationDTO import DeviceEvaluation
 
 
-class DeviceServiceEvaluation(object):
-    def __init__(self, redis):
+class DeviceFunctionalService(object):
+    def __init__(self, redis, config):
         self.r = redis
-        self.waterlevel_functions = WaterLevelFunction(redis)
+        self.mqtt_switch = config.get("MQTT", "mqtt_switch")
+        self.mqtt_servo = config.get("MQTT", "mqtt_servo")
+        self.mqtt_expiration = config.get("MQTT", "mqtt_expiration")
+        self.endpoint_mqtt = config.get("MQTT", "endpoint_mqtt")
         self.switch_functions = SwitchFunction(redis)
+        self.waterlevel_functions = WaterLevelFunction(redis)
         self.button_functions = ButtonFunction(redis)
         self.photocell_functions = PhotocellFunction(redis)
         self.servo_functions = ServoFunction(redis)
+        self.api_key = config.get("OPEN_WEATHER", "api_key")
+        self.api_location_url = config.get("OPEN_WEATHER", "api_location_url")
+        self.api_weather_url = config.get("OPEN_WEATHER", "api_weather_url")
+        self.weather_functions = WeatherFunction(redis, self.api_key, self.api_location_url, self.api_weather_url)
+
+    def device_evaluation(self, device_id, measure, expiration):
+        self.check_device_registration(device_id)
+        expiration_sync = self.expiration_evaluation(device_id, expiration)
+        if expiration_sync != "false":
+            url = self.endpoint_mqtt + self.mqtt_expiration + device_id
+            payload = {"message": expiration_sync}
+            requests.post(url, json.dumps(payload))
+        return self.measure_evaluation(device_id, measure)
 
     def measure_evaluation(self, device_id, measure):
         output = DeviceEvaluation()
@@ -72,3 +92,8 @@ class DeviceServiceEvaluation(object):
             print(device_id + " registered!")
         except Exception as error:
             print(repr(error))
+
+    def update_weather(self):
+        all_locations = list(self.r.smembers("weather:location:names"))
+        for location_name in all_locations:
+            self.weather_functions.update_weather(location_name)

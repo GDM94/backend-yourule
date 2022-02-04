@@ -5,7 +5,7 @@ import requests
 
 
 class RabbitMQ(object):
-    def __init__(self, app_id, service, config):
+    def __init__(self, app_id, config):
         rabbitmq_server = config.get("RABBITMQ", "server")
         rabbitmq_port = int(config.get("RABBITMQ", "port"))
         virtual_host = config.get("RABBITMQ", "virtual_host")
@@ -23,9 +23,9 @@ class RabbitMQ(object):
                                                            heartbeat=0)
         self.subscribe_queue = config.get("RABBITMQ", "subscribe_queue")
         self.publish_queue = config.get("RABBITMQ", "publish_queue")
+        self.backend_server = config.get("BACKEND", "ip")
         self.channel = None
         self.connection = None
-        self.service = service
         self.properties = pika.BasicProperties(
             app_id=app_id,
             content_type='application/json',
@@ -70,23 +70,18 @@ class RabbitMQ(object):
         device_id = str(payload["id"])
         measure = str(payload["measure"])
         expiration = str(payload["expiration"])
-        self.service.check_device_registration(device_id)
-        expiration_sync = self.service.expiration_evaluation(device_id, expiration)
-        if expiration_sync != "false":
-            url = self.mqtt_publisher_ip + self.mqtt_expiration + device_id
-            payload = {"message": expiration_sync}
-            requests.post(url, json.dumps(payload))
-        trigger = self.service.measure_evaluation(device_id, measure)
-        if trigger.type == "antecedent":
-            if len(trigger.rules) > 0:
-                output = json.dumps(trigger, default=lambda o: o.__dict__)
-                self.publish(output, self.publish_queue)
-        elif trigger.type == "switch":
+        evaluation_url = self.backend_server + device_id + "/" + measure + "/" + expiration
+        response = requests.get(evaluation_url)
+        trigger = json.loads(response.text)
+        if trigger["type"] == "antecedent":
+            if len(trigger["rules"]) > 0:
+                self.publish(response.text, self.publish_queue)
+        elif trigger["type"] == "switch":
             url = self.mqtt_publisher_ip + self.mqtt_switch + device_id
-            payload = {"message": trigger.measure}
+            payload = {"message": trigger["measure"]}
             requests.post(url, json.dumps(payload))
-        elif trigger.type == "servo":
+        elif trigger["type"] == "servo":
             url = self.mqtt_publisher_ip + self.mqtt_servo + device_id
-            payload = {"message": trigger.measure}
+            payload = {"message": trigger["measure"]}
             requests.post(url, json.dumps(payload))
         ch.basic_ack(delivery_tag=method.delivery_tag)

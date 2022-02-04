@@ -3,6 +3,7 @@ from flask import request
 import json
 from .UserRESTController import check_token
 from flask import current_app as app
+from flask import Response
 
 device = Blueprint('device', __name__)
 
@@ -140,3 +141,9 @@ def get_broker_address():
         raise Exception()
     else:
         return output
+
+
+@device.route('/evaluation/<device_id>/<measure>/<expiration>', methods=['GET'])
+def device_evaluation(device_id, measure, expiration):
+    output = app.device_functional_service.device_evaluation(device_id, measure, expiration)
+    return Response(json.dumps(output, default=lambda o: o.__dict__), mimetype='application/json')
