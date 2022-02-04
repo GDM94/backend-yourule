@@ -199,46 +199,20 @@ def delete_rule_consequent(rule_id, device_id):
         return json.dumps(output, default=lambda o: o.__dict__, indent=4)
 
 
-@rule.route('/antecedent/evaluation', methods=['POST'])
-def antecedent_evaluation():
-    payload = request.get_json()
-    user_id = str(payload["user_id"])
-    device_id = str(payload["device_id"])
-    measure = str(payload["measure"])
-    rules = payload["rules"]
-    output = app.functional_rule_service.antecedent_evaluation(user_id, device_id, measure, rules)
-    return Response(json.dumps(output, default=lambda o: o.__dict__), mimetype='application/json')
-
-
-@rule.route('/evaluation', methods=['POST'])
-def rule_evaluation():
-    payload = request.get_json()
-    user_id = str(payload["user_id"])
-    rules = payload["rules"]
-    output = app.functional_rule_service.rule_evaluation(user_id, rules)
-    return Response(json.dumps(output, default=lambda o: o.__dict__), mimetype='application/json')
-
-
-@rule.route('/consequent/evaluation', methods=['POST'])
-def consequent_evaluation():
-    payload = request.get_json()
-    user_id = str(payload["user_id"])
-    rule_id = str(payload["rule_id"])
-    output = app.functional_rule_service.consequent_evaluation(user_id, rule_id)
-    return Response(json.dumps(output, default=lambda o: o.__dict__), mimetype='application/json')
-
-
 @rule.route('/weather/evaluation', methods=['GET'])
 def weather_evaluation():
     app.functional_rule_service.weather_evaluation()
+    return "true"
 
 
 @rule.route('/timer/evaluation', methods=['GET'])
 def timer_evaluation():
     app.functional_rule_service.timer_evaluation()
+    return "true"
 
 
 @rule.route('/switch/last_on/evaluation', methods=['GET'])
 def switch_last_on_evaluation():
     app.functional_rule_service.switch_last_on_evaluation()
+    return "true"
 

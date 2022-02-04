@@ -1,5 +1,0 @@
-Devices
-Folder
-Profile
-Rule
-User

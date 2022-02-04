@@ -112,19 +112,20 @@ class SwitchFunction(object):
         return message
 
     def device_evaluation(self, device_id, measure):
-        output = DeviceEvaluation()
+        output = {}
         key_pattern = "device:" + device_id
-        if self.r.exists(key_pattern + ":user_id") == 1:
-            expiration = int(self.r.get(key_pattern + ":expiration")) + 2
-            self.r.setex(key_pattern + ":measure", expiration, measure)
-            self.last_time_status_update(device_id, measure)
-            user_id = self.r.get(key_pattern + ":user_id")
-            evaluated_measure = self.measure_evaluation(user_id, device_id)
-            if evaluated_measure != measure:
-                output.user_id = user_id
-                output.device_id = device_id
-                output.type = "switch"
-                output.measure = evaluated_measure
+        if self.r.exists(key_pattern + ":user_id") == 0:
+            return "false"
+        expiration = int(self.r.get(key_pattern + ":expiration")) + 2
+        self.r.setex(key_pattern + ":measure", expiration, measure)
+        self.last_time_status_update(device_id, measure)
+        user_id = self.r.get(key_pattern + ":user_id")
+        evaluated_measure = self.measure_evaluation(user_id, device_id)
+        if evaluated_measure == measure:
+            return "false"
+        output["user_id"] = user_id
+        output["device_id"] = device_id
+        output["measure"] = evaluated_measure
         return output
 
     def measure_evaluation(self, user_id, device_id):

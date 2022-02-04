@@ -11,8 +11,6 @@ services:
       - "5000:5000"
     depends_on:
       - redis
-      - rabbitmq
-      - mqtt_publisher
     networks:
       - backend
 
@@ -21,8 +19,7 @@ services:
     image: dimax94/microservice_device_entrypoint
     depends_on:
       - redis
-      - device_evaluation
-      - rabbitmq
+      - backend_asset
     networks:
       - backend
 
@@ -34,29 +31,6 @@ services:
     networks:
       - backend
 
-  device_evaluation:
-    container_name: device_evaluation
-    image: dimax94/microservice_device_evaluation
-    volumes:
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
-    depends_on:
-      - redis
-      - antecedent_evaluation
-      - rabbitmq
-    networks:
-      - backend
-
-  antecedent_evaluation:
-    container_name: antecedent_evaluation
-    image: dimax94/microservice_antecedent_evaluation
-    depends_on:
-      - redis
-      - rule_evaluation
-      - rabbitmq
-    networks:
-      - backend
-
   timer_evaluation:
     container_name: timer_evaluation
     image: dimax94/microservice_timer_evaluation
@@ -65,8 +39,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
     depends_on:
       - redis
-      - rule_evaluation
-      - rabbitmq
     networks:
       - backend
 
@@ -78,8 +50,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
     depends_on:
       - redis
-      - rule_evaluation
-      - rabbitmq
     networks:
       - backend
 
@@ -91,42 +61,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
     depends_on:
       - redis
-      - rule_evaluation
-      - rabbitmq
-    networks:
-      - backend
-
-  rule_evaluation:
-    container_name: rule_evaluation
-    image: dimax94/microservice_rule_evaluation
-    volumes:
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
-    depends_on:
-      - redis
-      - consequent_evaluation
-      - rabbitmq
-    networks:
-      - backend
-
-  consequent_evaluation:
-    container_name: consequent_evaluation
-    image: dimax94/microservice_consequent_evaluation
-    depends_on:
-      - redis
-      - rabbitmq
-    networks:
-      - backend
-
-  rabbitmq:
-    container_name: rabbitmq
-    image: dimax94/rabbitmq
-    volumes:
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
-    ports:
-      - "15672:15672"
-      - "5672:5672"
     networks:
       - backend
 

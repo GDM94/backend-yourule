@@ -2,10 +2,8 @@ from flask import Flask
 from flask_cors import CORS
 from flask import request
 from configuration.config import read_config
-from controller.RabbitMqClient import RabbitMQ
 import random
 import string
-import json
 from flask_mqtt import Mqtt
 
 config = read_config()
@@ -23,9 +21,6 @@ CORS(app)
 
 mqtt = Mqtt(app)
 
-rabbitmq = RabbitMQ("device_endpoint", config)
-rabbitmq.start_connection()
-
 
 @app.route('/mqtt/publish/<actuator>/<device_id>', methods=['POST'])
 def publish_mqtt(actuator, device_id):
@@ -33,13 +28,6 @@ def publish_mqtt(actuator, device_id):
     payload = request.get_json(force=True)
     msg = payload["message"]
     mqtt.publish(topic, msg)
-    return "true"
-
-
-@app.route('/rabbitmq/publish/<topic>', methods=['POST'])
-def publish_rabbit_mq(topic):
-    payload = request.get_json(force=True)
-    rabbitmq.publish(topic, json.dumps(payload))
     return "true"
 
 

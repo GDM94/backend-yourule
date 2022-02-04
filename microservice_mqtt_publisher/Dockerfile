@@ -4,7 +4,6 @@ RUN pip install -U flask-cors;
 RUN pip install Flask;
 RUN pip install Flask-MQTT;
 RUN pip install gunicorn;
-RUN pip install pika;
 
 ADD ./src /backend/microservice_mqtt_publisher/src/
 

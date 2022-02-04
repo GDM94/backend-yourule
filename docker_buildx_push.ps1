@@ -7,18 +7,8 @@ param (
 function Go () {
 
     # microservices folders to install in local mvn repo
-    $folders = @('microservice_backend_asset',
-    'microservice_device_entrypoint',
-    'microservice_antecedent_evaluation',
-    'microservice_device_evaluation',
-    'microservice_timer_evaluation' ,
-    'microservice_weather_evaluation' ,
-    'microservice_rule_evaluation',
-    'microservice_consequent_evaluation',
-    'microservice_laston_evaluation',
-    'microservice_mqtt_publisher'
+    $folders = @('microservice_backend_asset'
     #'redis',
-    #'rabbitmq',
     #'reverse_proxy'
     )
 

@@ -12,11 +12,11 @@ from ..components.Devices.Servo.ServoConsequentFunctions import ServoConsequentF
 from ..components.Devices.DeviceId import TIMER, ALERT, WEATHER, WATER_LEVEL, SWITCH, PHOTOCELL, BUTTON, SERVO
 import requests
 import json
+from flask import current_app as app
 
 
 class RuleService(object):
     def __init__(self, redis, config):
-        self.publish_rule = config.get("RABBITMQ", "publish_rule")
         self.mqtt_switch = config.get("MQTT", "mqtt_switch")
         self.mqtt_servo = config.get("MQTT", "mqtt_servo")
         self.endpoint_mqtt = config.get("MQTT", "endpoint_mqtt")
@@ -190,9 +190,7 @@ class RuleService(object):
                 output = self.photocell_antecedent_functions.delete_antecedent(user_id, rule_id, device_id)
             if output != "error":
                 # trigger rule evaluation
-                url = self.endpoint_rabbitmq + self.publish_rule
-                trigger_message = {"user_id": user_id, "rules": [rule_id]}
-                requests.post(url, json.dumps(trigger_message))
+                app.functional_rule_service.rule_evaluation(user_id, [rule_id])
                 # get rule by id
                 output = self.get_rule_by_id(user_id, rule_id)
             return output

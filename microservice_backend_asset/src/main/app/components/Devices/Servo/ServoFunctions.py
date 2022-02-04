@@ -153,26 +153,27 @@ class ServoFunction(object):
             self.r.set(key_pattern + ":last_date_off", date_str)
 
     def device_evaluation(self, device_id, absolute_measure):
-        output = DeviceEvaluation()
+        output = {}
         key_pattern = "device:" + device_id
-        if self.r.exists(key_pattern + ":user_id") == 1:
-            expiration = int(self.r.get(key_pattern + ":expiration")) + 2
-            setting_on = self.r.get(key_pattern + ":setting_on")
-            setting_off = self.r.get(key_pattern + ":setting_off")
-            measure = "off"
-            if absolute_measure == setting_on:
-                measure = "on"
-            self.r.set(key_pattern + ":absolute_measure", absolute_measure)
-            self.r.setex(key_pattern + ":measure", expiration, measure)
-            self.last_time_status_update(device_id, measure)
-            user_id = self.r.get(key_pattern + ":user_id")
-            evaluated_measure = self.measure_evaluation(user_id, device_id)
-            if evaluated_measure != measure:
-                output.user_id = user_id
-                output.device_id = device_id
-                output.type = "servo"
-                if evaluated_measure == "on":
-                    output.measure = setting_on
-                else:
-                    output.measure = setting_off
+        if self.r.exists(key_pattern + ":user_id") == 0:
+            return "false"
+        expiration = int(self.r.get(key_pattern + ":expiration")) + 2
+        setting_on = self.r.get(key_pattern + ":setting_on")
+        setting_off = self.r.get(key_pattern + ":setting_off")
+        measure = "off"
+        if absolute_measure == setting_on:
+            measure = "on"
+        self.r.set(key_pattern + ":absolute_measure", absolute_measure)
+        self.r.setex(key_pattern + ":measure", expiration, measure)
+        self.last_time_status_update(device_id, measure)
+        user_id = self.r.get(key_pattern + ":user_id")
+        evaluated_measure = self.measure_evaluation(user_id, device_id)
+        if evaluated_measure == measure:
+            return "false"
+        output["user_id"] = user_id
+        output["device_id"] = device_id
+        if evaluated_measure == "on":
+            output["measure"] = setting_on
+        else:
+            output["measure"] = setting_off
         return output

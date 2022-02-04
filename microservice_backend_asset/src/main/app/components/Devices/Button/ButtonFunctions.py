@@ -111,14 +111,17 @@ class ButtonFunction(object):
             self.r.set(key_pattern + ":last_date_off", date_str)
         return measure
 
+
     def device_evaluation(self, device_id, measure):
-        output = DeviceEvaluation()
+        output = {}
         key_pattern = "device:" + device_id
-        if self.r.exists(key_pattern + ":user_id") == 1:
-            output.user_id = self.r.get("device:" + device_id + ":user_id")
-            output.measure = self.measure_evaluation(device_id, measure)
-            output.device_id = device_id
-            output.type = "antecedent"
-            if self.r.exists(key_pattern + ":rules"):
-                output.rules = self.r.lrange(key_pattern + ":rules")
+        if self.r.exists(key_pattern + ":user_id") == 0:
+            return "false"
+        output["user_id"] = self.r.get("device:" + device_id + ":user_id")
+        output["measure"] = self.measure_evaluation(device_id, measure)
+        output["device_id"] = device_id
+        key_pattern = "device:" + device_id
+        if self.r.exists(key_pattern + ":rules") == 0:
+            return "false"
+        output["rules"] = self.r.lrange(key_pattern + ":rules")
         return output

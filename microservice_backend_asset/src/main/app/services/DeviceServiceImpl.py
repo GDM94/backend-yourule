@@ -9,13 +9,12 @@ from ..components.Devices.Servo.ServoFunctions import ServoFunction
 from ..components.Devices.DeviceId import TIMER, ALERT, WEATHER, WATER_LEVEL, SWITCH, PHOTOCELL, BUTTON, SERVO
 import json
 import requests
+from flask import current_app as app
 
 
 class DeviceService(object):
     def __init__(self, redis, config):
         self.r = redis
-        self.publish_rule = config.get("RABBITMQ", "publish_rule")
-        self.publish_consequent = config.get("RABBITMQ", "publish_consequent")
         self.EXPIRATION = config.get("REDIS", "expiration")
         self.mqtt_switch = config.get("MQTT", "mqtt_switch")
         self.mqtt_servo = config.get("MQTT", "mqtt_servo")
@@ -114,9 +113,7 @@ class DeviceService(object):
                 elif PHOTOCELL in device_id:
                     self.photocell_functions.delete_device(user_id, device_id)
                 # trigger rule evaluation
-                url = self.endpoint_rabbitmq + self.publish_rule
-                trigger_message = {"user_id": user_id, "rules": rules}
-                requests.post(url, json.dumps(trigger_message))
+                app.functional_rule_service.rule_evaluation(user_id, rules)
             return "true"
         except Exception as error:
             print(repr(error))
@@ -158,11 +155,8 @@ class DeviceService(object):
             self.r.set("device:" + device_id + ":automatic", automatic)
             if automatic == "true":
                 rules = self.r.lrange("device:" + device_id + ":rules")
-                trigger = {"user_id": user_id, "rule_id": ""}
                 for rule in rules:
-                    url = self.endpoint_rabbitmq + self.publish_consequent
-                    trigger["rule_id"] = rule
-                    requests.post(url, json.dumps(trigger))
+                    app.functional_rule_service.consequent_evaluation(user_id, rule)
             dto = {}
             if SWITCH in device_id:
                 dto = self.switch_functions.get_device(user_id, device_id)

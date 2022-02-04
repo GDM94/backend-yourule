@@ -134,19 +134,10 @@ def delete_alert_email(idx):
         return output
 
 
-@device.route('/broker/address', methods=['GET'])
-def get_broker_address():
-    output = app.device_service.get_broker_address()
-    if output == "error":
-        raise Exception()
-    else:
-        return output
-
-
 @device.route('/evaluation', methods=['POST'])
 def device_evaluation():
     payload = request.get_json()
-    device_id = str(payload["id"])
+    device_id = str(payload["device_id"])
     measure = str(payload["measure"])
     expiration = str(payload["expiration"])
     output = app.device_functional_service.device_evaluation(device_id, measure, expiration)

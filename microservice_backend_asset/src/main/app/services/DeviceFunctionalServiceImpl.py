@@ -6,7 +6,7 @@ from ..components.Devices.Servo.ServoFunctions import ServoFunction
 import json
 import requests
 from ..components.Devices.DeviceId import WATER_LEVEL, SWITCH, PHOTOCELL, BUTTON, SERVO
-from ..components.Devices.DeviceEvaluationDTO import DeviceEvaluation
+from .FunctionalRuleServiceImpl import FunctionalRuleService
 
 
 class DeviceFunctionalService(object):
@@ -21,6 +21,7 @@ class DeviceFunctionalService(object):
         self.button_functions = ButtonFunction(redis)
         self.photocell_functions = PhotocellFunction(redis)
         self.servo_functions = ServoFunction(redis)
+        self.functional_rule_service = FunctionalRuleService(redis, config)
 
     def device_evaluation(self, device_id, measure, expiration):
         self.check_device_registration(device_id)
@@ -29,26 +30,35 @@ class DeviceFunctionalService(object):
             url = self.endpoint_mqtt + self.mqtt_expiration + device_id
             payload = {"message": expiration_sync}
             requests.post(url, json.dumps(payload))
-        return self.measure_evaluation(device_id, measure)
+        trigger = self.measure_evaluation(device_id, measure)
+        if trigger != "false" and len(trigger["rules"]) > 0:
+            user_id = trigger["user_id"]
+            device_id = trigger["device_id"]
+            measure = trigger["measure"]
+            rules = trigger["rules"]
+            self.functional_rule_service.antecedent_evaluation(user_id, device_id, measure, rules)
 
     def measure_evaluation(self, device_id, measure):
-        output = DeviceEvaluation()
-        try:
-            if self.r.exists("device:" + device_id + ":user_id") == 1:
-                if SWITCH in device_id:
-                    output = self.switch_functions.device_evaluation(device_id, measure)
-                elif WATER_LEVEL in device_id:
-                    output = self.waterlevel_functions.device_evaluation(device_id, measure)
-                elif BUTTON in device_id:
-                    output = self.button_functions.device_evaluation(device_id, measure)
-                elif PHOTOCELL in device_id:
-                    output = self.photocell_functions.device_evaluation(device_id, measure)
-                elif SERVO in device_id:
-                    self.servo_functions.device_evaluation(device_id, measure)
-            return output
-        except Exception as error:
-            print(repr(error))
-            return output
+        if WATER_LEVEL in device_id:
+            return self.waterlevel_functions.device_evaluation(device_id, measure)
+        elif BUTTON in device_id:
+            return self.button_functions.device_evaluation(device_id, measure)
+        elif PHOTOCELL in device_id:
+            return self.photocell_functions.device_evaluation(device_id, measure)
+        elif SERVO in device_id:
+            output = self.servo_functions.device_evaluation(device_id, measure)
+            if output != "false":
+                url = self.endpoint_mqtt + self.mqtt_servo + device_id
+                payload = {"message": output["measure"]}
+                requests.post(url, json.dumps(payload))
+            return "false"
+        elif SWITCH in device_id:
+            output = self.switch_functions.device_evaluation(device_id, measure)
+            if output != "false":
+                url = self.endpoint_mqtt + self.mqtt_switch + device_id
+                payload = {"message": output["measure"]}
+                requests.post(url, json.dumps(payload))
+            return "false"
 
     def expiration_evaluation(self, device_id, expiration):
         try:
