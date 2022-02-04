@@ -227,3 +227,8 @@ def consequent_evaluation():
     output = app.functional_rule_service.consequent_evaluation(user_id, rule_id)
     return Response(json.dumps(output, default=lambda o: o.__dict__), mimetype='application/json')
 
+
+@rule.route('/weather/evaluation', methods=['GET'])
+def weather_evaluation():
+    app.functional_rule_service.weather_evaluation()
+

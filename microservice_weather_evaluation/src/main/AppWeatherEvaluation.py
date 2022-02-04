@@ -1,20 +1,11 @@
 import time
-from app.WeatherServiceEvaluationImpl import WeatherServiceEvaluation
-from app.RabbitMqClient import RabbitMQ
-import random
-import string
 from configuration.config import read_config
-from ruleapp.DBconnection.RedisConnectionImpl import RedisConnection
-
-client_id = 'weather_trigger'.join(random.choices(string.ascii_letters + string.digits, k=8))
+import requests
 
 config = read_config()
-redis = RedisConnection(config)
-rabbitmq = RabbitMQ(client_id, config)
-rabbitmq.start_connection()
-service = WeatherServiceEvaluation(rabbitmq, redis, config)
+backend_server = config.get("BACKEND", "ip")
 
 if __name__ == '__main__':
     while True:
-        service.weather_trigger()
-        time.sleep(3)
+        requests.get(backend_server)
+        time.sleep(10)
