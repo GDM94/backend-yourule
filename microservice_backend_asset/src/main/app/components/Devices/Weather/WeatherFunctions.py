@@ -8,11 +8,11 @@ from ..DeviceId import WEATHER
 
 
 class WeatherFunction(object):
-    def __init__(self, redis, api_key, api_location_url, api_weather_url):
+    def __init__(self, redis, config):
         self.r = redis
-        self.api_key = api_key
-        self.api_location_url = api_location_url
-        self.api_weather_url = api_weather_url
+        self.api_key = config.get("OPEN_WEATHER", "api_key")
+        self.api_location_url = config.get("OPEN_WEATHER", "api_location_url")
+        self.api_weather_url = config.get("OPEN_WEATHER", "api_weather_url")
         self.weather_refresh_cycle = 60 * 60
 
     def register(self, user_id):

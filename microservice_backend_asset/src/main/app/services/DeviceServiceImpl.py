@@ -1,11 +1,3 @@
-from ..components.Devices.WaterLevel.WaterLevelFunctions import WaterLevelFunction
-from ..components.Devices.Switch.SwitchFuntions import SwitchFunction
-from ..components.Devices.Button.ButtonFunctions import ButtonFunction
-from ..components.Devices.Timer.TimerFunctions import TimerFunction
-from ..components.Devices.Alert.AlertFunctions import AlertFunction
-from ..components.Devices.Weather.WeatherFunctions import WeatherFunction
-from ..components.Devices.Photocell.PhotocellFunctions import PhotocellFunction
-from ..components.Devices.Servo.ServoFunctions import ServoFunction
 from ..components.Devices.DeviceId import TIMER, ALERT, WEATHER, WATER_LEVEL, SWITCH, PHOTOCELL, BUTTON, SERVO
 import json
 import requests
@@ -20,37 +12,26 @@ class DeviceService(object):
         self.mqtt_servo = config.get("MQTT", "mqtt_servo")
         self.endpoint_mqtt = config.get("MQTT", "endpoint_mqtt")
         self.endpoint_rabbitmq = config.get("MQTT", "endpoint_rabbitmq")
-        self.api_key = config.get("OPEN_WEATHER", "api_key")
-        self.api_location_url = config.get("OPEN_WEATHER", "api_location_url")
-        self.api_weather_url = config.get("OPEN_WEATHER", "api_weather_url")
-        self.switch_functions = SwitchFunction(redis)
-        self.waterlevel_functions = WaterLevelFunction(redis)
-        self.button_functions = ButtonFunction(redis)
-        self.timer_functions = TimerFunction(redis)
-        self.alert_functions = AlertFunction(redis)
-        self.weather_functions = WeatherFunction(redis, self.api_key, self.api_location_url, self.api_weather_url)
-        self.photocell_functions = PhotocellFunction(redis)
-        self.servo_functions = ServoFunction(redis)
 
     def get_device(self, user_id, device_id):
         try:
             device = {}
             if SWITCH in device_id:
-                device = self.switch_functions.get_device(user_id, device_id)
+                device = app.switch_functions.get_device(user_id, device_id)
             elif WATER_LEVEL in device_id:
-                device = self.waterlevel_functions.get_device(user_id, device_id)
+                device = app.waterlevel_functions.get_device(user_id, device_id)
             elif TIMER in device_id:
-                device = self.timer_functions.get_device(user_id, device_id)
+                device = app.timer_functions.get_device(user_id, device_id)
             elif ALERT in device_id:
-                device = self.alert_functions.get_device(user_id, device_id)
+                device = app.alert_functions.get_device(user_id, device_id)
             elif BUTTON in device_id:
-                device = self.button_functions.get_device(user_id, device_id)
+                device = app.button_functions.get_device(user_id, device_id)
             elif WEATHER in device_id:
-                device = self.weather_functions.get_device(user_id, device_id)
+                device = app.weather_functions.get_device(user_id, device_id)
             elif PHOTOCELL in device_id:
-                device = self.photocell_functions.get_device(user_id, device_id)
+                device = app.photocell_functions.get_device(user_id, device_id)
             elif SERVO in device_id:
-                device = self.servo_functions.get_device(user_id, device_id)
+                device = app.servo_functions.get_device(user_id, device_id)
             return device
         except Exception as error:
             print(repr(error))
@@ -70,21 +51,21 @@ class DeviceService(object):
     def device_update(self, device_id, new_device):
         try:
             if SWITCH in device_id:
-                self.switch_functions.update_device(new_device)
+                app.switch_functions.update_device(new_device)
             elif WATER_LEVEL in device_id:
-                self.waterlevel_functions.update_device(new_device)
+                app.waterlevel_functions.update_device(new_device)
             elif TIMER in device_id:
-                self.timer_functions.update_device(new_device)
+                app.timer_functions.update_device(new_device)
             elif ALERT in device_id:
-                self.alert_functions.update_device(new_device)
+                app.alert_functions.update_device(new_device)
             elif BUTTON in device_id:
-                self.button_functions.update_device(new_device)
+                app.button_functions.update_device(new_device)
             elif WEATHER in device_id:
-                self.weather_functions.update_device(new_device)
+                app.weather_functions.update_device(new_device)
             elif PHOTOCELL in device_id:
-                self.photocell_functions.update_device(new_device)
+                app.photocell_functions.update_device(new_device)
             elif SERVO in device_id:
-                self.servo_functions.update_device(new_device)
+                app.servo_functions.update_device(new_device)
             return "true"
         except Exception as error:
             print(repr(error))
@@ -93,25 +74,25 @@ class DeviceService(object):
     def delete_device(self, user_id, device_id):
         try:
             if SWITCH in device_id:
-                self.switch_functions.delete_device(user_id, device_id)
+                app.switch_functions.delete_device(user_id, device_id)
                 # trigger setting device
                 url = self.endpoint_mqtt + self.mqtt_switch + device_id
                 message = {"message": "off/0"}
                 requests.post(url, json.dumps(message))
             elif SERVO in device_id:
                 off_status = self.r.get("device:" + device_id + ":setting_off")
-                self.servo_functions.delete_device(user_id, device_id)
+                app.servo_functions.delete_device(user_id, device_id)
                 url = self.endpoint_mqtt + self.mqtt_servo + device_id
                 message = {"message": off_status + "/0"}
                 requests.post(url, json.dumps(message))
             else:
                 rules = self.r.lrange("device:" + device_id + ":rules")
                 if WATER_LEVEL in device_id:
-                    self.waterlevel_functions.delete_device(user_id, device_id)
+                    app.waterlevel_functions.delete_device(user_id, device_id)
                 elif BUTTON in device_id:
-                    self.button_functions.delete_device(user_id, device_id)
+                    app.button_functions.delete_device(user_id, device_id)
                 elif PHOTOCELL in device_id:
-                    self.photocell_functions.delete_device(user_id, device_id)
+                    app.photocell_functions.delete_device(user_id, device_id)
                 # trigger rule evaluation
                 app.functional_rule_service.rule_evaluation(user_id, rules)
             return "true"
@@ -159,9 +140,9 @@ class DeviceService(object):
                     app.functional_rule_service.consequent_evaluation(user_id, rule)
             dto = {}
             if SWITCH in device_id:
-                dto = self.switch_functions.get_device(user_id, device_id)
+                dto = app.switch_functions.get_device(user_id, device_id)
             elif SERVO in device_id:
-                dto = self.servo_functions.get_device(user_id, device_id)
+                dto = app.servo_functions.get_device(user_id, device_id)
             return dto
         except Exception as error:
             print(repr(error))
@@ -172,18 +153,18 @@ class DeviceService(object):
             print(device_id)
             dto = {}
             if SWITCH in device_id:
-                message = self.switch_functions.set_manual_measure(user_id, device_id, manual_measure)
+                message = app.switch_functions.set_manual_measure(user_id, device_id, manual_measure)
                 url = self.endpoint_mqtt + self.mqtt_switch + device_id
                 msg = {"message": message}
                 requests.post(url, json.dumps(msg))
-                dto = self.switch_functions.get_device(user_id, device_id)
+                dto = app.switch_functions.get_device(user_id, device_id)
             elif SERVO in device_id:
-                message = self.servo_functions.set_manual_measure(user_id, device_id, manual_measure)
+                message = app.servo_functions.set_manual_measure(user_id, device_id, manual_measure)
                 url = self.endpoint_mqtt + self.mqtt_servo + device_id
                 print(url)
                 msg = {"message": message}
                 requests.post(url, json.dumps(msg))
-                dto = self.servo_functions.get_device(user_id, device_id)
+                dto = app.servo_functions.get_device(user_id, device_id)
             if dto.measure != "-":
                 dto.measure = manual_measure
             return dto
@@ -192,13 +173,13 @@ class DeviceService(object):
             return "error"
 
     def add_alert_email(self, user_id):
-        return self.alert_functions.add_alert_email(user_id)
+        return app.alert_functions.add_alert_email(user_id)
 
     def delete_alert_email(self, user_id, index):
-        return self.alert_functions.delete_alert_email(user_id, index)
+        return app.alert_functions.delete_alert_email(user_id, index)
 
     def modify_alert_email(self, user_id, email, idx):
-        return self.alert_functions.modify_alert_email(user_id, email, idx)
+        return app.alert_functions.modify_alert_email(user_id, email, idx)
 
     def get_device_rules(self, user_id, device_id):
         try:

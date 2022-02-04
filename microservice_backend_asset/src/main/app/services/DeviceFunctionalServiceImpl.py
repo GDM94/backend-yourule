@@ -1,12 +1,7 @@
-from ..components.Devices.WaterLevel.WaterLevelFunctions import WaterLevelFunction
-from ..components.Devices.Switch.SwitchFuntions import SwitchFunction
-from ..components.Devices.Button.ButtonFunctions import ButtonFunction
-from ..components.Devices.Photocell.PhotocellFunctions import PhotocellFunction
-from ..components.Devices.Servo.ServoFunctions import ServoFunction
 import json
 import requests
 from ..components.Devices.DeviceId import WATER_LEVEL, SWITCH, PHOTOCELL, BUTTON, SERVO
-from .FunctionalRuleServiceImpl import FunctionalRuleService
+from flask import current_app as app
 
 
 class DeviceFunctionalService(object):
@@ -16,12 +11,6 @@ class DeviceFunctionalService(object):
         self.mqtt_servo = config.get("MQTT", "mqtt_servo")
         self.mqtt_expiration = config.get("MQTT", "mqtt_expiration")
         self.endpoint_mqtt = config.get("MQTT", "endpoint_mqtt")
-        self.switch_functions = SwitchFunction(redis)
-        self.waterlevel_functions = WaterLevelFunction(redis)
-        self.button_functions = ButtonFunction(redis)
-        self.photocell_functions = PhotocellFunction(redis)
-        self.servo_functions = ServoFunction(redis)
-        self.functional_rule_service = FunctionalRuleService(redis, config)
 
     def device_evaluation(self, device_id, measure, expiration):
         self.check_device_registration(device_id)
@@ -36,24 +25,24 @@ class DeviceFunctionalService(object):
             device_id = trigger["device_id"]
             measure = trigger["measure"]
             rules = trigger["rules"]
-            self.functional_rule_service.antecedent_evaluation(user_id, device_id, measure, rules)
+            app.functional_rule_service.antecedent_evaluation(user_id, device_id, measure, rules)
 
     def measure_evaluation(self, device_id, measure):
         if WATER_LEVEL in device_id:
-            return self.waterlevel_functions.device_evaluation(device_id, measure)
+            return app.waterlevel_functions.device_evaluation(device_id, measure)
         elif BUTTON in device_id:
-            return self.button_functions.device_evaluation(device_id, measure)
+            return app.button_functions.device_evaluation(device_id, measure)
         elif PHOTOCELL in device_id:
-            return self.photocell_functions.device_evaluation(device_id, measure)
+            return app.photocell_functions.device_evaluation(device_id, measure)
         elif SERVO in device_id:
-            output = self.servo_functions.device_evaluation(device_id, measure)
+            output = app.servo_functions.device_evaluation(device_id, measure)
             if output != "false":
                 url = self.endpoint_mqtt + self.mqtt_servo + device_id
                 payload = {"message": output["measure"]}
                 requests.post(url, json.dumps(payload))
             return "false"
         elif SWITCH in device_id:
-            output = self.switch_functions.device_evaluation(device_id, measure)
+            output = app.switch_functions.device_evaluation(device_id, measure)
             if output != "false":
                 url = self.endpoint_mqtt + self.mqtt_switch + device_id
                 payload = {"message": output["measure"]}
@@ -85,15 +74,15 @@ class DeviceFunctionalService(object):
     def device_registration(self, user_id, device_id):
         try:
             if SWITCH in device_id:
-                self.switch_functions.register(user_id, device_id)
+                app.switch_functions.register(user_id, device_id)
             elif WATER_LEVEL in device_id:
-                self.waterlevel_functions.register(user_id, device_id)
+                app.waterlevel_functions.register(user_id, device_id)
             elif BUTTON in device_id:
-                self.button_functions.register(user_id, device_id)
+                app.button_functions.register(user_id, device_id)
             elif PHOTOCELL in device_id:
-                self.photocell_functions.register(user_id, device_id)
+                app.photocell_functions.register(user_id, device_id)
             elif SERVO in device_id:
-                self.servo_functions.register(user_id, device_id)
+                app.servo_functions.register(user_id, device_id)
             print(device_id + " registered!")
         except Exception as error:
             print(repr(error))

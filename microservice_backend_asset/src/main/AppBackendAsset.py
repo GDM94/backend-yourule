@@ -10,6 +10,24 @@ from app.services.RuleServiceImpl import RuleService
 from app.services.UserServiceImpl import UserService
 from app.services.DeviceFunctionalServiceImpl import DeviceFunctionalService
 from app.services.FunctionalRuleServiceImpl import FunctionalRuleService
+from app.components.Devices.WaterLevel.WaterLevelFunctions import WaterLevelFunction
+from app.components.Devices.Switch.SwitchFuntions import SwitchFunction
+from app.components.Devices.Button.ButtonFunctions import ButtonFunction
+from app.components.Devices.Timer.TimerFunctions import TimerFunction
+from app.components.Devices.Alert.AlertFunctions import AlertFunction
+from app.components.Devices.Weather.WeatherFunctions import WeatherFunction
+from app.components.Devices.Photocell.PhotocellFunctions import PhotocellFunction
+from app.components.Devices.Servo.ServoFunctions import ServoFunction
+from app.components.Rule.RuleFunctions import RuleFunction
+from app.components.Devices.Timer.TimerAntecedentFunctions import TimerAntecedentFunction
+from app.components.Devices.Alert.AlertConsequentFunctions import AlertConsequentFunction
+from app.components.Devices.WaterLevel.WaterLevelAntecedentFunctions import WaterLevelAntecedentFunction
+from app.components.Devices.Switch.SwitchConsequentFunctions import SwitchConsequentFunction
+from app.components.Devices.Button.ButtonAntecedentFunctions import ButtonAntecedentFunction
+from app.components.Devices.Switch.SwitchAntecedentFunctions import SwitchAntecedentFunction
+from app.components.Devices.Weather.WeatherAntecedentFunctions import WeatherAntecedentFunction
+from app.components.Devices.Photocell.PhotocellAntecedentFunctions import PhotocellAntecedentFunction
+from app.components.Devices.Servo.ServoConsequentFunctions import ServoConsequentFunction
 
 config = read_config()
 redis = RedisConnection(config)
@@ -24,6 +42,27 @@ app.rule_service = RuleService(redis, config)
 app.user_service = UserService(redis, config)
 app.device_functional_service = DeviceFunctionalService(redis, config)
 app.functional_rule_service = FunctionalRuleService(redis, config)
+
+app.switch_functions = SwitchFunction(redis)
+app.waterlevel_functions = WaterLevelFunction(redis)
+app.button_functions = ButtonFunction(redis)
+app.timer_functions = TimerFunction(redis)
+app.alert_functions = AlertFunction(redis)
+app.weather_functions = WeatherFunction(redis, config)
+app.photocell_functions = PhotocellFunction(redis)
+app.servo_functions = ServoFunction(redis)
+app.rule_functions = RuleFunction(redis)
+
+app.timer_antecedent_functions = TimerAntecedentFunction(redis)
+app.alert_consequent_functions = AlertConsequentFunction(redis)
+app.waterlevel_antecedent_functions = WaterLevelAntecedentFunction(redis)
+app.switch_consequent_functions = SwitchConsequentFunction(redis)
+app.button_antecedent_functions = ButtonAntecedentFunction(redis)
+app.switch_antecedent_functions = SwitchAntecedentFunction(redis)
+app.weather_antecedent_functions = WeatherAntecedentFunction(redis)
+app.photocell_antecedent_functions = PhotocellAntecedentFunction(redis)
+app.servo_consequent_functions = ServoConsequentFunction(redis)
+
 
 app.register_blueprint(rule, url_prefix='/rule')
 app.register_blueprint(device, url_prefix='/device')
