@@ -68,8 +68,7 @@ class RabbitMQ(object):
         payload = json.loads(message)
         print("[x] received message " + str(payload))
         device_id = str(payload["id"])
-        evaluation_url = self.backend_server
-        response = requests.post(evaluation_url, json=payload, headers={"Content-Type": "application/json"})
+        response = requests.post(self.backend_server, json=payload, headers={"Content-Type": "application/json"})
         trigger = response.json()
         if trigger["type"] == "antecedent":
             if len(trigger["rules"]) > 0:

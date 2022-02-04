@@ -218,3 +218,12 @@ def rule_evaluation():
     output = app.functional_rule_service.rule_evaluation(user_id, rules)
     return Response(json.dumps(output, default=lambda o: o.__dict__), mimetype='application/json')
 
+
+@rule.route('/consequent/evaluation', methods=['POST'])
+def consequent_evaluation():
+    payload = request.get_json()
+    user_id = str(payload["user_id"])
+    rule_id = str(payload["rule_id"])
+    output = app.functional_rule_service.consequent_evaluation(user_id, rule_id)
+    return Response(json.dumps(output, default=lambda o: o.__dict__), mimetype='application/json')
+

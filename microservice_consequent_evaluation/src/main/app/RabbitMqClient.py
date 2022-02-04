@@ -6,7 +6,7 @@ from ruleapp.Devices.DeviceId import SWITCH, SERVO
 
 
 class RabbitMQ(object):
-    def __init__(self, app_id, service, config):
+    def __init__(self, app_id, config):
         rabbitmq_server = config.get("RABBITMQ", "server")
         rabbitmq_port = int(config.get("RABBITMQ", "port"))
         virtual_host = config.get("RABBITMQ", "virtual_host")
@@ -23,9 +23,9 @@ class RabbitMQ(object):
         self.mqtt_switch = config.get("MQTT", "mqtt_switch")
         self.mqtt_servo = config.get("MQTT", "mqtt_servo")
         self.mqtt_publisher_ip = config.get("MQTT", "ip")
+        self.backend_server = config.get("BACKEND", "ip")
         self.channel = None
         self.connection = None
-        self.service = service
         self.properties = pika.BasicProperties(
             app_id=app_id,
             content_type='application/json',
@@ -67,11 +67,11 @@ class RabbitMQ(object):
     def on_message_callback(self, ch, method, properties, body):
         message = body.decode()
         print("[x] received message " + message)
-        message_dict = json.loads(message)
-        user_id = str(message_dict["user_id"])
-        rule_id = str(message_dict["rule_id"])
-        output = self.service.switch_evaluation(user_id, rule_id)
-        for trigger in output:
+        payload = json.loads(message)
+        response = requests.post(self.backend_server, json=payload, headers={"Content-Type": "application/json"})
+        output = response.json()
+        trigger_list = output["output"]
+        for trigger in trigger_list:
             topic = ""
             if SWITCH in trigger["device_id"]:
                 topic = self.mqtt_switch + trigger["device_id"]
@@ -80,5 +80,4 @@ class RabbitMQ(object):
             url = self.mqtt_publisher_ip + topic
             payload = {"message": trigger["measure"] + "/" + trigger["delay"]}
             requests.post(url, json.dumps(payload))
-        self.service.alert_evaluation(user_id, rule_id)
         ch.basic_ack(delivery_tag=method.delivery_tag)
