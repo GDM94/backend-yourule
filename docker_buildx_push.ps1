@@ -10,9 +10,9 @@ function Go () {
     $folders = @('microservice_backend_asset',
     'microservice_device_entrypoint'
     'microservice_timer_evaluation' ,
-    'microservice_mqtt_publisher'
-    #'redis',
+    'microservice_mqtt_publisher',
     #'reverse_proxy'
+    #'redis'
     )
 
     ForEach ($folder in $folders) {
