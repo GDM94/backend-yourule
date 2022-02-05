@@ -37,6 +37,23 @@ class DeviceService(object):
             print(repr(error))
             return "error"
 
+    def get_device_measure(self, device_id):
+        if SWITCH in device_id:
+            device = app.switch_functions.get_measure(device_id)
+        elif WATER_LEVEL in device_id:
+            device = app.waterlevel_functions.get_measure(device_id)
+        elif TIMER in device_id:
+            device = app.timer_functions.get_measure(device_id)
+        elif BUTTON in device_id:
+            device = app.button_functions.get_measure(device_id)
+        elif PHOTOCELL in device_id:
+            device = app.photocell_functions.get_measure(device_id)
+        elif SERVO in device_id:
+            device = app.servo_functions.get_measure(device_id)
+        else:
+            device = {"measure": "false"}
+        return device
+
     def device_registration(self, user_id, hardware_id):
         try:
             output = "false"

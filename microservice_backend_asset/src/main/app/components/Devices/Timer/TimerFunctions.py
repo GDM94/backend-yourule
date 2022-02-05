@@ -49,3 +49,9 @@ class TimerFunction(object):
         except Exception as error:
             print(repr(error))
             return "error"
+
+    def get_measure(self, device_id):
+        measure_time = datetime.now().strftime("%H:%M")
+        measure_day = str(datetime.today().weekday())
+        output = {"measure_time": measure_time, "measure_day": measure_day}
+        return output

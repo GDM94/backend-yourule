@@ -41,6 +41,16 @@ def get_all_antecedents():
         return json.dumps(output, default=lambda o: o.__dict__, indent=4)
 
 
+@device.route('/get/measure/<device_id>', methods=['GET'])
+@check_token
+def get_measure(device_id):
+    output = app.device_service.get_device_measure(device_id)
+    if output == "error":
+        raise Exception()
+    else:
+        return json.dumps(output)
+
+
 @device.route('/get/consequents', methods=['GET'])
 @check_token
 def get_all_consequents():

@@ -76,6 +76,13 @@ class WaterLevelFunction(object):
             print(repr(error))
             return "error"
 
+    def get_measure(self, device_id):
+        measure = "-"
+        if self.r.exists("device:" + device_id + ":measure") == 1:
+            measure = self.r.get("device:" + device_id + ":measure")
+        output = {"measure": measure}
+        return output
+
     def update_device(self, new_device):
         try:
             dto = WaterLevel()
