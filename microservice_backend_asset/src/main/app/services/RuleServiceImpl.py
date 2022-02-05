@@ -73,7 +73,7 @@ class RuleService(object):
         elif PHOTOCELL in device_id:
             result = app.photocell_antecedent_functions.add_antecedent(user_id, rule_id, device_id)
         if result != "error":
-            result = app.get_rule_by_id(user_id, rule_id)
+            result = self.get_rule_by_id(user_id, rule_id)
         return result
 
     def add_rule_consequent(self, user_id, rule_id, device_id):
@@ -85,7 +85,7 @@ class RuleService(object):
         elif SERVO in device_id:
             result = app.servo_consequent_functions.add_consequent(user_id, rule_id, device_id)
         if result != "error":
-            result = app.get_rule_by_id(user_id, rule_id)
+            result = self.get_rule_by_id(user_id, rule_id)
         return result
 
     def update_rule_antecedent(self, user_id, rule_id, device_id, antecedent_json):
