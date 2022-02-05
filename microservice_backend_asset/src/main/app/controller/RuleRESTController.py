@@ -199,20 +199,11 @@ def delete_rule_consequent(rule_id, device_id):
         return json.dumps(output, default=lambda o: o.__dict__, indent=4)
 
 
-@rule.route('/weather/evaluation', methods=['GET'])
-def weather_evaluation():
-    app.functional_rule_service.weather_evaluation()
-    return "true"
-
-
 @rule.route('/timer/evaluation', methods=['GET'])
 def timer_evaluation():
     app.functional_rule_service.timer_evaluation()
-    return "true"
-
-
-@rule.route('/switch/last_on/evaluation', methods=['GET'])
-def switch_last_on_evaluation():
     app.functional_rule_service.switch_last_on_evaluation()
+    app.functional_rule_service.weather_evaluation()
     return "true"
+
 

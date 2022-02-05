@@ -10,8 +10,6 @@ function Go () {
     $folders = @('microservice_backend_asset',
     'microservice_device_entrypoint'
     'microservice_timer_evaluation' ,
-    'microservice_weather_evaluation' ,
-    'microservice_laston_evaluation',
     'microservice_mqtt_publisher'
     #'redis',
     #'reverse_proxy'
