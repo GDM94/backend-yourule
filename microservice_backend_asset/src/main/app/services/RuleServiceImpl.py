@@ -105,7 +105,8 @@ class RuleService(object):
         elif PHOTOCELL in device_id:
             app.photocell_antecedent_functions.update_antecedent(user_id, rule_id, antecedent_json)
         measure = self.r.get("device:" + device_id + ":measure")
-        app.functional_rule_service.antecedent_evaluation(user_id, device_id, measure, [rule_id])
+        if SERVO not in device_id and SWITCH not in device_id:
+            app.functional_rule_service.antecedent_evaluation(user_id, device_id, measure, [rule_id])
         output = self.get_rule_by_id(user_id, rule_id)
         return output
 

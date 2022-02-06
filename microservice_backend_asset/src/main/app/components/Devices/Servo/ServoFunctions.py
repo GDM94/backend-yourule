@@ -1,6 +1,5 @@
 from .ServoDTO import Servo
 from datetime import datetime
-from ..DeviceEvaluationDTO import DeviceEvaluation
 from .ServoConsequentFunctions import ServoConsequentFunction
 
 
@@ -148,17 +147,6 @@ class ServoFunction(object):
             measure = self.r.get(key_pattern + ":manual_measure")
         return measure
 
-    def last_time_status_update(self, device_id, measure):
-        time_str = datetime.now().strftime("%H:%M")
-        date_str = datetime.now().strftime("%d/%m/%Y")
-        key_pattern = "device:" + device_id
-        if measure == "on":
-            self.r.set(key_pattern + ":last_time_on", time_str)
-            self.r.set(key_pattern + ":last_date_on", date_str)
-        else:
-            self.r.set(key_pattern + ":last_time_off", time_str)
-            self.r.set(key_pattern + ":last_date_off", date_str)
-
     def device_evaluation(self, device_id, absolute_measure):
         output = {}
         key_pattern = "device:" + device_id
@@ -184,3 +172,14 @@ class ServoFunction(object):
         else:
             output["measure"] = setting_off
         return output
+
+    def last_time_status_update(self, device_id, measure):
+        time_str = datetime.now().strftime("%H:%M")
+        date_str = datetime.now().strftime("%d/%m/%Y")
+        key_pattern = "device:" + device_id
+        if measure == "on":
+            self.r.set(key_pattern + ":last_time_on", time_str)
+            self.r.set(key_pattern + ":last_date_on", date_str)
+        else:
+            self.r.set(key_pattern + ":last_time_off", time_str)
+            self.r.set(key_pattern + ":last_date_off", date_str)

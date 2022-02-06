@@ -1,6 +1,5 @@
 from .SwitchDTO import Switch
 from .SwitchConsequentFunctions import SwitchConsequentFunction
-from ..DeviceEvaluationDTO import DeviceEvaluation
 from datetime import datetime
 
 
