@@ -41,23 +41,22 @@ class TimerFunction(object):
             return "error"
 
     def week_day_mapper(self, number_day):
-        match number_day:
-            case '0':
-                return 'Lunedi'
-            case '1':
-                return 'Martedi'
-            case '2':
-                return 'Mercoledi'
-            case '3':
-                return 'Giovedi'
-            case '4':
-                return 'Venerdi'
-            case '5':
-                return 'Sabato'
-            case '6':
-                return 'Domenica'
-            case _:
-                return ""
+        if number_day == '0':
+            return 'Lunedi'
+        elif number_day == '1':
+            return 'Martedi'
+        elif number_day == '2':
+            return 'Mercoledi'
+        elif number_day == '3':
+            return 'Giovedi'
+        elif number_day == '4':
+            return 'Venerdi'
+        elif number_day == '5':
+            return 'Sabato'
+        elif number_day == '6':
+            return 'Domenica'
+        else:
+            return ""
 
     def update_device(self, new_device):
         try:
