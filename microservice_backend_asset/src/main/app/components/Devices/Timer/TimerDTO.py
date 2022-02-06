@@ -4,6 +4,7 @@ class Timer(object):
         self.name = "timer"
         self.measure_time = ""
         self.measure_day = ""
+        self.measure = ""
         self.rules = []
         self.status = "connected"
         self.color = "green"

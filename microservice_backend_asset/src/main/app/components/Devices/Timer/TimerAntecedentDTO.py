@@ -5,6 +5,7 @@ class TimerAntecedent(object):
         self.device_name = ""
         self.measure_time = ""
         self.measure_day = ""
+        self.measure = ""
         self.condition_time = "between"
         self.condition_day = "="
         self.day_start_value = []

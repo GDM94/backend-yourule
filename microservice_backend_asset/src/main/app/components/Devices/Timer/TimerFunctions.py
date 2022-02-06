@@ -34,10 +34,30 @@ class TimerFunction(object):
                     dto.rules.append({"id": rule_id, "name": rule_name})
             dto.measure_time = datetime.now().strftime("%H:%M")
             dto.measure_day = str(datetime.today().weekday())
+            dto.measure = self.week_day_mapper(dto.measure_day) + ", " + dto.measure_time
             return dto
         except Exception as error:
             print(repr(error))
             return "error"
+
+    def week_day_mapper(self, number_day):
+        match number_day:
+            case '0':
+                return 'Lunedi'
+            case '1':
+                return 'Martedi'
+            case '2':
+                return 'Mercoledi'
+            case '3':
+                return 'Giovedi'
+            case '4':
+                return 'Venerdi'
+            case '5':
+                return 'Sabato'
+            case '6':
+                return 'Domenica'
+            case _:
+                return ""
 
     def update_device(self, new_device):
         try:
@@ -50,8 +70,9 @@ class TimerFunction(object):
             print(repr(error))
             return "error"
 
-    def get_measure(self, device_id):
+    def get_measure(self):
         measure_time = datetime.now().strftime("%H:%M")
         measure_day = str(datetime.today().weekday())
-        output = {"measure_time": measure_time, "measure_day": measure_day}
+        measure = self.week_day_mapper(measure_day) + ", " + measure_time
+        output = {"measure": measure}
         return output

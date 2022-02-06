@@ -20,10 +20,30 @@ class TimerAntecedentFunction(object):
             antecedent.evaluation = self.r.get(key_pattern + ":evaluation")
             antecedent.measure_time = datetime.now().strftime("%H:%M")
             antecedent.measure_day = str(datetime.today().weekday())
+            antecedent.measure = self.week_day_mapper(antecedent.measure_day) + ", " + antecedent.measure_time
             return antecedent
         except Exception as error:
             print(repr(error))
             return "error"
+
+    def week_day_mapper(self, number_day):
+        match number_day:
+            case '0':
+                return 'Lunedi'
+            case '1':
+                return 'Martedi'
+            case '2':
+                return 'Mercoledi'
+            case '3':
+                return 'Giovedi'
+            case '4':
+                return 'Venerdi'
+            case '5':
+                return 'Sabato'
+            case '6':
+                return 'Domenica'
+            case _:
+                return ""
 
     def get_antecedent_slim(self, user_id, rule_id, device_id):
         try:
