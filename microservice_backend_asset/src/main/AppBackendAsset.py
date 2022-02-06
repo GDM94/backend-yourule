@@ -25,6 +25,7 @@ from app.components.Devices.WaterLevel.WaterLevelAntecedentFunctions import Wate
 from app.components.Devices.Switch.SwitchConsequentFunctions import SwitchConsequentFunction
 from app.components.Devices.Button.ButtonAntecedentFunctions import ButtonAntecedentFunction
 from app.components.Devices.Switch.SwitchAntecedentFunctions import SwitchAntecedentFunction
+from app.components.Devices.Servo.ServoAntecedentFunctions import ServoAntecedentFunction
 from app.components.Devices.Weather.WeatherAntecedentFunctions import WeatherAntecedentFunction
 from app.components.Devices.Photocell.PhotocellAntecedentFunctions import PhotocellAntecedentFunction
 from app.components.Devices.Servo.ServoConsequentFunctions import ServoConsequentFunction
@@ -59,6 +60,7 @@ app.waterlevel_antecedent_functions = WaterLevelAntecedentFunction(redis)
 app.switch_consequent_functions = SwitchConsequentFunction(redis)
 app.button_antecedent_functions = ButtonAntecedentFunction(redis)
 app.switch_antecedent_functions = SwitchAntecedentFunction(redis)
+app.servo_antecedent_functions = ServoAntecedentFunction(redis)
 app.weather_antecedent_functions = WeatherAntecedentFunction(redis)
 app.photocell_antecedent_functions = PhotocellAntecedentFunction(redis)
 app.servo_consequent_functions = ServoConsequentFunction(redis)

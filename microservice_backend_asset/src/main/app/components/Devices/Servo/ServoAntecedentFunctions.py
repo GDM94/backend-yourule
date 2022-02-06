@@ -1,14 +1,14 @@
-from .SwitchAntecedentDTO import SwitchAntecedent
+from .ServoAntecedentDTO import ServoAntecedent
 from datetime import datetime
 
 
-class SwitchAntecedentFunction(object):
+class ServoAntecedentFunction(object):
     def __init__(self, redis):
         self.r = redis
 
     def get_antecedent(self, user_id, rule_id, device_id):
         try:
-            antecedent = SwitchAntecedent()
+            antecedent = ServoAntecedent()
             rule_key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
             device_key_pattern = "device:" + device_id
             antecedent.device_id = device_id
@@ -31,7 +31,7 @@ class SwitchAntecedentFunction(object):
 
     def get_antecedent_slim(self, user_id, rule_id, device_id):
         try:
-            antecedent = SwitchAntecedent()
+            antecedent = ServoAntecedent()
             key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
             antecedent.device_id = device_id
             antecedent.device_name = self.r.get("device:" + device_id + ":name")
@@ -67,7 +67,7 @@ class SwitchAntecedentFunction(object):
             if device_id not in device_antecedents and device_id in device_consequents:
                 self.r.rpush("user:" + user_id + ":rule:" + rule_id + ":device_antecedents", device_id)
                 key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
-                antecedent = SwitchAntecedent()
+                antecedent = ServoAntecedent()
                 self.r.set(key_pattern + ":evaluation", antecedent.evaluation)
                 self.r.set(key_pattern + ":time_start_value", antecedent.time_start_value)
                 self.r.set(key_pattern + ":time_stop_value", antecedent.time_stop_value)
@@ -81,7 +81,7 @@ class SwitchAntecedentFunction(object):
 
     def update_antecedent(self, user_id, rule_id, new_antecedent):
         try:
-            antecedent = SwitchAntecedent()
+            antecedent = ServoAntecedent()
             antecedent.antecedent_mapping(new_antecedent)
             device_antecedents = self.r.lrange("user:" + user_id + ":rule:" + rule_id + ":device_antecedents")
             result = "false"

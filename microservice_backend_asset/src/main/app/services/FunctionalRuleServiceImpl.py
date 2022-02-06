@@ -26,6 +26,10 @@ class FunctionalRuleService(object):
             elif PHOTOCELL in device_id:
                 trigger = app.photocell_antecedent_functions. \
                     antecedent_evaluation(user_id, rule_id, device_id, measure)
+            elif SWITCH in device_id:
+                trigger = app.switch_antecedent_functions.antecedent_evaluation(user_id, device_id, rule_id)
+            elif SERVO in device_id:
+                trigger = app.servo_antecedent_functions.antecedent_evaluation(user_id, device_id, rule_id)
             if trigger == "true":
                 output.append(rule_id)
         if len(output) > 0:
@@ -118,4 +122,21 @@ class FunctionalRuleService(object):
         for user_id in user_id_list:
             rules_id_list = self.get_rules_with_device_id(user_id, SWITCH)
             if len(rules_id_list) > 0:
-                self.rule_evaluation(user_id, rules_id_list)
+                for rule_id in rules_id_list:
+                    key_pattern = "user:" + user_id + ":rule:" + rule_id
+                    device_antecedents = self.r.lrange(key_pattern + ":device_antecedents")
+                    for device_id in device_antecedents:
+                        if SWITCH in device_id:
+                            self.antecedent_evaluation(user_id, device_id, "-", rules_id_list)
+
+    def servo_last_on_evaluation(self):
+        user_id_list = self.get_all_users()
+        for user_id in user_id_list:
+            rules_id_list = self.get_rules_with_device_id(user_id, SERVO)
+            if len(rules_id_list) > 0:
+                for rule_id in rules_id_list:
+                    key_pattern = "user:" + user_id + ":rule:" + rule_id
+                    device_antecedents = self.r.lrange(key_pattern + ":device_antecedents")
+                    for device_id in device_antecedents:
+                        if SERVO in device_id:
+                            self.antecedent_evaluation(user_id, device_id, "-", rules_id_list)

@@ -3,7 +3,6 @@ from flask import request
 from flask import Blueprint
 from .UserRESTController import check_token
 from flask import current_app as app
-from flask import Response
 
 rule = Blueprint('rule', __name__)
 
@@ -202,6 +201,7 @@ def delete_rule_consequent(rule_id, device_id):
 @rule.route('/timer/evaluation', methods=['GET'])
 def timer_evaluation():
     app.functional_rule_service.timer_evaluation()
+    app.functional_rule_service.servo_last_on_evaluation()
     app.functional_rule_service.switch_last_on_evaluation()
     app.functional_rule_service.weather_evaluation()
     return "true"

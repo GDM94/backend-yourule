@@ -10,7 +10,6 @@ class RuleService(object):
         self.mqtt_switch = config.get("MQTT", "mqtt_switch")
         self.mqtt_servo = config.get("MQTT", "mqtt_servo")
         self.endpoint_mqtt = config.get("MQTT", "endpoint_mqtt")
-        self.endpoint_rabbitmq = config.get("MQTT", "endpoint_rabbitmq")
         self.r = redis
 
     def create_rule(self, user_id, rule_name):
@@ -68,6 +67,8 @@ class RuleService(object):
             result = app.button_antecedent_functions.add_antecedent(user_id, rule_id, device_id)
         elif SWITCH in device_id:
             result = app.switch_antecedent_functions.add_antecedent(user_id, rule_id, device_id)
+        elif SERVO in device_id:
+            result = app.servo_antecedent_functions.add_antecedent(user_id, rule_id, device_id)
         elif WEATHER in device_id:
             result = app.weather_antecedent_functions.add_antecedent(user_id, rule_id, device_id)
         elif PHOTOCELL in device_id:
@@ -89,21 +90,23 @@ class RuleService(object):
         return result
 
     def update_rule_antecedent(self, user_id, rule_id, device_id, antecedent_json):
-        output = "error"
         if TIMER in device_id:
-            output = app.timer_antecedent_functions.update_antecedent(user_id, rule_id, antecedent_json)
+            app.timer_antecedent_functions.update_antecedent(user_id, rule_id, antecedent_json)
         elif WATER_LEVEL in device_id:
-            output = app.waterlevel_antecedent_functions.update_antecedent(user_id, rule_id, antecedent_json)
+            app.waterlevel_antecedent_functions.update_antecedent(user_id, rule_id, antecedent_json)
         elif BUTTON in device_id:
-            output = app.button_antecedent_functions.update_antecedent(user_id, rule_id, antecedent_json)
+            app.button_antecedent_functions.update_antecedent(user_id, rule_id, antecedent_json)
         elif SWITCH in device_id:
-            output = app.switch_antecedent_functions.update_antecedent(user_id, rule_id, antecedent_json)
+            app.switch_antecedent_functions.update_antecedent(user_id, rule_id, antecedent_json)
+        elif SERVO in device_id:
+            app.servo_antecedent_functions.update_antecedent(user_id, rule_id, antecedent_json)
         elif WEATHER in device_id:
-            output = app.weather_antecedent_functions.update_antecedent(user_id, rule_id, antecedent_json)
+            app.weather_antecedent_functions.update_antecedent(user_id, rule_id, antecedent_json)
         elif PHOTOCELL in device_id:
-            output = app.photocell_antecedent_functions.update_antecedent(user_id, rule_id, antecedent_json)
-        if output != "error":
-            output = self.get_rule_by_id(user_id, rule_id)
+            app.photocell_antecedent_functions.update_antecedent(user_id, rule_id, antecedent_json)
+        measure = self.r.get("device:" + device_id + ":measure")
+        app.functional_rule_service.antecedent_evaluation(user_id, device_id, measure, [rule_id])
+        output = self.get_rule_by_id(user_id, rule_id)
         return output
 
     def update_rule_consequent(self, user_id, rule_id, device_id, consequent_json):
@@ -164,6 +167,8 @@ class RuleService(object):
                 output = app.button_antecedent_functions.delete_antecedent(user_id, rule_id, device_id)
             elif SWITCH in device_id:
                 output = app.switch_antecedent_functions.delete_antecedent(user_id, rule_id, device_id)
+            elif SERVO in device_id:
+                output = app.servo_antecedent_functions.delete_antecedent(user_id, rule_id, device_id)
             elif WEATHER in device_id:
                 output = app.weather_antecedent_functions.delete_antecedent(user_id, rule_id, device_id)
             elif PHOTOCELL in device_id:
@@ -253,6 +258,8 @@ class RuleService(object):
                 antecedent = app.button_antecedent_functions.get_antecedent(user_id, rule_id, device_id)
             elif SWITCH in device_id:
                 antecedent = app.switch_antecedent_functions.get_antecedent(user_id, rule_id, device_id)
+            elif SERVO in device_id:
+                antecedent = app.servo_antecedent_functions.get_antecedent(user_id, rule_id, device_id)
             elif WEATHER in device_id:
                 antecedent = app.weather_antecedent_functions.get_antecedent(user_id, rule_id, device_id)
             elif PHOTOCELL in device_id:
@@ -273,6 +280,8 @@ class RuleService(object):
                 antecedent = app.button_antecedent_functions.get_antecedent_slim(user_id, rule_id, device_id)
             elif SWITCH in device_id:
                 antecedent = app.switch_antecedent_functions.get_antecedent_slim(user_id, rule_id, device_id)
+            elif SERVO in device_id:
+                antecedent = app.servo_antecedent_functions.get_antecedent_slim(user_id, rule_id, device_id)
             elif WEATHER in device_id:
                 antecedent = app.weather_antecedent_functions.get_antecedent_slim(user_id, rule_id, device_id)
             elif PHOTOCELL in device_id:

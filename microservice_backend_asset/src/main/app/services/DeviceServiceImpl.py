@@ -11,7 +11,6 @@ class DeviceService(object):
         self.mqtt_switch = config.get("MQTT", "mqtt_switch")
         self.mqtt_servo = config.get("MQTT", "mqtt_servo")
         self.endpoint_mqtt = config.get("MQTT", "endpoint_mqtt")
-        self.endpoint_rabbitmq = config.get("MQTT", "endpoint_rabbitmq")
 
     def get_device(self, user_id, device_id):
         try:
@@ -43,7 +42,7 @@ class DeviceService(object):
         elif WATER_LEVEL in device_id:
             device = app.waterlevel_functions.get_measure(device_id)
         elif TIMER in device_id:
-            device = app.timer_functions.get_measure(device_id)
+            device = app.timer_functions.get_measure()
         elif BUTTON in device_id:
             device = app.button_functions.get_measure(device_id)
         elif PHOTOCELL in device_id:
