@@ -120,15 +120,23 @@ class SwitchAntecedentFunction(object):
         return evaluation
 
     def last_time_off_evaluation(self, user_id, device_id, rule_id):
-        now = datetime.now().strftime("%H:%M")
+        now = datetime.now().strftime("%d/%m/%Y %H:%M")
         key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
         last_time_off_str = self.r.get("device:" + device_id + ":last_time_off")
+        last_date_off_str = self.r.get("device:" + device_id + ":last_date_off")
         time_stop_value_str = self.r.get(key_pattern + ":time_stop_value")
         date_stop_value_str = self.r.get(key_pattern + ":date_stop_value")
-        if last_time_off_str == "" or time_stop_value_str == "-":
+        if last_time_off_str == "" or last_date_off_str == "" or time_stop_value_str == "-":
             return "true"
-        delta_last_off = (
-                datetime.strptime(now, '%H:%M') - datetime.strptime(last_time_off_str, '%H:%M')).total_seconds()
+        delta_day_last_off = (
+                datetime.strptime(now, '%d/%m/%Y') - datetime.strptime(last_date_off_str, '%d/%m/%Y')).total_seconds()
+        if delta_day_last_off == 0:
+            delta_time_last_off = (
+                    datetime.strptime(now, '%H:%M') - datetime.strptime(last_time_off_str, '%H:%M')).total_seconds()
+        else:
+            delta_time_last_off = (
+                    datetime.strptime("23.59", '%H:%M') - datetime.strptime(last_time_off_str, '%H:%M')).total_seconds()
+        delta_last_off = delta_day_last_off + delta_time_last_off
         time_stop_value = datetime.strptime(time_stop_value_str, '%H:%M').time()
         stop_interval = (time_stop_value.hour * 60) + time_stop_value.minute + (int(date_stop_value_str) * 24 * 60)
         evaluation = "true"
@@ -137,14 +145,23 @@ class SwitchAntecedentFunction(object):
         return evaluation
 
     def last_time_on_evaluation(self, user_id, device_id, rule_id):
-        now = datetime.now().strftime("%H:%M")
+        now = datetime.now().strftime("%d/%m/%Y %H:%M")
         key_pattern = "user:" + user_id + ":rule:" + rule_id + ":rule_antecedents:" + device_id
         last_time_on_str = self.r.get("device:" + device_id + ":last_time_on")
+        last_date_on_str = self.r.get("device:" + device_id + ":last_date_on")
         time_start_value_str = self.r.get(key_pattern + ":time_start_value")
         date_start_value_str = self.r.get(key_pattern + ":date_start_value")
-        if last_time_on_str == "" or time_start_value_str == "-":
+        if last_time_on_str == "" or last_date_on_str == "" or time_start_value_str == "-":
             return "false"
-        delta_last_on = (datetime.strptime(now, '%H:%M') - datetime.strptime(last_time_on_str, '%H:%M')).total_seconds()
+        delta_day_last_on = (
+                datetime.strptime(now, '%d/%m/%Y') - datetime.strptime(last_date_on_str, '%d/%m/%Y')).total_seconds()
+        if delta_day_last_on == 0:
+            delta_time_last_on = (
+                    datetime.strptime(now, '%H:%M') - datetime.strptime(last_time_on_str, '%H:%M')).total_seconds()
+        else:
+            delta_time_last_on = (
+                    datetime.strptime("23.59", '%H:%M') - datetime.strptime(last_time_on_str, '%H:%M')).total_seconds()
+        delta_last_on = delta_day_last_on + delta_time_last_on
         time_start_value = datetime.strptime(time_start_value_str, '%H:%M').time()
         start_interval = (time_start_value.hour * 60) + time_start_value.minute + (int(date_start_value_str) * 24 * 60)
         evaluation = "false"
