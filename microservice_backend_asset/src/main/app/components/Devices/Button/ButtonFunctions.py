@@ -1,6 +1,5 @@
 from .ButtonDTO import Button
 from .ButtonAntecedentFunctions import ButtonAntecedentFunction
-from ..DeviceEvaluationDTO import DeviceEvaluation
 from datetime import datetime
 
 

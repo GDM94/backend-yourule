@@ -110,7 +110,7 @@ class DeviceService(object):
                 elif PHOTOCELL in device_id:
                     app.photocell_functions.delete_device(user_id, device_id)
                 # trigger rule evaluation
-                app.functional_rule_service.rule_evaluation(user_id, rules)
+                app.rule_evaluation_service.rules_evaluation(user_id, rules)
             return "true"
         except Exception as error:
             print(repr(error))
@@ -153,7 +153,7 @@ class DeviceService(object):
             if automatic == "true":
                 rules = self.r.lrange("device:" + device_id + ":rules")
                 for rule in rules:
-                    app.functional_rule_service.consequent_evaluation(user_id, rule)
+                    app.consequent_evaluation_service.consequent_evaluation(user_id, rule)
             dto = {}
             if SWITCH in device_id:
                 dto = app.switch_functions.get_device(user_id, device_id)

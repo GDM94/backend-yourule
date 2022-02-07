@@ -1,6 +1,5 @@
 from .PhotocellDTO import Photocell
 from .PhotocellAntecedentFunctions import PhotocellAntecedentFunction
-from ..DeviceEvaluationDTO import DeviceEvaluation
 from datetime import datetime
 
 

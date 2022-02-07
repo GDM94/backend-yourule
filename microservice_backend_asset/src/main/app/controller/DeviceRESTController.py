@@ -150,5 +150,5 @@ def device_evaluation():
     device_id = str(payload["device_id"])
     measure = str(payload["measure"])
     expiration = str(payload["expiration"])
-    output = app.device_functional_service.device_evaluation(device_id, measure, expiration)
+    output = app.device_evaluation_service.device_evaluation(device_id, measure, expiration)
     return Response(json.dumps(output, default=lambda o: o.__dict__), mimetype='application/json')

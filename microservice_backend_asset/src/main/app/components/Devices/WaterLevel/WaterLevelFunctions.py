@@ -1,7 +1,6 @@
 from .WaterLevelDTO import WaterLevel
 from .WaterLevelAntecedentFunctions import WaterLevelAntecedentFunction
 from datetime import datetime
-from ..DeviceEvaluationDTO import DeviceEvaluation
 
 
 class WaterLevelFunction(object):

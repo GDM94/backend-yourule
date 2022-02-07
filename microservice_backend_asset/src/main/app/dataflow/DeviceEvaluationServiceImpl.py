@@ -4,7 +4,7 @@ from ..components.Devices.DeviceId import WATER_LEVEL, SWITCH, PHOTOCELL, BUTTON
 from flask import current_app as app
 
 
-class DeviceFunctionalService(object):
+class DeviceEvaluationService(object):
     def __init__(self, redis, config):
         self.r = redis
         self.mqtt_switch = config.get("MQTT", "mqtt_switch")
@@ -25,7 +25,7 @@ class DeviceFunctionalService(object):
             device_id = trigger["device_id"]
             measure = trigger["measure"]
             rules = trigger["rules"]
-            app.functional_rule_service.antecedent_evaluation(user_id, device_id, measure, rules)
+            app.antecedent_evaluation_service.antecedent_evaluation(user_id, device_id, measure, rules)
 
     def measure_evaluation(self, device_id, measure):
         if WATER_LEVEL in device_id:

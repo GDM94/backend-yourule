@@ -8,8 +8,6 @@ from app.DBconnection.RedisConnectionImpl import RedisConnection
 from app.services.DeviceServiceImpl import DeviceService
 from app.services.RuleServiceImpl import RuleService
 from app.services.UserServiceImpl import UserService
-from app.services.DeviceFunctionalServiceImpl import DeviceFunctionalService
-from app.services.FunctionalRuleServiceImpl import FunctionalRuleService
 from app.components.Devices.WaterLevel.WaterLevelFunctions import WaterLevelFunction
 from app.components.Devices.Switch.SwitchFuntions import SwitchFunction
 from app.components.Devices.Button.ButtonFunctions import ButtonFunction
@@ -29,6 +27,10 @@ from app.components.Devices.Servo.ServoAntecedentFunctions import ServoAnteceden
 from app.components.Devices.Weather.WeatherAntecedentFunctions import WeatherAntecedentFunction
 from app.components.Devices.Photocell.PhotocellAntecedentFunctions import PhotocellAntecedentFunction
 from app.components.Devices.Servo.ServoConsequentFunctions import ServoConsequentFunction
+from app.dataflow.DeviceEvaluationServiceImpl import DeviceEvaluationService
+from app.dataflow.AntecedentEvaluationServiceImpl import AntecedentEvaluationService
+from app.dataflow.RuleEvaluationServiceImpl import RuleEvaluationService
+from app.dataflow.ConsequentEvaluationServiceImpl import ConsequentEvaluationService
 
 config = read_config()
 redis = RedisConnection(config)
@@ -41,8 +43,6 @@ CORS(app)
 app.device_service = DeviceService(redis, config)
 app.rule_service = RuleService(redis, config)
 app.user_service = UserService(redis, config)
-app.device_functional_service = DeviceFunctionalService(redis, config)
-app.functional_rule_service = FunctionalRuleService(redis, config)
 
 app.switch_functions = SwitchFunction(redis)
 app.waterlevel_functions = WaterLevelFunction(redis)
@@ -64,6 +64,11 @@ app.servo_antecedent_functions = ServoAntecedentFunction(redis)
 app.weather_antecedent_functions = WeatherAntecedentFunction(redis)
 app.photocell_antecedent_functions = PhotocellAntecedentFunction(redis)
 app.servo_consequent_functions = ServoConsequentFunction(redis)
+
+app.device_evaluation_service = DeviceEvaluationService(redis, config)
+app.antecedent_evaluation_service = AntecedentEvaluationService(redis)
+app.rule_evaluation_service = RuleEvaluationService(redis)
+app.consequent_evaluation_service = ConsequentEvaluationService(redis, config)
 
 
 app.register_blueprint(rule, url_prefix='/rule')

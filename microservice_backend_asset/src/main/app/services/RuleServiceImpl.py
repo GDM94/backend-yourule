@@ -106,7 +106,7 @@ class RuleService(object):
             app.photocell_antecedent_functions.update_antecedent(user_id, rule_id, antecedent_json)
         measure = self.r.get("device:" + device_id + ":measure")
         if SERVO not in device_id and SWITCH not in device_id:
-            app.functional_rule_service.antecedent_evaluation(user_id, device_id, measure, [rule_id])
+            app.antecedent_evaluation_service.antecedent_evaluation(user_id, device_id, measure, [rule_id])
         output = self.get_rule_by_id(user_id, rule_id)
         return output
 
@@ -176,7 +176,7 @@ class RuleService(object):
                 output = app.photocell_antecedent_functions.delete_antecedent(user_id, rule_id, device_id)
             if output != "error":
                 # trigger rule evaluation
-                app.functional_rule_service.rule_evaluation(user_id, [rule_id])
+                app.rule_evaluation_service.rules_evaluation(user_id, [rule_id])
                 # get rule by id
                 output = self.get_rule_by_id(user_id, rule_id)
             return output
