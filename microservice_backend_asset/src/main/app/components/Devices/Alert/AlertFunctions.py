@@ -38,6 +38,17 @@ class AlertFunction(object):
             print(repr(error))
             return "error"
 
+    def get_device_slim(self, device_id):
+        try:
+            key_pattern = "device:" + device_id
+            dto = Alert()
+            dto.id = device_id
+            dto.name = self.r.get(key_pattern + ":name")
+            return dto
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
     def delete_all_email(self, device_id):
         key_pattern = "device:" + device_id
         if self.r.exists(key_pattern + ":email_list"):

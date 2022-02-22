@@ -17,6 +17,7 @@ class Servo(object):
         self.status = "disconnected"
         self.color = "red"
         self.expiration = "10"
+        self.type = "actuator"
 
     def device_mapping(self, device):
         self.id = device["id"]

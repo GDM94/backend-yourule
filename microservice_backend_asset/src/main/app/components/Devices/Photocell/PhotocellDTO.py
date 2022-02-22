@@ -14,6 +14,7 @@ class Photocell(object):
         self.min_measure_time = "-"
         self.min_measure_date = "-"
         self.expiration = "10"
+        self.type = "sensor"
 
     def device_mapping(self, device):
         self.id = device["id"]

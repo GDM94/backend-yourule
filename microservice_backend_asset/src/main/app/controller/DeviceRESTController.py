@@ -62,6 +62,17 @@ def get_all_consequents():
         return json.dumps(output, default=lambda o: o.__dict__, indent=4)
 
 
+@device.route('/get/devices', methods=['GET'])
+@check_token
+def get_all_devices():
+    user_id = request.args.get("user_id")
+    output = app.device_service.get_all_devices(user_id)
+    if output == "error":
+        raise Exception()
+    else:
+        return json.dumps(output, default=lambda o: o.__dict__, indent=4)
+
+
 @device.route('/delete/<device_id>', methods=['DELETE'])
 @check_token
 def delete_device(device_id):

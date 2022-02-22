@@ -14,6 +14,7 @@ class ServoFunction(object):
             key_pattern = "device:" + device_id
             if self.r.exists(key_pattern + ":name") == 0:
                 self.r.rpush("user:" + user_id + ":switches", device_id)
+                self.r.rpush("user:" + user_id + ":devices", device_id)
                 device_id_keys = self.r.lrange("user:" + user_id + ":switches")
                 device = Servo()
                 device.id = device_id
@@ -74,6 +75,27 @@ class ServoFunction(object):
             print(repr(error))
             return "error"
 
+    def get_device_slim(self, device_id):
+        try:
+            key_pattern = "device:" + device_id
+            dto = Servo()
+            dto.id = device_id
+            dto.name = self.r.get(key_pattern + ":name")
+            if self.r.exists(key_pattern + ":measure") == 1:
+                measure = self.r.get(key_pattern + ":measure")
+                if measure == "-":
+                    dto.measure = measure
+                    dto.color = "yellow"
+                    dto.status = "initialization"
+                else:
+                    dto.measure = measure
+                    dto.color = "green"
+                    dto.status = "connected"
+            return dto
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
     def get_measure(self, device_id):
         measure = "-"
         if self.r.exists("device:" + device_id + ":measure") == 1:
@@ -100,6 +122,7 @@ class ServoFunction(object):
     def delete_device(self, user_id, device_id):
         try:
             self.r.lrem("user:" + user_id + ":switches", device_id)
+            self.r.lrem("user:" + user_id + ":devices", device_id)
             key_pattern = "device:" + device_id
             self.r.delete(key_pattern + ":name")
             self.r.delete(key_pattern + ":user_id")

@@ -36,6 +36,30 @@ class DeviceService(object):
             print(repr(error))
             return "error"
 
+    def get_device_slim(self, device_id):
+        try:
+            device = {}
+            if SWITCH in device_id:
+                device = app.switch_functions.get_device_slim(device_id)
+            elif WATER_LEVEL in device_id:
+                device = app.waterlevel_functions.get_device_slim(device_id)
+            elif TIMER in device_id:
+                device = app.timer_functions.get_device_slim(device_id)
+            elif ALERT in device_id:
+                device = app.alert_functions.get_device_slim(device_id)
+            elif BUTTON in device_id:
+                device = app.button_functions.get_device_slim(device_id)
+            elif WEATHER in device_id:
+                device = app.weather_functions.get_device_slim(device_id)
+            elif PHOTOCELL in device_id:
+                device = app.photocell_functions.get_device_slim(device_id)
+            elif SERVO in device_id:
+                device = app.servo_functions.get_device_slim(device_id)
+            return device
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
     def get_device_measure(self, device_id):
         if SWITCH in device_id:
             device = app.switch_functions.get_measure(device_id)
@@ -141,6 +165,22 @@ class DeviceService(object):
                 key_pattern = "device:" + device_id
                 device_name = self.r.get(key_pattern + ":name")
                 output.append({"id": device_id, "name": device_name})
+        except Exception as error:
+            print(repr(error))
+            return "error"
+        else:
+            return output
+
+    def get_all_devices(self, user_id):
+        try:
+            device_id_keys = self.r.lrange("user:" + user_id + ":devices")
+            device_id_keys.insert(0, "timer-" + user_id)
+            device_id_keys.insert(1, "WEATHER-" + user_id)
+            device_id_keys.insert(2, "alert-" + user_id)
+            output = []
+            for device_id in device_id_keys:
+                device = self.get_device_slim(device_id)
+                output.append({"id": device_id, "name": device.name, "type": device.type, "color": device.color})
         except Exception as error:
             print(repr(error))
             return "error"

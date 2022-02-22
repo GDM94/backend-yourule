@@ -40,6 +40,17 @@ class TimerFunction(object):
             print(repr(error))
             return "error"
 
+    def get_device_slim(self, device_id):
+        try:
+            key_pattern = "device:" + device_id
+            dto = Timer()
+            dto.id = device_id
+            dto.name = self.r.get(key_pattern + ":name")
+            return dto
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
     def week_day_mapper(self, number_day):
         if number_day == '0':
             return 'Lunedi'

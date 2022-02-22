@@ -12,6 +12,7 @@ class Button(object):
         self.last_date_on = "-"
         self.last_date_off = "-"
         self.expiration = "10"
+        self.type = "sensor"
 
     def device_mapping(self, device):
         self.id = device["id"]

@@ -8,6 +8,7 @@ class Alert(object):
         self.status = "connected"
         self.color = "green"
         self.expiration = "no"
+        self.type = "actuator"
 
     def device_mapping(self, device):
         self.id = device["id"]

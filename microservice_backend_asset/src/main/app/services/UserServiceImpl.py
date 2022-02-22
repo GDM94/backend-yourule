@@ -1,8 +1,6 @@
 from ..components.Profile.ProfileDTO import ProfileDto
 from ..components.Profile.ProfileFunctions import ProfileFunction
-from ..components.Devices.Alert.AlertFunctions import AlertFunction
-from ..components.Devices.Timer.TimerFunctions import TimerFunction
-from ..components.Devices.Weather.WeatherFunctions import WeatherFunction
+from flask import current_app as app
 
 
 class UserService(object):
@@ -11,9 +9,6 @@ class UserService(object):
         self.r = redis
         token_key = config.get("OAUTH", "token_key")
         self.profile_functions = ProfileFunction(redis, token_key)
-        self.timer_functions = TimerFunction(redis)
-        self.alert_functions = AlertFunction(redis)
-        self.weather_functions = WeatherFunction(redis, config)
 
     def user_login(self, profile_map):
         try:
@@ -31,9 +26,9 @@ class UserService(object):
             profile.constructor_map(profile_map)
             output = self.profile_functions.register(profile)
             if output != "false" and output != "error":
-                self.timer_functions.register(profile.user_id)
-                self.alert_functions.register(profile.user_id, profile.email)
-                self.weather_functions.register(profile.user_id)
+                app.timer_functions.register(profile.user_id)
+                app.alert_functions.register(profile.user_id, profile.email)
+                app.weather_functions.register(profile.user_id)
             return output
         except Exception as error:
             print(repr(error))
@@ -52,10 +47,10 @@ class UserService(object):
             return output
 
     def set_user_location(self, user_id, name, country, lat, lon):
-        return self.weather_functions.set_location(user_id, name, country, lat, lon)
+        return app.weather_functions.set_location(user_id, name, country, lat, lon)
 
     def get_user_location(self, user_id):
-        return self.weather_functions.get_location(user_id)
+        return app.weather_functions.get_location(user_id)
 
     def search_new_location(self, name):
-        return self.weather_functions.search_new_location(name)
+        return app.weather_functions.search_new_location(name)

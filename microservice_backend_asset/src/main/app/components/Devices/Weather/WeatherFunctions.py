@@ -65,6 +65,17 @@ class WeatherFunction(object):
             print(repr(error))
             return "error"
 
+    def get_device_slim(self, device_id):
+        try:
+            key_pattern = "device:" + device_id
+            dto = Weather()
+            dto.id = device_id
+            dto.name = self.r.get(key_pattern + ":name")
+            return dto
+        except Exception as error:
+            print(repr(error))
+            return "error"
+
     def update_device(self, new_device):
         try:
             dto = Weather()

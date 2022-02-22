@@ -9,6 +9,7 @@ class Timer(object):
         self.status = "connected"
         self.color = "green"
         self.expiration = "no"
+        self.type = "sensor"
 
     def device_mapping(self, device):
         self.id = device["id"]

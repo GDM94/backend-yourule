@@ -26,6 +26,7 @@ class Weather(object):
         self.last_time_update = ""
         self.last_date_update = ""
         self.rules = []
+        self.type = "sensor"
 
     def device_mapping(self, device):
         self.id = device["id"]
